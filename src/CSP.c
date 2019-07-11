@@ -9,6 +9,7 @@ kirilenkobm@gmail.com
 #include <assert.h>
 #include <stdbool.h>
 #include "patterns.h"
+#include "grid.h"
 
 
 int solve_CSP(int str_num, int str_len, int k_, int pat_num, int pos_num, 
@@ -118,6 +119,8 @@ int solve_CSP(int str_num, int str_len, int k_, int pat_num, int pos_num,
         positions[i].patterns[0] = first_pattern;
         positions[i].patterns[1] = second_pattern;
     }
+    // now we can go throw grid and try to find the positions
+    
 
     // free memory!
     for (int i = 0; i < pat_num; i++){

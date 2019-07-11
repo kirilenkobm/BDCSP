@@ -1,5 +1,21 @@
 CC = gcc
-CFLAGS = -fPIC -shared
+CFLAGS = -fPIC
+LDFLAGS = -shared
+RM = rm -f
+TARGET_LIB = libs/CSP.so
 
-all:
-	$(CC) $(CFLAGS) -o libs/CSP.so src/CSP.c
+SRCS = src/CSP.c src/grid.c
+OBJS = $(SRCS:.c=.o)
+
+.PHONY: all
+all: ${TARGET_LIB}
+
+$(TARGET_LIB): $(OBJS)
+	$(CC) ${LDFLAGS} -o $@ $^
+
+$(SRCS:.c):%.c
+	$(CC) $(CFLAGS) -MM $< >$@
+
+.PHONY: clean
+clean:
+	-${RM} ${OBJS} $(SRCS:.c)

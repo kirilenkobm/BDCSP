@@ -10,9 +10,6 @@ kirilenkobm@gmail.com
 #include <stdbool.h>
 #include "patterns.h"
 
-#define PAT_NUM 10
-#define PAT_REALLOC_STEP 10
-
 
 int solve_CSP(int str_num, int str_len, int k_, int pat_num, int pos_num, 
               int *patterns_1D_arr, int *pat_to_pos_1D, int *pat_to_pos_num,
@@ -50,6 +47,7 @@ int solve_CSP(int str_num, int str_len, int k_, int pat_num, int pos_num,
         patterns[i].id = i;  // obviously id
         // get occupied positions
         int occupies_size = sum_pattern(str_num, patterns[i].pattern_seq);
+        patterns[i].occupies_num = occupies_size;
         patterns[i].occupies = malloc(sizeof(int) * occupies_size);
         int j_n = 0;
         for (int j = 0; j < str_num; j++){
@@ -68,6 +66,44 @@ int solve_CSP(int str_num, int str_len, int k_, int pat_num, int pos_num,
         // pattern intersects with and not intersects with
         // at the latter stage
     }
+    // patterns and positions are packed in the two lists of structures
+    // now we can find intersecting and non-intersecting patterns
+    for (int i = 0; i < pat_num; i++){
+        // find intersections and non-intersections of smaller id
+        // not the most efficient algorithm though
+        if (i == pat_num - 1){
+            // terminal pattern; never start with it
+            patterns[i].intersects_with = NULL;
+            patterns[i].not_intersects_with = NULL;
+            break;}
+        // define what to compare and compare
+        int pat_num_downstream = pat_num - (i + 1);
+        int intersects = 0;
+        int non_intersects = 0;
+        int *intersects_lst = malloc(sizeof(int) * pat_num_downstream);
+        int *non_intersects_lst = malloc(sizeof(int) * pat_num_downstream);
+        for (int j = i + 1; j < pat_num; j++){
+            // if true -> to intersected, otherwise to non-intersected
+            bool i_j_inter = intersect_by_occ(patterns[i].occupies, patterns[i].occupies_num,
+                                              patterns[j].occupies, patterns[j].occupies_num);
+            if (i_j_inter){
+                intersects_lst[intersects] = j;
+                intersects++;
+            } else {
+                non_intersects_lst[non_intersects] = j;
+                non_intersects++;}}
+        // save to struct
+        patterns[i].intersects_with = malloc(sizeof(int) * intersects);
+        patterns[i].inters_num = intersects;
+        for (int j = 0; j < intersects; j++){
+            patterns[i].intersects_with[j] = intersects_lst[j];}
+        patterns[i].not_intersects_with = malloc(sizeof(int) * non_intersects);
+        patterns[i].non_inters_num = non_intersects;
+        for (int j = 0; j < non_intersects; j++){
+            patterns[i].not_intersects_with[j] = non_intersects_lst[j];}
+        free(intersects_lst);
+        free(non_intersects_lst);
+    }
 
     // read positions then
     printf("# Overal %d positions\n", pos_num);
@@ -83,14 +119,13 @@ int solve_CSP(int str_num, int str_len, int k_, int pat_num, int pos_num,
         positions[i].patterns[1] = second_pattern;
     }
 
-    // patterns and positions are packed in the two lists of structures
-    // now we can find intersecting and non-intersecting patterns
-    
     // free memory!
     for (int i = 0; i < pat_num; i++){
         free(patterns[i].pattern_seq);
         free(patterns[i].occupies);
         free(patterns[i].positions);
+        free(patterns[i].intersects_with);
+        free(patterns[i].not_intersects_with);
     }
     free(patterns);
     free(positions);

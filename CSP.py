@@ -73,30 +73,24 @@ def extract_patterns(strings, str_num, str_len):
     """Extract patterns from the strings."""
     columns = [[s[n] for s in strings] for n in range(str_len)]
     actual_col_num = str_len
-    pattern_id = 0
-    pattern_to_id = {}
     id_to_pattern = []
-    pattern_id_to_positions = defaultdict(list)
+    pattern_id_to_positions = {}
+    pattern_to_positions = defaultdict(list)
     for num, column in enumerate(columns):
         if len(set(column)) == 1:
             actual_col_num -= 1
             continue
         ones_pattern = tuple(column)
         zeros_pattern = tuple(invert_pattern(ones_pattern))
-        ones_pattern_id = pattern_to_id.get(ones_pattern)
-        zeros_pattern_id = pattern_to_id.get(zeros_pattern)
-        # actually absence of only the one is enough
-        if not ones_pattern_id:
-            ones_pattern_id = pattern_id
-            pattern_to_id[ones_pattern] = pattern_id
-            id_to_pattern.append(ones_pattern)
-            pattern_id += 1
-            zeros_pattern_id = pattern_id
-            pattern_to_id[zeros_pattern] = pattern_id
-            id_to_pattern.append(zeros_pattern)
-            pattern_id += 1
-        pattern_id_to_positions[ones_pattern_id].append(num)
-        pattern_id_to_positions[zeros_pattern_id].append(num)
+        # two patterns per position
+        pattern_to_positions[ones_pattern].append(num)
+        pattern_to_positions[zeros_pattern].append(num)
+    patterns_sorted = sorted([p for p in pattern_to_positions.keys()],
+                             key=lambda x: sum(x),
+                             reverse=True)
+    for num, pattern in enumerate(patterns_sorted):
+        id_to_pattern.append(pattern)
+        pattern_id_to_positions[num] = pattern_to_positions[pattern]
     return id_to_pattern, pattern_id_to_positions, actual_col_num
 
 

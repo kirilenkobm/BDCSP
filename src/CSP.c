@@ -18,11 +18,17 @@ uint32_t pattern_seq_to_id(uint32_t pat_len, uint32_t pat_num, uint8_t *pattern_
 {   
     // get characterising number for a pattern
     uint32_t pat_ch_num = pat_to_num(pat_len, pattern_seq);
-    uint32_t split = pat_num / 2;
-    // todo: finish it
-    // divide in 2 parts each time
-    // find in log2(N) steps
-    return split;
+    // uint32_t split = pat_num / 2;
+    // todo: rewrite it
+    // actually the search list is pre-sorted
+    // so it can be done in log2(N), not just N
+    for (int i = 0; i < pat_num; i++){
+        // very bad O(N) solution now!
+        // I've been too lazy to do O(log2(N))
+        if (pat_search_list[i].pat_num == pat_ch_num){
+            return pat_search_list[i].pat_id;
+        }
+    }
 }
 
 
@@ -151,12 +157,6 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
         patterns[second_pattern].pattern_rev = first_pattern;
     }
     // now we can go throw grid and try to find the positions
-    for (uint32_t i = 0; i < pat_num; i++){
-        uint32_t som = pattern_seq_to_id(str_num, pat_num,
-                                         patterns[i].pattern_seq,
-                                         pat_search_list);
-        
-    }
 
     // free memory!
     for (uint32_t i = 0; i < pat_num; i++){

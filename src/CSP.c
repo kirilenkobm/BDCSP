@@ -13,6 +13,10 @@ kirilenkobm@gmail.com
 #include "grid.h"
 
 
+// todo: func to find pattern id using it's char. number
+// extracting from the pat_search_list
+
+
 int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
               uint32_t pos_num, uint8_t *patterns_1D_arr, int *pat_to_pos_1D,
               int *pat_to_pos_num, int *pat_to_pos_starts, int *pos_1D_arr,
@@ -134,6 +138,8 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
         positions[i].patterns[1] = second_pattern;
         pattern_rev[first_pattern] = second_pattern;
         pattern_rev[second_pattern] = first_pattern;
+        patterns[first_pattern].pattern_rev = second_pattern;
+        patterns[second_pattern].pattern_rev = first_pattern;
     }
     // now we can go throw grid and try to find the positions
     

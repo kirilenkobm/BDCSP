@@ -13,6 +13,7 @@ typedef struct{
     int * not_intersects_with;
     int non_inters_num;
     int * positions;
+    int pattern_rev;
     int id;
 } pattern;
 

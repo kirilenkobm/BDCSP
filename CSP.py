@@ -120,12 +120,12 @@ def main():
         CSP_LIB_PATH = os.path.join(LIBS_DIR, "CSP.so")
         CSP_SLIB = ctypes.CDLL(CSP_LIB_PATH)
         # arguments:
-        CSP_SLIB.solve_CSP.argtypes = [ctypes.c_int,  # int 5 times
-                                       ctypes.c_int,
-                                       ctypes.c_int,
-                                       ctypes.c_int,
-                                       ctypes.c_int,  # int* 6 times
-                                       ctypes.POINTER(ctypes.c_int),
+        CSP_SLIB.solve_CSP.argtypes = [ctypes.c_uint32,  # int 5 times
+                                       ctypes.c_uint32,
+                                       ctypes.c_uint32,
+                                       ctypes.c_uint32,
+                                       ctypes.c_uint32,  # int* 6 times
+                                       ctypes.POINTER(ctypes.c_uint8),
                                        ctypes.POINTER(ctypes.c_int),
                                        ctypes.POINTER(ctypes.c_int),
                                        ctypes.POINTER(ctypes.c_int),
@@ -149,15 +149,19 @@ def main():
     if act_col_num == 0:
         # nothing to cover
         print("All sequences are the same")
-        print("Answer is:\nTrue")
-        sys.exit()
+        print("Answer is:\ntrue")
+        sys.exit(0)
+    elif (act_col_num - args.k) <= 0:
+        print("Nothing to cover at this K")
+        print("Answer is:\ntrue")
+        sys.exit(0)
     pattern_id_to_positions, positions_to_pat_ids, all_positions \
         = reformate_pattern_id_to_pos(patttern_id_to_positions_raw)
     # put this stuff into C function
     patterns_num = len(id_to_pattern)
     # pattern lenght is the str_num
     patterns_array = flatten(id_to_pattern)
-    c_patterns_array = (ctypes.c_int * (patterns_num * str_num + 1))()
+    c_patterns_array = (ctypes.c_uint8 * (patterns_num * str_num + 1))()
     c_patterns_array[:-1] = patterns_array
     # patterns to positions
     pat_to_pos_array = flatten(pattern_id_to_positions)
@@ -183,11 +187,11 @@ def main():
     c_pos_array = (ctypes.c_int * (positions_num + 1))()
     c_pos_array[:-1] = all_positions
     # single values
-    c_str_num = ctypes.c_int(str_num)
-    c_str_len = ctypes.c_int(act_col_num)
-    c_k_ = ctypes.c_int(args.k)
-    c_pos_num = ctypes.c_int(positions_num)
-    c_pat_num = ctypes.c_int(patterns_num)
+    c_str_num = ctypes.c_uint32(str_num)
+    c_str_len = ctypes.c_uint32(act_col_num)
+    c_k_ = ctypes.c_uint32(args.k)
+    c_pos_num = ctypes.c_uint32(positions_num)
+    c_pat_num = ctypes.c_uint32(patterns_num)
     # call the solver finally
     answer = CSP_SLIB.solve_CSP(c_str_num,  # int
                                 c_str_len,  # int
@@ -204,6 +208,7 @@ def main():
     print("# The answer is:\n{}".format(answer))
     if args.show_time:
         print("Elapsed: {}".format(dt.now() - t0))
+
 
 if __name__ == "__main__":
     main()

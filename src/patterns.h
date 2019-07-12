@@ -14,7 +14,7 @@ typedef struct{
     int non_inters_num;
     int * positions;
     int pattern_rev;
-    int id;
+    uint32_t id;
 } pattern;
 
 typedef struct{
@@ -23,8 +23,8 @@ typedef struct{
 } position;
 
 typedef struct{
-    int pat_num;
-    int pat_id;
+    uint32_t pat_num;
+    uint32_t pat_id;
 } pat_list_search_elem;
 
 uint32_t sum_pattern(uint32_t pattern_len, uint8_t * pattern_seq){

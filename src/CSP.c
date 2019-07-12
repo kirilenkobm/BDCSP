@@ -29,6 +29,7 @@ uint32_t pattern_seq_to_id(uint32_t pat_len, uint32_t pat_num, uint8_t *pattern_
             return pat_search_list[i].pat_id;
         }
     }
+    return 0;
 }
 
 
@@ -157,6 +158,7 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
         patterns[second_pattern].pattern_rev = first_pattern;
     }
     // now we can go throw grid and try to find the positions
+    Point *grid = make_grid(pos_num, str_num, size_times);
 
     // free memory!
     for (uint32_t i = 0; i < pat_num; i++){

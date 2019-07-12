@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Closest string problem solution.
 
-Decisional version on binary input."""
+Decisional version on binary input.
+"""
 import argparse
 import subprocess
 import sys

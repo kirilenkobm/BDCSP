@@ -9,27 +9,37 @@ typedef struct{
     int *occupies;
     int occupies_num;   // equal to size
     int * intersects_with;
-    int inters_num;
+    uint32_t inters_num;
     int * not_intersects_with;
-    int non_inters_num;
+    uint32_t non_inters_num;
     int * positions;
     int pattern_rev;
     uint32_t id;
 } pattern;
+
 
 typedef struct{
     int number;
     int * patterns;
 } position;
 
+
 typedef struct{
     uint32_t pat_num;
     uint32_t pat_id;
 } pat_list_search_elem;
 
-uint32_t sum_pattern(uint32_t pattern_len, uint8_t * pattern_seq){
+
+uint32_t sum_pattern(uint32_t pattern_len, uint8_t * pattern_seq)
+// for a pattern sequence just compute a sum
+{
     int sum = 0;
-    for (int i = 0; i < pattern_len; i++) {sum += pattern_seq[i];}
+    uint8_t *ptr = pattern_seq;
+    while (ptr < &pattern_seq[pattern_len - 1])
+    {
+        sum += *ptr;
+        ptr++;
+    }
     return sum;
 }
 
@@ -41,7 +51,8 @@ int comp_search_elems(const void *a, const void *b)
 }
 
 
-uint32_t pat_to_num(uint32_t pattern_len, uint8_t * pattern_seq){
+uint32_t pat_to_num(uint32_t pattern_len, uint8_t * pattern_seq)
+{
     int kt = 0;
     uint32_t answer = 0;
     for (int i = pattern_len - 1, j = 1; i >= 0; i--, j++){

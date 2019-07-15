@@ -13,7 +13,7 @@ kirilenkobm@gmail.com
 #include "grid.h"
 
 
-uint32_t pattern_seq_to_id(pat_list_search_elem *pat_search_list, int l, int r, int x) 
+uint32_t pattern_seq_to_id(pat_list_search_elem *pat_search_list, int l, int r, uint32_t x) 
 {
     if (r >= l)
     { 
@@ -114,8 +114,8 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
         }
         // define what to compare and compare
         int pat_num_downstream = pat_num - (i + 1);
-        int intersects = 0;
-        int non_intersects = 0;
+        uint32_t intersects = 0;
+        uint32_t non_intersects = 0;
         int *intersects_lst = malloc(sizeof(int) * pat_num_downstream);
         int *non_intersects_lst = malloc(sizeof(int) * pat_num_downstream);
         for (uint32_t j = i + 1; j < pat_num; j++)
@@ -149,6 +149,7 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
         free(intersects_lst);
         free(non_intersects_lst);
     }
+
     // sort pattern search array
     // sorted from smaller to bigger
     qsort(pat_search_list, pat_num, sizeof(pat_list_search_elem), comp_search_elems);
@@ -156,6 +157,7 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
     // read positions then
     int *pattern_rev = malloc(sizeof(int) * pat_num);
     position *positions = malloc(sizeof(positions) * pos_num);
+
     // each position intersects with 2 patterns
     int first_pattern, second_pattern;
     for (uint32_t i = 0; i < pos_num; i++)

@@ -1,5 +1,7 @@
+# Took a template from https://gist.github.com/xuhdev/1873316
+# Makefile for shared library
 CC = gcc
-CFLAGS = -fPIC
+CFLAGS = -fPIC -Wall -Wextra -O2 -g
 LDFLAGS = -shared
 RM = rm -f
 TARGET_LIB = libs/CSP.so
@@ -13,8 +15,10 @@ all: ${TARGET_LIB}
 $(TARGET_LIB): $(OBJS)
 	$(CC) ${LDFLAGS} -o $@ $^
 
-$(SRCS:.c):%.c
+$(SRCS:.c=.d):%.d:%.c
 	$(CC) $(CFLAGS) -MM $< >$@
+
+include $(SRCS:.c=.d)
 
 .PHONY: clean
 clean:

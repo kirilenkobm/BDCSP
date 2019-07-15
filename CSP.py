@@ -43,15 +43,12 @@ def read_strings(input_file, v=False):
         strings = [l[:-1] for l in f.readlines() if l != "\n"]
     # check data size
     str_num = len(strings)
-    if str_num < 2:
-        sys.exit("Error: at least two input strings required!")
+    sys.exit("Error: at least two input strings required!") if str_num < 2 else None
     str_len = len(strings[0])
-    if str_len < 2:
-        sys.exit("Error: string length must be >= 2!")
+    sys.exit("Error: string length must be >= 2!") if str_num < 2 else None
     if any(len(strings[i]) != str_len for i in range(str_num)):
         sys.exit("Error: strings must have the same lenght!")
-    if v:
-        eprint("Input data contains {} strings of length {}".format(str_num, str_len))
+    eprint("Input data contains {} strings of length {}".format(str_num, str_len)) if v else None
     all_characters = set(flatten(strings))
     if all_characters.difference(CHARS):
         sys.exit("Error: Allowed characters are 1 and 0!")
@@ -87,7 +84,7 @@ def extract_patterns(strings, str_num, str_len):
         pattern_to_positions[ones_pattern].append(num)
         pattern_to_positions[zeros_pattern].append(num)
     patterns_sorted = sorted([p for p in pattern_to_positions.keys()],
-                             key=lambda x: sum(x),
+                             key=lambda x: (sum(x), -1 * x.index(1)),
                              reverse=True)
     for num, pattern in enumerate(patterns_sorted):
         id_to_pattern.append(pattern)
@@ -116,46 +113,37 @@ def reformate_pattern_id_to_pos(pat_id_to_pos_dct):
 def main():
     """Enrty point."""
     t0 = dt.now()
-    try:  # try to find the C lib
-        LIBS_DIR = os.path.join(os.getcwd(), "libs")
-        CSP_LIB_PATH = os.path.join(LIBS_DIR, "CSP.so")
-        CSP_SLIB = ctypes.CDLL(CSP_LIB_PATH)
-        # arguments:
-        CSP_SLIB.solve_CSP.argtypes = [ctypes.c_uint32,  # int 5 times
-                                       ctypes.c_uint32,
-                                       ctypes.c_uint32,
-                                       ctypes.c_uint32,
-                                       ctypes.c_uint32,  # int* 6 times
-                                       ctypes.POINTER(ctypes.c_uint8),
-                                       ctypes.POINTER(ctypes.c_int),
-                                       ctypes.POINTER(ctypes.c_int),
-                                       ctypes.POINTER(ctypes.c_int),
-                                       ctypes.POINTER(ctypes.c_int),
-                                       ctypes.POINTER(ctypes.c_int)]
-        # returns bool
-        CSP_SLIB.solve_CSP.restype = ctypes.c_bool
-    except OSError:  # not found --> call make then and exit
-        eprint("Error: shared libs not found")
-        eprint("Calling make...")
+    # connect shared library
+    LIBS_DIR = os.path.join(os.getcwd(), "libs")
+    CSP_LIB_PATH = os.path.join(LIBS_DIR, "CSP.so")
+    if not os.path.isfile(CSP_LIB_PATH):
+        eprint("Error: shared libs not found\nCalling make...")
         os.mkdir("libs") if not os.path.isdir("libs") else None
         rc = subprocess.call("make", shell=True)
-        eprint("Make failed") if rc != 0 else eprint("Make successful")
-        sys.exit("Try to call again.")
+        sys.exit("Make failed") if rc != 0 else eprint("Make successful")
+    CSP_SLIB = ctypes.CDLL(CSP_LIB_PATH)
+    # arguments:
+    CSP_SLIB.solve_CSP.argtypes = [ctypes.c_uint32,  # int 5 times
+                                   ctypes.c_uint32,
+                                   ctypes.c_uint32,
+                                   ctypes.c_uint32,
+                                   ctypes.c_uint32,  # int* 6 times
+                                   ctypes.POINTER(ctypes.c_uint8),
+                                   ctypes.POINTER(ctypes.c_uint32),
+                                   ctypes.POINTER(ctypes.c_uint32),
+                                   ctypes.POINTER(ctypes.c_uint32),
+                                   ctypes.POINTER(ctypes.c_uint32),
+                                   ctypes.POINTER(ctypes.c_uint32)]
+    # returns bool
+    CSP_SLIB.solve_CSP.restype = ctypes.c_bool
     # read and check input
     args = parse_args()
     in_strings, str_num, str_len = read_strings(args.input_file, args.verbose)
     # pre-process input
     id_to_pattern, patttern_id_to_positions_raw, act_col_num \
          = extract_patterns(in_strings, str_num, str_len)
-    if act_col_num == 0:
-        # nothing to cover
-        print("All sequences are the same")
-        print("Answer is:\ntrue")
-        sys.exit(0)
-    elif (act_col_num - args.k) <= 0:
-        print("Nothing to cover at this K")
-        print("Answer is:\ntrue")
-        sys.exit(0)
+    sys.exit("Answer is:\nTrue") if act_col_num == 0 else None
+    sys.exit("Answer is:\nTrue") if (act_col_num - args.k) <= 0 else None
     pattern_id_to_positions, positions_to_pat_ids, all_positions \
         = reformate_pattern_id_to_pos(patttern_id_to_positions_raw)
     # put this stuff into C function
@@ -168,24 +156,24 @@ def main():
     pat_to_pos_array = flatten(pattern_id_to_positions)
     pat_to_pos_num = [len(x) for x in pattern_id_to_positions]
     pat_to_pos_arr_size = len(pat_to_pos_array)
-    c_pat_to_pos_arr = (ctypes.c_int * (pat_to_pos_arr_size + 1))()
+    c_pat_to_pos_arr = (ctypes.c_uint32 * (pat_to_pos_arr_size + 1))()
     c_pat_to_pos_arr[:-1] = pat_to_pos_array
-    c_pat_to_pos_num = (ctypes.c_int * (patterns_num + 1))()
+    c_pat_to_pos_num = (ctypes.c_uint32 * (patterns_num + 1))()
     c_pat_to_pos_num[:-1] = pat_to_pos_num
     pointer = 0
     pat_to_pos_starts = []
     for pos_ in pattern_id_to_positions:
         pat_to_pos_starts.append(pointer)
         pointer += len(pos_)
-    c_pat_to_pos_starts = (ctypes.c_int * (patterns_num + 1))()
+    c_pat_to_pos_starts = (ctypes.c_uint32 * (patterns_num + 1))()
     c_pat_to_pos_starts[:-1] = pat_to_pos_starts
     # positions to patterns
     pos_to_patterns_array = flatten(positions_to_pat_ids)
     positions_num = len(all_positions)
-    c_pos_to_pat_array = (ctypes.c_int * (positions_num * 2 + 1))()
+    c_pos_to_pat_array = (ctypes.c_uint32 * (positions_num * 2 + 1))()
     c_pos_to_pat_array[:-1] = pos_to_patterns_array
     # positions themselves
-    c_pos_array = (ctypes.c_int * (positions_num + 1))()
+    c_pos_array = (ctypes.c_uint32 * (positions_num + 1))()
     c_pos_array[:-1] = all_positions
     # single values
     c_str_num = ctypes.c_uint32(str_num)
@@ -207,8 +195,7 @@ def main():
                                 c_pos_to_pat_array,  # int*
     )
     print("# The answer is:\n{}".format(answer))
-    if args.show_time:
-        print("Elapsed: {}".format(dt.now() - t0))
+    eprint("Elapsed: {}".format(dt.now() - t0)) if args.show_time else None
 
 
 if __name__ == "__main__":

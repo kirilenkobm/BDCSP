@@ -179,26 +179,26 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     // now we can go throw grid and try to find the positions
     Point *grid = make_grid(pos_num, str_num, size_times);
 
-    // // free memory!
-    // for (uint32_t i = 0; i < pat_num; i++)
-    // {
-    //     // left print patterns for now
-    //     // will remove later
-    //     for (uint32_t j = 0; j < str_num; j++)
-    //     {
-    //         printf("%d ", patterns[i].pattern_seq[j]);
-    //     }
-    //     printf("| pattern id %d\n", i);
-    //     free(patterns[i].pattern_seq);
-    //     free(patterns[i].occupies);
-    //     free(patterns[i].positions);
-    //     free(patterns[i].intersects_with);
-    //     free(patterns[i].not_intersects_with);
-    // }
-    // free(patterns);
-    // free(positions);
-    // // free(pattern_rev);
-    // free(size_times);
-    // free(pat_search_list);
+    // free memory!
+    for (uint32_t i = 0; i < pat_num; i++)
+    {
+        // left print patterns for now
+        // will remove later
+        for (uint32_t j = 0; j < str_num; j++)
+        {
+            printf("%d ", patterns[i].pattern_seq[j]);
+        }
+        printf("| pattern id %d\n", i);
+        free(patterns[i].pattern_seq);
+        free(patterns[i].occupies);
+        free(patterns[i].positions);
+        free(patterns[i].intersects_with);
+        free(patterns[i].not_intersects_with);
+    }
+    free(patterns);
+    free(positions);
+    // free(pattern_rev);
+    free(size_times);
+    free(pat_search_list);
     return answer;
 }

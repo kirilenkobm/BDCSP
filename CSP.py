@@ -40,7 +40,7 @@ def eprint(msg, end="\n"):
 def read_strings(input_file, v=False):
     """Read and check input stings."""
     with open(input_file, "r") as f:
-        strings = [l[:-1] for l in f.readlines() if l != "\n"]
+        strings = [l.rstrip() for l in f.readlines()]
     # check data size
     str_num = len(strings)
     sys.exit("Error: at least two input strings required!") if str_num < 2 else None

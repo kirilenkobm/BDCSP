@@ -6,7 +6,7 @@ LDFLAGS = -shared
 RM = rm -f
 TARGET_LIB = libs/CSP.so
 
-SRCS = src/CSP.c src/grid.c
+SRCS = src/CSP.c src/grid.c 
 OBJS = $(SRCS:.c=.o)
 
 .PHONY: all

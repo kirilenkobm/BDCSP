@@ -31,11 +31,9 @@ uint32_t pattern_seq_to_id(pat_list_search_elem *pat_search_list, int l, int r, 
 }
 
 
-
-int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
-              uint32_t pos_num, uint8_t *patterns_1D_arr, int *pat_to_pos_1D,
-              int *pat_to_pos_num, int *pat_to_pos_starts, int *pos_1D_arr,
-              int *pos_to_pat)
+int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num, uint32_t pos_num,
+              uint8_t *patterns_1D_arr, uint32_t *pat_to_pos_1D, uint32_t *pat_to_pos_num,
+              uint32_t *pat_to_pos_starts, uint32_t *pos_1D_arr, uint32_t *pos_to_pat)
 // entry point; returns 1 if a solution with the K given exists, 0 otherwise
 {   
     bool answer = false;
@@ -59,6 +57,7 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
     uint16_t *size_times = (uint16_t*)calloc(str_num, sizeof(uint16_t));
     pat_list_search_elem *pat_search_list = malloc(sizeof(pat_list_search_elem) \
                                                    * pat_num);
+
     // read patterns first
     for (uint32_t i = 0; i < pat_num; i++)
     {
@@ -74,7 +73,7 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
         uint32_t occupies_size = sum_pattern(str_num, patterns[i].pattern_seq);
         patterns[i].occupies_num = occupies_size;
         size_times[occupies_size]++;
-        patterns[i].occupies = malloc(sizeof(int) * occupies_size);
+        patterns[i].occupies = malloc(sizeof(uint32_t) * occupies_size);
         uint32_t j_n = 0;
         for (uint32_t j = 0; j < str_num; j++)
         {
@@ -84,10 +83,11 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
                 j_n++;
             }
         }
+
         // also positions
         uint32_t pat_pos_arr_starts = pat_to_pos_starts[i];
         uint32_t pat_pos_arr_size = pat_to_pos_num[i];
-        patterns[i].positions = malloc(sizeof(int) * pat_pos_arr_size);
+        patterns[i].positions = malloc(sizeof(uint32_t) * pat_pos_arr_size);
         // bulky for initiation
         for (uint32_t j = pat_pos_arr_starts, n = 0;
              j < pat_pos_arr_starts + pat_pos_arr_size;
@@ -113,11 +113,11 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
             break;
         }
         // define what to compare and compare
-        int pat_num_downstream = pat_num - (i + 1);
+        uint32_t pat_num_downstream = pat_num - (i + 1);
         uint32_t intersects = 0;
         uint32_t non_intersects = 0;
-        int *intersects_lst = malloc(sizeof(int) * pat_num_downstream);
-        int *non_intersects_lst = malloc(sizeof(int) * pat_num_downstream);
+        uint32_t *intersects_lst = malloc(sizeof(int) * pat_num_downstream);
+        uint32_t *non_intersects_lst = malloc(sizeof(int) * pat_num_downstream);
         for (uint32_t j = i + 1; j < pat_num; j++)
         {
             // if true -> to intersected, otherwise to non-intersected
@@ -155,21 +155,23 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
     qsort(pat_search_list, pat_num, sizeof(pat_list_search_elem), comp_search_elems);
 
     // read positions then
-    int *pattern_rev = malloc(sizeof(int) * pat_num);
+    // uint32_t *pattern_rev = malloc(sizeof(int) * pat_num);
     position *positions = malloc(sizeof(positions) * pos_num);
 
     // each position intersects with 2 patterns
-    int first_pattern, second_pattern;
+    uint32_t first_pattern;
+    uint32_t second_pattern;
+
     for (uint32_t i = 0; i < pos_num; i++)
     {
         positions[i].number = pos_1D_arr[i];
         first_pattern = pos_to_pat[i * 2];
         second_pattern = pos_to_pat[i * 2 + 1];
-        positions[i].patterns = malloc(sizeof(int) * 2);
+        // positions[i].patterns = malloc(sizeof(int) * 2);
         positions[i].patterns[0] = first_pattern;
         positions[i].patterns[1] = second_pattern;
-        pattern_rev[first_pattern] = second_pattern;
-        pattern_rev[second_pattern] = first_pattern;
+        // pattern_rev[first_pattern] = second_pattern;
+        // pattern_rev[second_pattern] = first_pattern;
         patterns[first_pattern].pattern_rev = second_pattern;
         patterns[second_pattern].pattern_rev = first_pattern;
     }
@@ -180,6 +182,13 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
     // free memory!
     for (uint32_t i = 0; i < pat_num; i++)
     {
+        // left print patterns for now
+        // will remove later
+        for (uint32_t j = 0; j < str_num; j++)
+        {
+            printf("%d ", patterns[i].pattern_seq[j]);
+        }
+        printf("| pattern id %d\n", i);
         free(patterns[i].pattern_seq);
         free(patterns[i].occupies);
         free(patterns[i].positions);
@@ -188,7 +197,7 @@ int solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
     }
     free(patterns);
     free(positions);
-    free(pattern_rev);
+    // free(pattern_rev);
     free(size_times);
     free(pat_search_list);
     return answer;

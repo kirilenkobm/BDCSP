@@ -196,6 +196,8 @@ def main():
     )
     print("# The answer is:\n{}".format(answer))
     eprint("Elapsed: {}".format(dt.now() - t0)) if args.show_time else None
+    sys.exit("Done")
+    # Segmentation fault: 11!
 
 
 if __name__ == "__main__":

@@ -10,12 +10,98 @@ kirilenkobm@gmail.com
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "patterns.h"
+#include "CSP.h"
 #include "grid.h"
 
 #define CHUNK 2
 
-uint32_t pattern_seq_to_id(pat_list_search_elem *pat_search_list, int l, int r, uint32_t x) 
+
+struct pattern
+{
+    uint8_t *pattern_seq;
+    uint32_t *occupies;
+    uint32_t occupies_num;   // equal to size
+    uint32_t *intersects_with;
+    uint32_t inters_num;
+    uint32_t * not_intersects_with;
+    uint32_t non_inters_num;
+    uint32_t *positions;
+    uint32_t pattern_rev;
+    uint32_t id;
+};
+
+
+struct position
+{
+    uint32_t number;
+    uint32_t patterns[2];
+};
+
+
+struct pat_list_search_elem
+{
+    uint32_t pat_num;
+    uint32_t pat_id;
+};
+
+
+uint32_t pat_to_num(uint32_t pattern_len, uint8_t * pattern_seq)
+{
+    int kt = 0;
+    uint32_t answer = 0;
+    for (int i = pattern_len - 1, j = 1; i >= 0; i--, j++){
+        kt = j * 2;
+        answer += pattern_seq[i] * kt;
+    }
+    return answer;
+}
+
+
+uint32_t sum_pattern(uint32_t pattern_len, uint8_t * pattern_seq)
+// for a pattern sequence just compute a sum
+{
+    int sum = 0;
+    uint8_t *ptr = pattern_seq;
+    while (ptr < &pattern_seq[pattern_len])
+    {
+        sum += *ptr;
+        ptr++;
+    }
+    return sum;
+}
+
+int comp_search_elems(const void *a, const void *b)
+// comp. function to compare search elems in qsort
+{ 
+    Pat_list_search_elem *ia = (Pat_list_search_elem *)a;
+    Pat_list_search_elem *ib = (Pat_list_search_elem *)b;
+    return ia->pat_num - ib->pat_num;
+}
+
+
+bool intersect_by_occ(uint32_t *occupies_1, uint32_t occ_num_1,
+                      uint32_t *occupies_2, uint32_t occ_num_2)
+// return true if patterns intersect, false otherwise
+{   
+    if ((occupies_1[occ_num_1] < occupies_2[0]) || (occupies_1[0] > occupies_2[occ_num_2]))
+    {
+        return false;
+    }
+    for (uint32_t i = 0; i < occ_num_1; i++){
+        // if smaller that the smallest element in other arr then continue
+        if (occupies_1[i] < occupies_2[0]){continue;}
+        else if (occupies_1[i] > occupies_2[occ_num_2 - 1]){return false;}
+        for (uint32_t j = 0; j <= occ_num_2; j++){
+            if (occupies_1[i] == occupies_2[j]){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+uint32_t pattern_seq_to_id(Pat_list_search_elem *pat_search_list, int l, int r, uint32_t x) 
 {
     if (r >= l)
     { 
@@ -57,13 +143,13 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
 
     // read all this stuff
     printf("# Overall %d patterns\n", pat_num);
-    pattern *patterns = (pattern*)malloc(sizeof(pattern) * (pat_num + CHUNK));
+    Pattern *patterns = (Pattern*)malloc(sizeof(Pattern) * (pat_num + CHUNK));
     uint32_t p_start, p_end;
 
-    size_t size_times_size = sizeof(uint16_t) * (str_num + CHUNK);
-    uint16_t *size_times = (uint16_t*)calloc((str_num + CHUNK), sizeof(uint16_t));
-    size_t search_list_size = sizeof(pat_list_search_elem) * (pat_num + CHUNK);
-    pat_list_search_elem *pat_search_list = (pat_list_search_elem*)malloc(search_list_size);
+    size_t size_times_size = sizeof(uint32_t) * (str_num + CHUNK);
+    uint32_t *size_times = (uint32_t*)calloc((str_num + CHUNK), sizeof(uint32_t));
+    size_t search_list_size = sizeof(Pat_list_search_elem) * (pat_num + CHUNK);
+    Pat_list_search_elem *pat_search_list = (Pat_list_search_elem*)malloc(search_list_size);
 
     printf("Allocated %zu for search list\n", search_list_size);
     printf("Allocated %zu for size times array\n", size_times_size);
@@ -91,6 +177,7 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
         
         // get occupied positions
         uint32_t occupies_size = sum_pattern(str_num, patterns[i].pattern_seq);
+        printf("Pattern %d occupies %d\n", i, occupies_size);
         patterns[i].occupies_num = occupies_size;
         size_times[occupies_size]++;
         size_t pattern_occ_size = sizeof(uint32_t) * (occupies_size + 1);
@@ -197,11 +284,11 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     total_memory_allocated += intersects_size_total;
     // sort pattern search array
     // sorted from smaller to bigger
-    qsort(pat_search_list, pat_num, sizeof(pat_list_search_elem), comp_search_elems);
+    qsort(pat_search_list, pat_num, sizeof(Pat_list_search_elem), comp_search_elems);
 
     // read positions then
-    size_t pos_array_size = sizeof(position) * (pos_num + CHUNK);
-    position *positions = (position*)malloc(pos_array_size);
+    size_t pos_array_size = sizeof(Position) * (pos_num + CHUNK);
+    Position *positions = (Position*)malloc(pos_array_size);
     printf("Allocated %zu for positions array\n", pos_array_size);
     total_memory_allocated += pos_array_size;
 
@@ -221,7 +308,7 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     }
 
     // now we can go throw grid and try to find the positions
-    // Point *grid = make_grid(pos_num, str_num, size_times);
+    Point *grid = make_grid(str_num, pos_num, size_times, &patterns, &positions);
 
     // free memory!
     printf("# Totally memory allocated: %zu\n", total_memory_allocated);
@@ -230,11 +317,11 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     {
         // left print patterns for now
         // will remove later
-        // for (uint32_t j = 0; j < str_num; j++)
-        // {
-        //     printf("%d ", patterns[i].pattern_seq[j]);
-        // }
-        // printf("| pattern id %d\n", i);
+        for (uint32_t j = 0; j < str_num; j++)
+        {
+            printf("%d ", patterns[i].pattern_seq[j]);
+        }
+        printf("| pattern id %d\n", i);
         free(patterns[i].pattern_seq);
         free(patterns[i].occupies);
         free(patterns[i].positions);

@@ -9,6 +9,7 @@ kirilenkobm@gmail.com
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include "CSP.h"
 #include "grid.h"
 
 struct point{
@@ -20,8 +21,12 @@ struct point{
     double density;
 };
 
-Point *make_grid(uint32_t pos_num, uint32_t str_num, uint16_t *size_times)
+Point *make_grid(uint32_t str_num, uint32_t str_len, uint32_t *size_times,
+                 Pattern **patterns, Position **positions)
 {
+    for (uint32_t i = 0; i < str_num; i++){
+        printf("Size %d times %d\n", i, size_times[i]);
+    }
     Point *grid = malloc(sizeof(Point) * 10);
     return grid;
 }

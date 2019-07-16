@@ -25,6 +25,7 @@ class BDCspSolver:
         self.str_num = len(input_strings)
         self.str_len = len(input_strings[0])
         self.k = k
+        self.answer = None
         self.__check_lib()
         self.__extract_patterns()
         self.__reformate_pattern_id_to_pos()
@@ -87,9 +88,12 @@ class BDCspSolver:
         for num, pattern in enumerate(patterns_sorted):
             self.id_to_pattern.append(pattern)
             self.pattern_id_to_positions_raw[num] = self.pattern_to_positions[pattern]
-        sys.exit("Answer is:\nTrue") if self.actual_col_num == 0 else None
-        sys.exit("Answer is:\nTrue") if (self.actual_col_num - self.k) <= 0 else None
-    
+        if self.actual_col_num == 0 or (self.actual_col_num - self.k) <= 0:
+            self.answer = True
+            # no need to call this
+            self.__reformate_pattern_id_to_pos = lambda: None
+            self.get_answer = lambda: None
+
     def __reformate_pattern_id_to_pos(self):
         """Make a list instead of dict."""
         max_key = max(self.pattern_id_to_positions_raw.keys())
@@ -145,18 +149,17 @@ class BDCspSolver:
         c_pos_num = ctypes.c_uint32(self.positions_num)
         c_pat_num = ctypes.c_uint32(self.patterns_num)
         # call the solver finally
-        answer = self.CSP_SLIB.solve_CSP(c_str_num,  # int
-                                         c_str_len,  # int
-                                         c_k_,  # int
-                                         c_pat_num,  # int
-                                         c_pos_num,  # int
-                                         c_patterns_array,  # int*
-                                         c_pat_to_pos_arr,  # int*
-                                         c_pat_to_pos_num,  # int*
-                                         c_pat_to_pos_starts,  # int*
-                                         c_pos_array,
-                                         c_pos_to_pat_array)  # int*
-        return answer
+        self.answer = self.CSP_SLIB.solve_CSP(c_str_num,  # int
+                                              c_str_len,  # int
+                                              c_k_,  # int
+                                              c_pat_num,  # int
+                                              c_pos_num,  # int
+                                              c_patterns_array,  # int*
+                                              c_pat_to_pos_arr,  # int*
+                                              c_pat_to_pos_num,  # int*
+                                              c_pat_to_pos_starts,  # int*
+                                              c_pos_array,
+                                              c_pos_to_pat_array)  # int*
 
 
 def parse_args():
@@ -202,8 +205,8 @@ def main():
     args = parse_args()  # parse and check args
     in_strings = read_strings(args.input_file)  # read and check strings
     solver = BDCspSolver(in_strings, args.k)  # prepare patterns and positions
-    answer = solver.get_answer()  # call C library to solve the problem
-    print("# The answer is:\n{}".format(answer))
+    solver.get_answer()  # call C library to solve the problem
+    print("# The answer is:\n{}".format(solver.answer))
     eprint("Elapsed: {}".format(dt.now() - t0)) if args.show_time else None
 
 

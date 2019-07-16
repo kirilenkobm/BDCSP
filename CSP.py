@@ -28,7 +28,6 @@ class BDCspSolver:
         self.__check_lib()
         self.__extract_patterns()
         self.__reformate_pattern_id_to_pos()
-        pass
 
     @staticmethod
     def flatten(lst):
@@ -48,7 +47,8 @@ class BDCspSolver:
             eprint("Error: shared libs not found\nCalling make...")
             os.mkdir("libs") if not os.path.isdir("libs") else None
             rc = subprocess.call("make", shell=True)
-            sys.exit("Make failed") if rc != 0 else eprint("Make successful")
+            if rc != 0:
+                raise RuntimeError("Make failed!")
         self.CSP_SLIB = ctypes.CDLL(CSP_LIB_PATH)
         # arguments:
         self.CSP_SLIB.solve_CSP.argtypes = [ctypes.c_uint32,  # int 5 times
@@ -185,13 +185,12 @@ def read_strings(input_file):
     # check data size
     str_num = len(strings)
     sys.exit("Error: at least two input strings required!") if str_num < 2 else None
-    str_len = len(strings[0])
     sys.exit("Error: string length must be >= 2!") if str_num < 2 else None
-    if any(len(strings[i]) != str_len for i in range(str_num)):
-        sys.exit("Error: strings must have the same lenght!")
+    if any(len(strings[i]) != len(strings[0]) for i in range(str_num)):
+        raise ValueError("Error: strings must have the same lenght!")
     all_characters = set(BDCspSolver.flatten(strings))
     if all_characters.difference(allowed_chars):
-        sys.exit("Error: Allowed characters are 1 and 0!")
+        raise ValueError("Error: Allowed characters are 1 and 0!")
     # ok, let's convert them into an arrray
     strings_int = [[int(c) for c in s] for s in strings]
     return strings_int
@@ -199,16 +198,13 @@ def read_strings(input_file):
 
 def main():
     """Enrty point."""
-    # TODO: rewrite as a class
-    t0 = dt.now()
-    # read and check input
-    args = parse_args()
-    in_strings = read_strings(args.input_file)
-    solver = BDCspSolver(in_strings, args.k)
-    answer = solver.get_answer()
+    t0 = dt.now()  # start time
+    args = parse_args()  # parse and check args
+    in_strings = read_strings(args.input_file)  # read and check strings
+    solver = BDCspSolver(in_strings, args.k)  # prepare patterns and positions
+    answer = solver.get_answer()  # call C library to solve the problem
     print("# The answer is:\n{}".format(answer))
     eprint("Elapsed: {}".format(dt.now() - t0)) if args.show_time else None
-    sys.exit("Done")
 
 
 if __name__ == "__main__":

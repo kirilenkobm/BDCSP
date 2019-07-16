@@ -46,7 +46,8 @@ uint32_t sum_pattern(uint32_t pattern_len, uint8_t * pattern_seq)
     return sum;
 }
 
-int comp_search_elems(const void *a, const void *b) 
+int comp_search_elems(const void *a, const void *b)
+// comp. function to compare search elems in qsort
 { 
     pat_list_search_elem *ia = (pat_list_search_elem *)a;
     pat_list_search_elem *ib = (pat_list_search_elem *)b;
@@ -69,8 +70,10 @@ bool intersect_by_occ(uint32_t *occupies_1, uint32_t occ_num_1,
                       uint32_t *occupies_2, uint32_t occ_num_2)
 // return true if patterns intersect, false otherwise
 {   
-    if (occupies_1[occ_num_1] < occupies_2[0] || occupies_1[0] > occupies_2[occ_num_2]){
-        return false;}
+    if ((occupies_1[occ_num_1] < occupies_2[0]) || (occupies_1[0] > occupies_2[occ_num_2]))
+    {
+        return false;
+    }
     for (uint32_t i = 0; i < occ_num_1; i++){
         // if smaller that the smallest element in other arr then continue
         if (occupies_1[i] < occupies_2[0]){continue;}

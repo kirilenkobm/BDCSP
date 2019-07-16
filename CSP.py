@@ -112,6 +112,7 @@ def reformate_pattern_id_to_pos(pat_id_to_pos_dct):
 
 def main():
     """Enrty point."""
+    # TODO: rewrite as a class
     t0 = dt.now()
     # connect shared library
     LIBS_DIR = os.path.join(os.getcwd(), "libs")

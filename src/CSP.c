@@ -240,8 +240,9 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
         uint32_t pat_num_downstream = pat_num - (i + 1);
         uint32_t intersects = 0;
         uint32_t non_intersects = 0;
-        uint32_t intersects_lst[pat_num_downstream];
-        uint32_t non_intersects_lst[pat_num_downstream];
+        size_t inter_size = sizeof(uint32_t)  * (pat_num_downstream + CHUNK);
+        uint32_t* intersects_lst = (uint32_t*)malloc(inter_size);
+        uint32_t* non_intersects_lst = (uint32_t*)malloc(inter_size);
 
         for (uint32_t j = i + 1; j < pat_num; j++)
         {
@@ -278,6 +279,9 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
         {
             patterns[i].not_intersects_with[j] = non_intersects_lst[j];
         }
+
+        free(intersects_lst);
+        free(non_intersects_lst);
     }
 
     printf("Allocated %zu for intersect patterns\n", intersects_size_total);

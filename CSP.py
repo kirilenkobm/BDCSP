@@ -7,6 +7,7 @@ import argparse
 import subprocess
 import sys
 import os
+import platform
 from collections import defaultdict
 from datetime import datetime as dt
 import ctypes
@@ -42,8 +43,10 @@ class BDCspSolver:
 
     def __check_lib(self):
         """Check shared lib, compile if needed."""
+        sys_name = platform.system()
+        dll_ext = "so" if sys_name in ("Linux", "Darwin") else "dll"
         LIBS_DIR = os.path.join(os.getcwd(), "libs")
-        CSP_LIB_PATH = os.path.join(LIBS_DIR, "CSP.so")
+        CSP_LIB_PATH = os.path.join(LIBS_DIR, "CSP.{}".format(dll_ext))
         if not os.path.isfile(CSP_LIB_PATH):
             eprint("Error: shared libs not found\nCalling make...")
             os.mkdir("libs") if not os.path.isdir("libs") else None

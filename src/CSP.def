@@ -1,0 +1,3 @@
+LIBRARY   CSP
+EXPORTS
+    solve_CSP   @1

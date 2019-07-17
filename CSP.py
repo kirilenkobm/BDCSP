@@ -50,7 +50,8 @@ class BDCspSolver:
         if not os.path.isfile(CSP_LIB_PATH):
             eprint("Error: shared libs not found\nCalling make...")
             os.mkdir("libs") if not os.path.isdir("libs") else None
-            rc = subprocess.call("make", shell=True)
+            make_cmd = "make" if sys_name != "Windows" else ".\Win_make.bat"
+            rc = subprocess.call(make_cmd, shell=True)
             if rc != 0:
                 raise RuntimeError("Make failed!")
         self.CSP_SLIB = ctypes.CDLL(CSP_LIB_PATH)

@@ -15,6 +15,7 @@ On linux/MacOS:
 git clone git@gitlab.com:kirilenkobm/bdcsp.git
 cd bdcsp/
 make
+./CSP.py input_data/test_1.txt 4
 ```
 
 On windows:
@@ -23,6 +24,7 @@ On windows:
 git clone git@gitlab.com:kirilenkobm/bdcsp.git
 cd bdcsp\
 .\Win_make.bat
+python .\CSP.py input_data\test_1.txt 4
 ```
 
 --------------------------

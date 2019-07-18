@@ -9,6 +9,22 @@ Likely not polynomial.
 
 And if yes, probably not absolutely precise.
 
+On linux:
+
+```shell
+git clone git@gitlab.com:kirilenkobm/bdcsp.git
+cd bdcsp/
+make
+```
+
+On windows:
+
+```powershell
+git clone git@gitlab.com:kirilenkobm/bdcsp.git
+cd bdcsp\
+.\Win_make.bat
+```
+
 --------------------------
 
 ## To write

@@ -17,9 +17,10 @@ kirilenkobm@gmail.com
 #define CHUNK 2
 
 
-bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num, uint32_t pos_num,
-              uint8_t *patterns_1D_arr, uint32_t *pat_to_pos_1D, uint32_t *pat_to_pos_num,
-              uint32_t *pat_to_pos_starts, uint32_t *pos_1D_arr, uint32_t *pos_to_pat)
+bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
+               uint32_t pos_num, uint8_t *patterns_1D_arr, uint32_t *pat_to_pos_1D,
+               uint32_t *pat_to_pos_num, uint32_t *pat_to_pos_starts,
+               uint32_t *pos_1D_arr, uint32_t *pos_to_pat)
 // entry point; returns 1 if a solution with the K given exists, 0 otherwise
 {   
     bool answer = false;
@@ -230,19 +231,21 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
         printf("Iteration num %llu\n", iter_num);
         answer_found = true;
     }
-
+    // done
     // free memory!
-    printf("# Totally memory allocated: %0.3f kb\n", (double)total_memory_allocated / 1024);
+    printf("# Totally memory allocated: %0.3f kb\n",
+        (double)total_memory_allocated / 1024);
     // Different amount of memory allocated all the time!
     for (uint32_t i = 0; i < pat_num; i++)
     {
         // left print patterns for now
         // will remove later
-        for (uint32_t j = 0; j < str_num; j++)
-        {
-            printf("%d ", patterns[i].pattern_seq[j]);
-        }
-        printf("| pattern id %d\n", i);
+
+        // for (uint32_t j = 0; j < str_num; j++)
+        // {
+        //     printf("%d ", patterns[i].pattern_seq[j]);
+        // }
+        // printf("| pattern id %d\n", i);
         free(patterns[i].pattern_seq);
         free(patterns[i].occupies);
         free(patterns[i].positions);
@@ -251,7 +254,6 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     }
     free(patterns);
     free(positions);
-    // free(pattern_rev);
     free(size_times);
     free(pat_search_list);
     return answer;

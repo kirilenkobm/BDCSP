@@ -11,6 +11,7 @@ kirilenkobm@gmail.com
 #include <stdint.h>
 #include "CSP.h"
 #include "grid.h"
+#include "patterns.h"
 
 struct point{
     uint32_t point_num;

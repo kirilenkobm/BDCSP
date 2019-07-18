@@ -5,6 +5,7 @@ kirilenkobm@gmail.com
 */
 #ifndef GRID_H
 #define GRID_H
+#include "patterns.h"
 
 
 typedef struct point Point;

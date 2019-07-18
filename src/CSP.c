@@ -10,145 +10,12 @@ kirilenkobm@gmail.com
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "patterns.h"
 #include "CSP.h"
 #include "grid.h"
 
 #define CHUNK 2
 
-
-struct pattern
-{
-    uint8_t *pattern_seq;
-    uint32_t *occupies;
-    uint32_t occupies_num;   // equal to size
-    uint32_t *intersects_with;
-    uint32_t inters_num;
-    uint32_t * not_intersects_with;
-    uint32_t non_inters_num;
-    uint32_t *positions;
-    uint32_t pattern_rev;
-    uint32_t id;
-};
-
-
-struct position
-{
-    uint32_t number;
-    uint32_t patterns[2];
-};
-
-
-struct pat_list_search_elem
-{
-    uint32_t pat_num;
-    uint32_t pat_id;
-};
-
-
-uint32_t pat_to_num(uint32_t pattern_len, uint8_t * pattern_seq)
-{
-    int kt = 0;
-    uint32_t answer = 0;
-    for (int i = pattern_len - 1, j = 1; i >= 0; i--, j++){
-        kt = j * 2;
-        answer += pattern_seq[i] * kt;
-    }
-    return answer;
-}
-
-
-uint32_t sum_pattern(uint32_t pattern_len, uint8_t * pattern_seq)
-// for a pattern sequence just compute a sum
-{
-    int sum = 0;
-    uint8_t *ptr = pattern_seq;
-    while (ptr < &pattern_seq[pattern_len])
-    {
-        sum += *ptr;
-        ptr++;
-    }
-    return sum;
-}
-
-int comp_search_elems(const void *a, const void *b)
-// comp. function to compare search elems in qsort
-{ 
-    Pat_list_search_elem *ia = (Pat_list_search_elem *)a;
-    Pat_list_search_elem *ib = (Pat_list_search_elem *)b;
-    return ia->pat_num - ib->pat_num;
-}
-
-
-bool intersect_by_occ(uint32_t *occupies_1, uint32_t occ_num_1,
-                      uint32_t *occupies_2, uint32_t occ_num_2)
-// return true if patterns intersect, false otherwise
-{   
-    if ((occupies_1[occ_num_1] < occupies_2[0]) || (occupies_1[0] > occupies_2[occ_num_2]))
-    {
-        return false;
-    }
-    for (uint32_t i = 0; i < occ_num_1; i++){
-        // if smaller that the smallest element in other arr then continue
-        if (occupies_1[i] < occupies_2[0]){continue;}
-        else if (occupies_1[i] > occupies_2[occ_num_2 - 1]){return false;}
-        for (uint32_t j = 0; j <= occ_num_2; j++){
-            if (occupies_1[i] == occupies_2[j]){
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-
-uint32_t pattern_seq_to_id(Pat_list_search_elem *pat_search_list, int l, int r, uint32_t x) 
-{
-    if (r >= l)
-    { 
-        int mid = l + (r - l) / 2; 
-        if (pat_search_list[mid].pat_num == x) {
-            return pat_search_list[mid].pat_id;
-        } else if (pat_search_list[mid].pat_num > x) {
-            return pattern_seq_to_id(pat_search_list, l, mid - 1, x);
-        } else {
-        return pattern_seq_to_id(pat_search_list, mid + 1, r, x);
-        }
-    }
-    // nothing found; should never happen, but...
-    return 0;
-}
-
-uint64_t C_n_k(uint32_t n, uint32_t k)
-// compute combinations
-{
-    if (k > n) return 0;
-    if (k * 2 > n) k = n-k;
-    if (k == 0) return 1;
-
-    uint64_t result = n;
-    for(uint32_t i = 2; i <= k; ++i)
-    {
-        result *= (n - i + 1);
-        result /= i;
-    }
-    return result;
-}
-
-
-uint64_t *get_max_pat_num(uint32_t lvl_size)
-// compute maximal number of patterns for this lvl size
-{
-    uint64_t *comb_size_num = (uint64_t*)calloc(lvl_size, sizeof(uint64_t));
-    for (uint32_t k = 1; k < lvl_size; k++)
-    // how many times can I select k size patterns with a given lvl size?
-    {
-        // n! / k!(n - k)!
-        uint64_t pat_num_at_lvl = C_n_k(lvl_size, k);
-        comb_size_num[k] = pat_num_at_lvl;
-
-    }
-    return comb_size_num;
-}
 
 bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num, uint32_t pos_num,
               uint8_t *patterns_1D_arr, uint32_t *pat_to_pos_1D, uint32_t *pat_to_pos_num,
@@ -175,10 +42,9 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     // read all this stuff
     printf("# Overall %d patterns\n", pat_num);
     uint64_t *max_pat_num = get_max_pat_num(str_num);
-    printf("Max possible number of patterns at lvl %u is:\n", str_num);
-    for (uint32_t i = 1; i < str_num; i++){
-        printf("Of size %u: %llu\n", i, max_pat_num[i]);
-    }
+    size_t max_pat_num_size = sizeof(uint64_t) * str_num;
+    total_memory_allocated += max_pat_num_size;
+
     Pattern *patterns = (Pattern*)malloc(sizeof(Pattern) * (pat_num + CHUNK));
     uint32_t p_start, p_end;
 
@@ -248,6 +114,11 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
         // positions added; what's left:
         // pattern intersects with and not intersects with
         // at the latter stage
+    }
+
+    printf("Max possible and real number of patterns at lvl %u is:\n", str_num);
+    for (uint32_t i = 1; i < str_num; i++){
+        printf("Of size %u max: %llu actual: %u\n", i, max_pat_num[i], size_times[i]);
     }
 
     printf("Totally allocated %zu for pattern sequences\n", pat_seq_total);

@@ -20,12 +20,13 @@ __status__ = "Development"
 
 class BDCspSolver:
     """Interface between python and C."""
-    def __init__(self, input_strings, k):
+    def __init__(self, input_strings, k, v):
         """Check lib and read input."""
         self.input_strings = input_strings
         self.str_num = len(input_strings)
         self.str_len = len(input_strings[0])
         self.k = k
+        self.v = v
         self.answer = None
         self.__check_lib()
         self.__extract_patterns()
@@ -152,6 +153,7 @@ class BDCspSolver:
         c_k_ = ctypes.c_uint32(self.k)
         c_pos_num = ctypes.c_uint32(self.positions_num)
         c_pat_num = ctypes.c_uint32(self.patterns_num)
+        c_v = ctypes.c_bool(self.v)
         # call the solver finally
         self.answer = self.CSP_SLIB.solve_CSP(c_str_num,  # int
                                               c_str_len,  # int
@@ -171,6 +173,7 @@ def parse_args():
     app = argparse.ArgumentParser()
     app.add_argument("input_file", help="File containing strings.")
     app.add_argument("k", type=int, help="K to test.")
+    app.add_argument("-v", action="store_true", dest="v", help="Vertbose messages")
     # TODO: verbosity more
     app.add_argument("--show_time", "-t", action="store_true", dest="show_time")
     args = app.parse_args()
@@ -208,7 +211,7 @@ def main():
     t0 = dt.now()  # start time
     args = parse_args()  # parse and check args
     in_strings = read_strings(args.input_file)  # read and check strings
-    solver = BDCspSolver(in_strings, args.k)  # prepare patterns and positions
+    solver = BDCspSolver(in_strings, args.k, args.v)  # prepare patterns and positions
     solver.get_answer()  # call C library to solve the problem
     print("# The answer is:\n{}".format(solver.answer))
     eprint("Elapsed: {}".format(dt.now() - t0)) if args.show_time else None

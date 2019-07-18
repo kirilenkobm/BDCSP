@@ -118,6 +118,37 @@ uint32_t pattern_seq_to_id(Pat_list_search_elem *pat_search_list, int l, int r, 
     return 0;
 }
 
+uint64_t C_n_k(uint32_t n, uint32_t k)
+// compute combinations
+{
+    if (k > n) return 0;
+    if (k * 2 > n) k = n-k;
+    if (k == 0) return 1;
+
+    uint64_t result = n;
+    for(uint32_t i = 2; i <= k; ++i)
+    {
+        result *= (n - i + 1);
+        result /= i;
+    }
+    return result;
+}
+
+
+uint64_t *get_max_pat_num(uint32_t lvl_size)
+// compute maximal number of patterns for this lvl size
+{
+    uint64_t *comb_size_num = (uint64_t*)calloc(lvl_size, sizeof(uint64_t));
+    for (uint32_t k = 1; k < lvl_size; k++)
+    // how many times can I select k size patterns with a given lvl size?
+    {
+        // n! / k!(n - k)!
+        uint64_t pat_num_at_lvl = C_n_k(lvl_size, k);
+        comb_size_num[k] = pat_num_at_lvl;
+
+    }
+    return comb_size_num;
+}
 
 bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num, uint32_t pos_num,
               uint8_t *patterns_1D_arr, uint32_t *pat_to_pos_1D, uint32_t *pat_to_pos_num,
@@ -143,6 +174,11 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
 
     // read all this stuff
     printf("# Overall %d patterns\n", pat_num);
+    uint64_t *max_pat_num = get_max_pat_num(str_num);
+    printf("Max possible number of patterns at lvl %u is:\n", str_num);
+    for (uint32_t i = 1; i < str_num; i++){
+        printf("Of size %u: %llu\n", i, max_pat_num[i]);
+    }
     Pattern *patterns = (Pattern*)malloc(sizeof(Pattern) * (pat_num + CHUNK));
     uint32_t p_start, p_end;
 

@@ -9,7 +9,7 @@ Likely not polynomial.
 
 And if yes, probably not absolutely precise.
 
-On linux:
+On linux/MacOS:
 
 ```shell
 git clone git@gitlab.com:kirilenkobm/bdcsp.git
@@ -19,7 +19,7 @@ make
 
 On windows:
 
-```powershell
+```bat
 git clone git@gitlab.com:kirilenkobm/bdcsp.git
 cd bdcsp\
 .\Win_make.bat

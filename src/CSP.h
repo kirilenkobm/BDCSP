@@ -19,6 +19,10 @@ typedef struct position Position;
 
 typedef struct pat_list_search_elem Pat_list_search_elem;
 
+uint64_t *get_max_pat_num(uint32_t lvl_size);
+
+uint64_t C_n_k(uint32_t n, uint32_t k);
+
 uint32_t pat_to_num(uint32_t pattern_len, uint8_t * pattern_seq);
 
 uint32_t sum_pattern(uint32_t pattern_len, uint8_t * pattern_seq); 

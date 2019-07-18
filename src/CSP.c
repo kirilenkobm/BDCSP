@@ -13,8 +13,22 @@ kirilenkobm@gmail.com
 #include "patterns.h"
 #include "CSP.h"
 #include "grid.h"
-
 #define CHUNK 2
+
+
+uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
+// just return a min of three numbers
+{
+    if (*a < *b && *a < *c){
+        return *a;
+    // ok, not a, min of b and c
+    } else if (*b < *c){
+        return *b;
+    // not b and not a -> clearly c
+    } else {
+        return *c;
+    }
+}
 
 
 bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num,
@@ -35,6 +49,9 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     double inf = 1.0 / str_num;
     double sup = (double)(str_num - 1) / str_num; 
     printf("# Minimal density: %f, maximal density: %f\n", inf, sup);
+
+    uint32_t max_comb_len = min_of_three(&str_num, &str_len, &pat_num);
+    printf("# Maximal combination length: %d", max_comb_len);
 
     // trim obvious cases
     if (exp_ave_ro > sup){return false;  // unreachable density
@@ -220,17 +237,16 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     }
 
     // now we can go throw grid and try to find the positions
-    // main loop
-    bool answer_found = false;
-    uint64_t iter_num = 0;
-
-    while (!answer_found)
-    {
-        // recompute sup, inf and exp until anything clarifies
-        iter_num++;
-        printf("Iteration num %llu\n", iter_num);
-        answer_found = true;
-    }
+    Point *grid = make_grid(str_num, pat_num, patterns, max_comb_len);
+    // get grid size
+    uint32_t grid_size = 0;
+    // while (true)
+    // {
+    //     if (grid[grid_size].point_class == -1){
+    //         break;
+    //     }
+    //     grid_size++;
+    // }
     // done
     // free memory!
     printf("# Totally memory allocated: %0.3f kb\n",
@@ -238,14 +254,6 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     // Different amount of memory allocated all the time!
     for (uint32_t i = 0; i < pat_num; i++)
     {
-        // left print patterns for now
-        // will remove later
-
-        // for (uint32_t j = 0; j < str_num; j++)
-        // {
-        //     printf("%d ", patterns[i].pattern_seq[j]);
-        // }
-        // printf("| pattern id %d\n", i);
         free(patterns[i].pattern_seq);
         free(patterns[i].occupies);
         free(patterns[i].positions);
@@ -256,5 +264,6 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     free(positions);
     free(size_times);
     free(pat_search_list);
+    free(grid);
     return answer;
 }

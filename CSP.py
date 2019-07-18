@@ -153,7 +153,7 @@ class BDCspSolver:
         c_k_ = ctypes.c_uint32(self.k)
         c_pos_num = ctypes.c_uint32(self.positions_num)
         c_pat_num = ctypes.c_uint32(self.patterns_num)
-        c_v = ctypes.c_bool(self.v)
+        # c_v = ctypes.c_bool(self.v)
         # call the solver finally
         self.answer = self.CSP_SLIB.solve_CSP(c_str_num,  # int
                                               c_str_len,  # int
@@ -166,7 +166,11 @@ class BDCspSolver:
                                               c_pat_to_pos_starts,  # int*
                                               c_pos_array,
                                               c_pos_to_pat_array)  # int*
-
+    
+    def show_patterns(self):
+        """Print out patterns."""
+        for pid, pattern in enumerate(self.id_to_pattern):
+            print("{} | id: {}".format(pattern, pid))
 
 def parse_args():
     """Parse args and check if everything is correct."""
@@ -176,6 +180,7 @@ def parse_args():
     app.add_argument("-v", action="store_true", dest="v", help="Vertbose messages")
     # TODO: verbosity more
     app.add_argument("--show_time", "-t", action="store_true", dest="show_time")
+    app.add_argument("--show_patterns", "-p", action="store_true", dest="show_patterns")
     args = app.parse_args()
     if args.k < 1:
         sys.exit("K must be >= 1")
@@ -215,6 +220,7 @@ def main():
     solver.get_answer()  # call C library to solve the problem
     print("# The answer is:\n{}".format(solver.answer))
     eprint("Elapsed: {}".format(dt.now() - t0)) if args.show_time else None
+    solver.show_patterns() if args.show_patterns else None
 
 
 if __name__ == "__main__":

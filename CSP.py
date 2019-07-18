@@ -44,7 +44,7 @@ class BDCspSolver:
     def __check_lib(self):
         """Check shared lib, compile if needed."""
         sys_name = platform.system()
-        dll_ext = "so" if sys_name in ("Linux", "Darwin") else "dll"
+        dll_ext = "so" if sys_name!= "Windows" else "dll"
         LIBS_DIR = os.path.join(os.getcwd(), "libs")
         CSP_LIB_PATH = os.path.join(LIBS_DIR, "CSP.{}".format(dll_ext))
         if not os.path.isfile(CSP_LIB_PATH):

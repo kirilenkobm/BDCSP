@@ -14,14 +14,6 @@ kirilenkobm@gmail.com
 #include "patterns.h"
 
 
-struct point{
-    uint32_t point_num;
-    uint32_t lvl_num;
-    uint32_t char_num;
-    bool trivial;
-    double density;
-    uint8_t point_class;
-};
 
 
 uint32_t *accumulate_sum(uint32_t *func, uint32_t f_len)
@@ -89,17 +81,16 @@ Point *make_grid(uint32_t str_num, uint32_t pat_num,
     Point *grid = (Point*)malloc(grid_size);
     v_min_ptr = &f_min_acc[0];
     v_max_ptr = &f_max_acc[0];
-    uint32_t char_num = 0;
+    uint32_t char_num = 1;
     uint32_t point_id = 0;
 
     for (uint32_t i = 0; i < max_comb_len; i++)
     // fill the "grid" with points
     // values between v_min ptr and v_max_ptr is what we need
-    {
-        char_num ++;
+    {   
         for (uint32_t p_sum = *v_min_ptr; p_sum < *v_max_ptr + 1; p_sum++)
         // apply different sums
-        {
+        {   
             uint32_t lvl_full = p_sum / str_num;
             // get rid of...
             if (lvl_full == 0){
@@ -113,7 +104,7 @@ Point *make_grid(uint32_t str_num, uint32_t pat_num,
             grid[point_id].char_num = char_num;
             double density = (double)lvl_full / char_num;
             grid[point_id].density = density;
-            if ((lvl_full = char_num - 1) && (lvl_full > 1)){
+            if ((lvl_full == (char_num - 1)) && (lvl_full > 1)){
                 // ro = (N - 1) / N
                 grid[point_id].point_class = 0;
                 grid[point_id].trivial = true;
@@ -125,15 +116,20 @@ Point *make_grid(uint32_t str_num, uint32_t pat_num,
                 // ro = 1 / N
                 grid[point_id].point_class = 2;
                 grid[point_id].trivial = true;
-            } else {
+            } else if (((lvl_full * 2)== char_num) && lvl_full > 1){
+                // non trivial point with density = 1 / 2
                 grid[point_id].point_class = 3;
                 grid[point_id].trivial = false;
+            } else {
+                grid[point_id].point_class = 4;
+                grid[point_id].trivial = false;
             }
+            point_id++;
         }
         v_min_ptr++;
         v_max_ptr++;
-        point_id++;
+        char_num ++;
     }
-    grid[point_id].point_class = -1;
+    grid[point_id].char_num = 0;
     return grid;
-}
+ }

@@ -7,6 +7,14 @@ kirilenkobm@gmail.com
 #define GRID_H
 #include "patterns.h"
 
+struct point{
+    uint32_t point_num;
+    uint32_t lvl_num;
+    uint32_t char_num;
+    bool trivial;
+    double density;
+    uint8_t point_class;
+};
 
 typedef struct point Point;
 

@@ -240,13 +240,17 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     Point *grid = make_grid(str_num, pat_num, patterns, max_comb_len);
     // get grid size
     uint32_t grid_size = 0;
-    // while (true)
-    // {
-    //     if (grid[grid_size].point_class == -1){
-    //         break;
-    //     }
-    //     grid_size++;
-    // }
+    while (true){
+        if (grid[grid_size].char_num == 0){break;}
+        grid_size++;}
+    for (uint32_t i = 0; i < grid_size; i++)
+    {
+        printf("Point num %d lvl num %d char num %d dens %f p_Class %d\n",
+        i, grid[i].lvl_num, grid[i].char_num, grid[i].density, grid[i].point_class);
+    }
+    // also count this
+    size_t grid_mem_size = sizeof(Point) * grid_size;
+    total_memory_allocated += grid_mem_size;
     // done
     // free memory!
     printf("# Totally memory allocated: %0.3f kb\n",

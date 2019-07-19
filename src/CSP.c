@@ -237,13 +237,15 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     }
 
     // now we can go throw grid and try to find the positions
-    Grid_output grid = make_grid(str_num, pat_num, patterns, max_comb_len);
-    for (uint32_t i = 0; i < grid.grid_len; i++)
-    {
-        uint32_t **size_paths = get_size_path(&grid.grid[i], size_times, str_num);
-    }
+    // Grid_output grid = make_grid(str_num, pat_num, patterns, max_comb_len);
+    // for (uint32_t i = 0; i < grid.grid_len; i++)
+    // {   
+    //     uint32_t *primer = 0;
+    //     uint32_t *first_size_path = get_size_path(&grid.grid[i], &primer, 0, size_times, str_num,
+    //                                           grid.f_max_acc, grid.f_min_acc, 0);
+    // }
     // also count this
-    total_memory_allocated += grid.grid_mem_size;
+    // total_memory_allocated += grid.grid_mem_size;
     // done
     // free memory!
     printf("# Totally memory allocated: %0.3f kb\n",
@@ -261,6 +263,6 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     free(positions);
     free(size_times);
     free(pat_search_list);
-    free(grid.grid);
+    // free(grid.grid);
     return answer;
 }

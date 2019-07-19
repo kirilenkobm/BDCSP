@@ -14,6 +14,8 @@ kirilenkobm@gmail.com
 #include "CSP.h"
 #include "grid.h"
 #define CHUNK 2
+#define INIT_COMB_NUM 10
+#define REALLOC_COMB_NUM_STEP 10
 
 
 uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
@@ -235,7 +237,6 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
         patterns[first_pattern].pattern_rev = second_pattern;
         patterns[second_pattern].pattern_rev = first_pattern;
     }
-
     // now we can go throw grid and try to find the positions
     // Grid_output grid = make_grid(str_num, pat_num, patterns, max_comb_len);
     // for (uint32_t i = 0; i < grid.grid_len; i++)
@@ -246,6 +247,13 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     // }
     // also count this
     // total_memory_allocated += grid.grid_mem_size;
+    // main part starts here
+    // find all guys of ro = 1 / 2
+    size_t comb_init_allocation = sizeof(uint32_t*) * INIT_COMB_NUM;
+    uint32_t **combinations = malloc(comb_init_allocation);
+    for (uint32_t i = 0; i < pat_num / 2; i++){
+        printf("Pat num %d\n", i);
+    }
     // done
     // free memory!
     printf("# Totally memory allocated: %0.3f kb\n",

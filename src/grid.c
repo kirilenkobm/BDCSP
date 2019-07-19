@@ -55,8 +55,8 @@ Grid_output make_grid(uint32_t str_num, uint32_t pat_num,
     uint32_t *v_max_ptr = &f_max_acc[0];
     uint32_t grid_elems_num = 0;
 
-    answer.f_max = f_max;
-    answer.f_min = f_min;
+    answer.f_max_acc = f_max_acc;
+    answer.f_min_acc = f_min_acc;
 
     for (uint32_t i = 0; i < max_comb_len; i++)
     // compute grid size first
@@ -141,45 +141,7 @@ Grid_output make_grid(uint32_t str_num, uint32_t pat_num,
         char_num ++;
     }
     answer.grid[point_id].char_num = 0;
-    free(f_max_acc);
-    free(f_min_acc);
+    free(f_max);
+    free(f_min);
     return answer;
  }
-
-
-uint32_t __get_next_size(uint32_t current, uint32_t *all_numbers, uint32_t all_num_size)
-// get next available size
-{
-    uint32_t item = 0;
-    for (uint32_t i = 0; i < all_num_size; i++){
-        item = all_numbers[i];
-        if (item < current) {return item;}
-    }
-    return 0;
-}
-
-
-uint32_t __check_current(uint32_t current, uint32_t *path_counter, uint32_t *all_moves,
-                         uint32_t *all_numbers, uint32_t all_num_size)
-// check if we still can use the current value
-{
-    int answer = 0;
-    int used = path_counter[current];
-    int available = all_moves[current];
-    assert (available >= used);
-    if (available == used){
-        answer = __get_next_size(current, all_numbers, all_num_size);
-        return answer;
-    }
-    return current;
-}
-
-
-uint32_t **get_size_path(Point *point, uint32_t *size_times, uint32_t str_num){
-// create all possible size paths to this point
-    uint32_t size_paths_num = INIT_SPATH_NUM;
-    uint32_t **s_paths = (uint32_t**)malloc(sizeof(uint32_t*) * size_paths_num);
-    // size times would be a template for answer
-
-    return s_paths;
-}

@@ -237,20 +237,13 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     }
 
     // now we can go throw grid and try to find the positions
-    Point *grid = make_grid(str_num, pat_num, patterns, max_comb_len);
-    // get grid size
-    uint32_t grid_size = 0;
-    while (true){
-        if (grid[grid_size].char_num == 0){break;}
-        grid_size++;}
-    for (uint32_t i = 0; i < grid_size; i++)
+    Grid_output grid = make_grid(str_num, pat_num, patterns, max_comb_len);
+    for (uint32_t i = 0; i < grid.grid_len; i++)
     {
-        printf("Point num %d lvl num %d char num %d dens %f p_Class %d\n",
-        i, grid[i].lvl_num, grid[i].char_num, grid[i].density, grid[i].point_class);
+        uint32_t **size_paths = get_size_path(&grid.grid[i], size_times, str_num);
     }
     // also count this
-    size_t grid_mem_size = sizeof(Point) * grid_size;
-    total_memory_allocated += grid_mem_size;
+    total_memory_allocated += grid.grid_mem_size;
     // done
     // free memory!
     printf("# Totally memory allocated: %0.3f kb\n",
@@ -268,6 +261,6 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     free(positions);
     free(size_times);
     free(pat_search_list);
-    free(grid);
+    free(grid.grid);
     return answer;
 }

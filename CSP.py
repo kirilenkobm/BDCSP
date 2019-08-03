@@ -11,6 +11,7 @@ import platform
 from collections import defaultdict
 from datetime import datetime as dt
 import ctypes
+from py_replace.BDSCP_lib import BDCSP_colver
 
 __author__ = "Bogdan Kirilenko"
 __version__ = "0.03"
@@ -117,8 +118,11 @@ class BDCspSolver:
         self.patterns_num = len(self.id_to_pattern)
         self.positions_num = len(self.all_positions)
 
-    def get_answer(self):
-        """Solve CSP."""
+    def __get_answer(self):
+        """Solve CSP.
+        
+        Temporary replaced with Python solver!
+        """
         # pre-process input \put this stuff into C function
         # pattern lenght is the str_num
         patterns_array = self.flatten(self.id_to_pattern)
@@ -166,7 +170,19 @@ class BDCspSolver:
                                               c_pat_to_pos_starts,  # int*
                                               c_pos_array,
                                               c_pos_to_pat_array)  # int*
-    
+
+    def get_answer(self):
+        """Python replacement!"""
+        solver = BDCSP_colver(self.id_to_pattern,
+                              self.pattern_id_to_positions,
+                              self.pos_to_pat_ids,
+                              self.all_positions,
+                              self.str_len,
+                              self.str_num,
+                              self.actual_col_num,
+                              self.k)
+        self.answer = solver.solve()
+
     def show_patterns(self):
         """Print out patterns."""
         for pid, pattern in enumerate(self.id_to_pattern):

@@ -6,3 +6,4 @@ libs/*.dll
 *.obj
 *.exp
 *.lib
+__pycache__/

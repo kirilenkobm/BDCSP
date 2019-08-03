@@ -53,7 +53,7 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     printf("# Minimal density: %f, maximal density: %f\n", inf, sup);
 
     uint32_t max_comb_len = min_of_three(&str_num, &str_len, &pat_num);
-    printf("# Maximal combination length: %d", max_comb_len);
+    printf("# Maximal combination length: %d\n", max_comb_len);
 
     // trim obvious cases
     if (exp_ave_ro > sup){return false;  // unreachable density
@@ -141,9 +141,6 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
         printf("Of size %u max: %llu actual: %u\n", i, max_pat_num[i], size_times[i]);
     }
 
-    // printf("Totally allocated %zu for pattern sequences\n", pat_seq_total);
-    // printf("Totally allocated %zu for patterns occupy\n", pat_occupies_total);
-    // printf("Totally allocated %zu for patterns positions\n", pat_pos_total);
     total_memory_allocated += pat_seq_total;
     total_memory_allocated += pat_occupies_total;
     total_memory_allocated += pat_pos_total;
@@ -220,7 +217,6 @@ bool solve_CSP(uint32_t str_num, uint32_t str_len, uint32_t k_, uint32_t pat_num
     // read positions then
     size_t pos_array_size = sizeof(Position) * (pos_num + CHUNK);
     Position *positions = (Position*)malloc(pos_array_size);
-    // printf("Allocated %zu for positions array\n", pos_array_size);
     total_memory_allocated += pos_array_size;
 
     // each position intersects with 2 patterns

@@ -3,6 +3,7 @@
 To be implemented first, and rewritten in C later.
 """
 from collections import defaultdict
+from collections import Counter
 from py_replace.Grid_lib import Grid
 
 
@@ -195,8 +196,22 @@ class BDCSP_colver:
         """Create comb compatibility matrix."""
         self.comb_id_compat_with = defaultdict(set)
         for i in range(self.base_combs_num):
-            for j in range(self.base_combs_num):
-                print(i, j)
+            i_comb = self.combs[i]
+            i_pos = [tuple(self.pattern_id_to_positions[p]) for p in i_comb]
+            i_id = self.comb_to_id[i_comb]
+            # self-compatibility is allowed
+            for j in range(i, self.base_combs_num):
+                j_comb = self.combs[j]
+                j_pos = [tuple(self.pattern_id_to_positions[p]) for p in j_comb]
+                j_id = self.comb_to_id[j_comb]
+                to_check = Counter(i_pos + j_pos)
+                # very simple compatibility check
+                # if some positions tuple appears more times than it's lenght
+                # then combination is impossible
+                if any(len(k) < v for k, v in to_check.items()):
+                    continue
+                self.comb_id_compat_with[i_id].add(j_id)
+                self.comb_id_compat_with[j_id].add(i_id)
 
     def solve(self):
         """Return True if reachable, False otherwise."""

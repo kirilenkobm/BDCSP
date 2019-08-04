@@ -213,6 +213,12 @@ class BDCSP_colver:
                 self.comb_id_compat_with[i_id].add(j_id)
                 self.comb_id_compat_with[j_id].add(i_id)
 
+    def __check_enough(self):
+        """Check, it trivial cobinations are enough to make a decision."""
+        # TODO: grow each compatible chain of combinations, if enough:
+        # abort and assign self.answer = True
+        pass
+
     def solve(self):
         """Return True if reachable, False otherwise."""
         self.combs = []
@@ -229,7 +235,11 @@ class BDCSP_colver:
         self.__make_combs_index()
         # check if basepoints are enough to get an answer
         self.__comb_compat()
+        self.__check_enough()
+        if self.answer is not None:
+            return self.answer
         return False
+
 
 if __name__ == "__main__":
     pass

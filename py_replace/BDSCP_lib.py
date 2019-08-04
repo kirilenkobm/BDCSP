@@ -18,12 +18,17 @@ class BDCSP_colver:
         self.str_len = str_len
         self.str_num = str_num
         self.act_col_num = act_col_num
+        print("# Str_len: {}; actual: {}; str_num: {}".format(self.str_len,
+                                                              self.act_col_num,
+                                                              self.str_num))
         self.k = k
         self.answer = None
+        self.template = tuple(0 for _ in range(self.str_num))
         self.__get_fmax_and_sizes()
         self.__make_pattern_to_id()
         self.__get_negatives()
         self.__get_naive_sup_and_inf()
+        self.__get_not_intersect()
         self.grid = Grid(self.str_num, self.act_col_num, self.f_max, self.pattern_to_size,
                          self.position_to_patterns, self.pattern_id_to_positions)
         self.points_num = self.grid.points_num
@@ -33,11 +38,11 @@ class BDCSP_colver:
     def __get_fmax_and_sizes(self):
         """Get f_max and pattern sizes."""
         self.pattern_to_size = [0 for _ in range(len(self.id_to_pattern))]
-        self.size_to_pattern = defaultdict(list)
+        self.size_to_pattern = defaultdict(set)
         for id_, pat in enumerate(self.id_to_pattern):
             pat_size = sum(pat)
             self.pattern_to_size[id_] = pat_size
-            self.size_to_pattern[pat_size].append(id_)
+            self.size_to_pattern[pat_size].add(id_)
         self.f_max = sorted(self.pattern_to_size, reverse=True)
 
     def __make_pattern_to_id(self):
@@ -59,9 +64,18 @@ class BDCSP_colver:
         """Return not-pattern."""
         return tuple(1 if pattern[i] == 0 else 0 for i in range(self.str_num))
 
+    def __comb_sum(self, comb):
+        """Compute combination sum."""
+        if not comb:
+            # special case, return empty sum them
+            return self.template
+        patterns = [self.id_to_pattern[p] for p in comb]
+        return tuple(sum((p[i] for p in patterns)) for i in range(self.str_num))
+
     def __get_naive_sup_and_inf(self):
         """Get sup and inf."""
         self.to_cover = self.act_col_num - self.k
+        print("# With K = {} positions to cover: {}".format(self.k, self.to_cover))
         self.exp_ave_ro = self.to_cover / self.act_col_num
         self.inf = 1 / self.str_num
         self.sup = (self.str_num - 1) / self.str_num
@@ -74,11 +88,21 @@ class BDCSP_colver:
         elif self.exp_ave_ro <= self.inf:
             self.answer = True
     
-    def __process_case_0(self, s_path):
-        """Process the case of ro > 1/2."""
-        answer = []
-        # NO NEED TO COMPUTE THIS
-        return answer
+    def __get_not_intersect(self):
+        """Return a dict of non-intersecting patterns."""
+        self.non_intersects = defaultdict(set)
+        pat_len = len(self.id_to_pattern)
+        for i in range(pat_len):
+            i_pat = self.id_to_pattern[i]
+            for j in range(i + 1, pat_len):
+                j_pat = self.id_to_pattern[j]
+                intersect = any(i_pat[k] == j_pat[k] == 1 for k in range(self.str_num))
+                if intersect:
+                    continue
+                self.non_intersects[i].add(j)
+        # remove complementary patterns
+        for i in range(pat_len):
+            self.non_intersects[i].discard(self.pat_neg[i])
 
     def __process_case_1(self, s_path):
         """Resolve case 1."""
@@ -94,35 +118,77 @@ class BDCSP_colver:
             answer.append(pair_pos[:2])
         return answer
 
+    def __add_1_tails(self, chain):
+        """Add patterns of size 1."""
+        answer = []
+        for pre_comb, _ in chain:
+            pre_comb_sum = self.__comb_sum(pre_comb)
+            zeros_at = [i for i, v in enumerate(pre_comb_sum) if v == 0]
+            zeros_num = len(zeros_at)
+            patterns_to_find = [tuple(0 if j != i else 1 for j in range(self.str_num))
+                            for i in zeros_at]
+            found_ids = tuple(self.pattern_to_id.get(pat) for pat in patterns_to_find)
+            if any(found_ids[i] is None for i in range(zeros_num)):
+                continue
+            ans = pre_comb + found_ids
+            answer.append(ans)
+        return answer
+
     def __process_case_2(self, s_path):
         """Resolve case of ro = 1/N."""
-        answer = []
-
+        chain = [((x,), self.non_intersects[x]) for x in self.size_to_pattern[s_path[0]]]
+        path_left = s_path[1:]
+        left_len = len(path_left)
+        for size in path_left:
+            if size == 1:
+                tailed = self.__add_1_tails(chain)
+                return tailed
+            size_fit = self.size_to_pattern[size]
+            new_chain_ = []
+            for path, n_inter in chain:
+                inter_compat = size_fit.intersection(n_inter)
+                for c_ in inter_compat:
+                    added_c_ = path + (c_, )
+                    added_inter = n_inter.intersection(self.non_intersects[c_])
+                    new_chain_.append((added_c_, added_inter))
+            if not new_chain_:
+                return []
+            chain = new_chain_
+        answer = [c[0] for c in chain]
         return answer
+
+    def __inv_comb(self, comb):
+        """Return inverted comb."""
+        return tuple(self.pat_neg[p] for p in comb)
 
     def _find_comb(self, s_path, point_class):
         """Find combinations for the size path and point class given."""
-        if point_class == 0:
-            return self.__process_case_0(s_path)
-        elif point_class == 1:
+        if point_class == 1:
             return self.__process_case_1(s_path)
         elif point_class == 2:
-            return self.__process_case_2(s_path)
+            direct = self.__process_case_2(s_path)
+            inv = [self.__inv_comb(c) for c in direct]
+            return direct + inv
         return []
+
+    def __make_combs_index(self):
+        """Make combinations index."""
+        for comb in self.combs:
+            print(comb)
 
     def solve(self):
         """Return True if reachable, False otherwise."""
-        self.point_to_size = {}
-        self.comb_index = {}
+        self.combs = []
         if self.answer is not None:
             return self.answer
-        for s_path, point_num, point_class in self.points_gen:
-            self.point_to_size[point_num] = len(s_path)
+        for s_path, _, point_class in self.points_gen:
             if not s_path:
                 break
-            # print(s_path, point_num, point_class)
             combs = self._find_comb(s_path, point_class)
-            # print(combs)
+            if not combs:
+                continue
+            self.combs.extend(combs)
+        self.__make_combs_index()
         return False
 
 if __name__ == "__main__":

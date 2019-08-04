@@ -226,6 +226,9 @@ class Grid:
             if point["basepoint"] is False:
                 # non-trivial points!
                 continue
+            elif point["class"] == 0:
+                # in case of BDCSP there is no need to compute case 0
+                continue
             first_path = self.__get_s_path([], point)
             if not first_path:
                 # not reachable

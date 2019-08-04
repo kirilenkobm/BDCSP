@@ -173,8 +173,30 @@ class BDCSP_colver:
 
     def __make_combs_index(self):
         """Make combinations index."""
+        self.comb_index = defaultdict(list)
+        self.comb_to_id = {}
+        self.comb_id_to_ro = {}
+        self.pat_to_combs = defaultdict(set)
+        self.ro_to_ind = defaultdict(list)
         for comb in self.combs:
-            print(comb)
+            comb_len = len(comb)
+            comb_sum = self.__comb_sum(comb)
+            comb_ro = comb_sum[0] / comb_len
+            cur_ind = len(self.comb_index[comb_len])
+            self.comb_index[comb_len].append(comb)
+            comb_id = (comb_len, cur_ind)
+            for p_ in comb:
+                self.pat_to_combs[p_].add(comb_id)
+            self.ro_to_ind[comb_ro].append(comb_id)
+            self.comb_to_id[comb] = comb_id
+            self.comb_id_to_ro[comb_id] = comb_ro
+
+    def __comb_compat(self):
+        """Create comb compatibility matrix."""
+        self.comb_id_compat_with = defaultdict(set)
+        for i in range(self.base_combs_num):
+            for j in range(self.base_combs_num):
+                print(i, j)
 
     def solve(self):
         """Return True if reachable, False otherwise."""
@@ -188,7 +210,10 @@ class BDCSP_colver:
             if not combs:
                 continue
             self.combs.extend(combs)
+        self.base_combs_num = len(self.combs)
         self.__make_combs_index()
+        # check if basepoints are enough to get an answer
+        self.__comb_compat()
         return False
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ class BDCSP_colver:
                  all_pos, str_len, str_num, act_col_num, k):
         """Entry point."""
         self.id_to_pattern = id_to_pattern
+        self.pat_num = len(self.id_to_pattern)
         self.pattern_id_to_positions = pat_id_to_pos
         self.position_to_patterns = pos_to_pat
         self.all_positions = all_pos
@@ -33,6 +34,7 @@ class BDCSP_colver:
         self.__get_negatives()
         self.__get_naive_sup_and_inf()
         self.__get_not_intersect()
+        self._got_non_trivial = False
         self.grid = Grid(self.str_num, self.act_col_num, self.f_max, self.pattern_to_size,
                          self.position_to_patterns, self.pattern_id_to_positions)
         self.points_num = self.grid.points_num
@@ -88,8 +90,10 @@ class BDCSP_colver:
                                                                        self.sup))
         # get rid of obvious cases
         if self.exp_ave_ro > self.sup:
+            print("# Required density to satisfy K given is too high")
             self.answer = False
         elif self.exp_ave_ro <= self.inf:
+            print("# Required density is lower that potential minimal.")
             self.answer = True
     
     def __get_not_intersect(self):
@@ -185,6 +189,7 @@ class BDCSP_colver:
         self.comb_to_id = {}
         self.comb_id_to_ro = {}
         self.pat_to_combs = defaultdict(set)
+        self.pat_to_combs_ctr = defaultdict(Counter)
         self.ro_to_ind = defaultdict(list)
         for i, comb in enumerate(self.combs):
             comb_len = len(comb)
@@ -197,6 +202,8 @@ class BDCSP_colver:
             self.ro_to_ind[comb_ro].append(comb_id)
             self.comb_to_id[comb] = comb_id
             self.comb_id_to_ro[comb_id] = comb_ro
+        for k, v in self.pat_to_combs.items():
+            self.pat_to_combs_ctr[k] = Counter(v)
         print("# Extracted and indexed {} combinations".format(self.base_combs_num))
 
     def __comb_compat(self):
@@ -224,12 +231,13 @@ class BDCSP_colver:
         """Check if chains path is compatible."""
         combs = [self.comb_index[c[0]][c[1]] for c in chain]
         comb_united = flatten(combs)
-        comb_pos_count = Counter(tuple(self.pattern_id_to_positions[p]) for p in comb_united)
+        comb_pos_count = Counter(tuple(self.pattern_id_to_positions[p])
+                                       for p in comb_united)
         if any(len(k) < v for k, v in comb_pos_count.items()):
             return False
         return True
 
-    def __generate_base_cliques(self):
+    def __generate_base_cliques(self, skip_short=True):
         """Cliques generator."""
         for start in range(self.base_combs_num):
             start_id = self.comb_to_id[self.combs[start]]
@@ -250,14 +258,15 @@ class BDCSP_colver:
                     ok_ = self.__check_path_ok(next_chain)
                     if ok_ is False:
                         continue
-                    next_lvl = iter(self.comb_id_compat_with[next_elem].intersection(chain_compat))
+                    next_lvl = iter(self.comb_id_compat_with[next_elem]\
+                        .intersection(chain_compat))
                     iter_collection.append(next_lvl)
                     chain.append(next_elem)
                     pointer += 1
                     continue
                 yield chain
-                break
-                # TODO: point to think about
+                if skip_short:
+                    break
                 pointer -= 1
                 del chain[-1]
                 if flag is True:
@@ -316,10 +325,7 @@ class BDCSP_colver:
                 switched[to_swicth] += 1
                 indexes[to_swicth] = 1 if indexes[to_swicth] == 0 else 0
                 continue
-            possible = False
             if not infl_round[1] and not infl_round[0]:
-                break
-            elif max(switched) > 3:
                 break
             elif min(switched) == 2:
                 break
@@ -332,7 +338,7 @@ class BDCSP_colver:
         print("# Redefined sup: {}".format(self.sup))
         if self.exp_ave_ro > self.sup:
             # abort in this case
-            print("# Redefined sup < average expected ro")
+            print("# Redefined sup < average expected density")
             self.answer = False
             return
         cliques_gen = self.__generate_base_cliques()
@@ -340,21 +346,85 @@ class BDCSP_colver:
             cliq_pats = flatten([self.comb_index[c[0]][c[1]] for c in cliq])
             cliq_pos = [set(self.pattern_id_to_positions[p]) for p in cliq_pats]
             not_occ = self.__get_pos_left(cliq_pos)
-            cliq_len = len(cliq_pats)
-            pos_left = self.act_col_num - cliq_len
+            # cliq_len = len(cliq_pats)
+            # pos_left = self.act_col_num - cliq_len
             cliq_cov = min(self.__comb_sum(cliq_pats))
-            print("# Clique covers {}".format(cliq_cov))
             left_on_the_rest = self.__get_tail_from_positions(not_occ)
-            print("# Other positions cover {}".format(left_on_the_rest))
             total_cover = left_on_the_rest + cliq_cov
             if total_cover >= self.to_cover:
                 print("# Basepoints cover enoung positions: {}".format(total_cover))
                 self.answer = True
                 return
 
+    @staticmethod
+    def __can_include(ctr_1, ctr_2):
+        """Check if we can add this pattern."""
+        check_counter = ctr_1 + ctr_2 if ctr_2 else ctr_1
+        if any(len(k) < v for k, v in check_counter.items()):
+            return False
+        return True
+
+    def __get_next(self, i):
+        """Return the next index if possible."""
+        if i + 1 == self.pat_num:
+            return None
+        return i + 1
+
+    def __build_chain(self, prev_path):
+        """Build a chain."""
+        exclude = set(self.pat_neg[i] for i in prev_path)
+        chain = prev_path.copy()
+        ctr = Counter()
+        for elem in prev_path:
+            ctr += self.pat_to_combs_ctr[elem]
+        if not self.__can_include(ctr, None):
+            return None
+        last_elem = prev_path[-1]
+        ptr = self.__get_next(last_elem)
+        possible = True
+        while possible:
+            if ptr is None:
+                break
+            elif ptr in exclude:
+                ptr = self.__get_next(ptr)
+                continue
+            ptr_ctr = self.pat_to_combs_ctr[ptr]
+            includeable = self.__can_include(ctr, ptr_ctr)
+            if not includeable:
+                ptr = self.__get_next(ptr)
+                continue
+            chain.append(ptr)
+            chain_sum = self.__comb_sum(chain)
+            if all(chain_sum[i] == chain_sum[i + 1] for i in range(self.str_num)):
+                self.non_trivial.append(chain)
+                return chain
+            ctr += ptr_ctr
+            exclude.add(self.pat_neg[ptr])
+            ptr = self.__get_next(ptr)
+        return chain
+    
     def __get_non_trivial_points(self):
         """Final part, get non_trivial points."""
-        pass
+        self.non_trivial = []
+        # build initial chain
+        chain = self.__build_chain([0, ])
+        col_num = len(chain) - 1
+        possible = True
+        while possible:
+            # move pointer left if no way to decrease ID
+            # right if a new chain appeared
+            cur_val = chain[col_num]
+            decr_val = self.__get_next(cur_val)
+            if decr_val is None:
+                col_num -= 1
+                continue
+            path = chain[: col_num]
+            path.append(decr_val)
+            chain = self.__build_chain(path)
+            chain_sum = self.__comb_sum(chain)
+            if all(chain_sum[i] == chain_sum[i + 1] for i in range(self.str_num)):
+                self.non_trivial.append(chain)
+            break
 
     def solve(self):
         """Return True if reachable, False otherwise."""

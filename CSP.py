@@ -95,6 +95,7 @@ class BDCspSolver:
             self.id_to_pattern.append(pattern)
             self.pattern_id_to_positions_raw[num] = self.pattern_to_positions[pattern]
         if self.actual_col_num == 0 or (self.actual_col_num - self.k) <= 0:
+            print("# K lower that number of variable columns")
             self.answer = True
             # no need to call this
             self.__reformate_pattern_id_to_pos = lambda: None
@@ -173,6 +174,8 @@ class BDCspSolver:
 
     def get_answer(self):
         """Python replacement!"""
+        if self.answer is not None:
+            return
         solver = BDCSP_colver(self.id_to_pattern,
                               self.pattern_id_to_positions,
                               self.pos_to_pat_ids,

@@ -4,7 +4,10 @@ To be implemented first, and rewritten in C later.
 """
 from collections import defaultdict
 from collections import Counter
+from functools import reduce
+from operator import or_
 from py_replace.Grid_lib import Grid
+from py_replace.static import flatten
 
 
 class BDCSP_colver:
@@ -218,17 +221,63 @@ class BDCSP_colver:
                 self.comb_id_compat_with[i_id].add(j_id)
                 self.comb_id_compat_with[j_id].add(i_id)
 
+    def __check_path_ok(self, chain):
+        """Check if chains path is compatible."""
+        combs = [self.comb_index[c[0]][c[1]] for c in chain]
+        comb_united = flatten(combs)
+        comb_pos_count = Counter(tuple(self.pattern_id_to_positions[p]) for p in comb_united)
+        if any(len(k) < v for k, v in comb_pos_count.items()):
+            return False
+        return True
+
+    def __generate_base_cliques(self):
+        """Cliques generator."""
+        for start in range(self.base_combs_num):
+            start_id = self.comb_to_id[self.combs[start]]
+            chain = [start_id, ]
+            compat_with = self.comb_id_compat_with[start_id]
+            if not compat_with:
+                yield chain
+                continue
+            iter_collection = [iter(compat_with), ]
+            pointer = 0
+            while pointer >= 0:
+                chain_compat = reduce(or_, (self.comb_id_compat_with[c] for c in chain))
+                next_elem = next(iter_collection[pointer], None)
+                if next_elem:
+                    next_chain = chain + [next_elem, ]
+                    ok_ = self.__check_path_ok(next_chain)
+                    if ok_ is False:
+                        continue
+                    next_lvl = iter(self.comb_id_compat_with[next_elem].intersection(chain_compat))
+                    iter_collection.append(next_lvl)
+                    chain.append(next_elem)
+                    pointer += 1
+                    continue
+                yield chain
+                break
+
     def __check_enough(self):
         """Check, it trivial cobinations are enough to make a decision."""
-        # TODO: grow each compatible chain of combinations, if enough:
         self.sup = self._ro[0]
         print("# Redefined sup: {}".format(self.sup))
         if self.exp_ave_ro > self.sup:
+            # abort in this case
             print("# Redefined sup < average expected ro")
             self.answer = False
             return
-        
-        pass
+        cliques_gen = self.__generate_base_cliques()
+        for cliq in cliques_gen:
+            cliq_pats = flatten([self.comb_index[c[0]][c[1]] for c in cliq])
+            cliq_len = len(cliq_pats)
+            pos_left = self.act_col_num - cliq_len
+            cliq_cov = min(self.__comb_sum(cliq_pats))
+            left_on_min = pos_left % self.str_num
+            total_cover = left_on_min + cliq_cov
+            if total_cover >= self.to_cover:
+                print("# Basepoints cover enoung positions: {}".format(total_cover))
+                self.answer = True
+                return
 
     def solve(self):
         """Return True if reachable, False otherwise."""
@@ -246,7 +295,6 @@ class BDCSP_colver:
         self.__make_combs_index()
         # check if basepoints are enough to get an answer
         self.__comb_compat()
-        print(self.comb_to_id)
         self.__check_enough()
         if self.answer is not None:
             return self.answer

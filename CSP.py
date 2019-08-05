@@ -47,7 +47,7 @@ class BDCspSolver:
         """Check shared lib, compile if needed."""
         sys_name = platform.system()
         dll_ext = "so" if sys_name!= "Windows" else "dll"
-        LIBS_DIR = os.path.join(os.getcwd(), "libs")
+        LIBS_DIR = os.path.join(os.getcwd(), "bin")
         CSP_LIB_PATH = os.path.join(LIBS_DIR, "CSP.{}".format(dll_ext))
         if not os.path.isfile(CSP_LIB_PATH):
             eprint("Error: shared libs not found\nCalling make...")

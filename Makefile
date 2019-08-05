@@ -4,7 +4,7 @@ CC = gcc
 CFLAGS = -fPIC -Wall -Wextra -O2 -g
 LDFLAGS = -shared
 RM = rm -f
-TARGET_LIB = libs/CSP.so
+TARGET_LIB = bin/CSP.so
 
 SRCS = src/CSP.c src/grid.c src/patterns.c
 OBJS = $(SRCS:.c=.o)

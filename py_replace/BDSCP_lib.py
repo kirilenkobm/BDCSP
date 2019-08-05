@@ -80,7 +80,7 @@ class BDCSP_colver:
         self.exp_ave_ro = self.to_cover / self.act_col_num
         self.inf = 1 / self.str_num
         self.sup = (self.str_num - 1) / self.str_num
-        print("# Inf: {0:.4f} average_RO: {1:.4f} Max: {2:.4f}".format(self.inf,
+        print("# Inf: {0:.4f} average_RO: {1:.4f} Sup: {2:.4f}".format(self.inf,
                                                                        self.exp_ave_ro,
                                                                        self.sup))
         # get rid of obvious cases
@@ -174,15 +174,19 @@ class BDCSP_colver:
 
     def __make_combs_index(self):
         """Make combinations index."""
+        comb_ro = [self.__comb_sum(comb)[0] / len(comb) for comb in self.combs]
+        comb_and_ro = sorted(zip(self.combs, comb_ro), key=lambda x: x[1], reverse=True)
+        self.combs = [x[0] for x in comb_and_ro]
+        self._ro = [x[1] for x in comb_and_ro]
+        comb_dens = [x[1] for x in comb_and_ro]
         self.comb_index = defaultdict(list)
         self.comb_to_id = {}
         self.comb_id_to_ro = {}
         self.pat_to_combs = defaultdict(set)
         self.ro_to_ind = defaultdict(list)
-        for comb in self.combs:
+        for i, comb in enumerate(self.combs):
             comb_len = len(comb)
-            comb_sum = self.__comb_sum(comb)
-            comb_ro = comb_sum[0] / comb_len
+            comb_ro = comb_dens[i]
             cur_ind = len(self.comb_index[comb_len])
             self.comb_index[comb_len].append(comb)
             comb_id = (comb_len, cur_ind)
@@ -191,6 +195,7 @@ class BDCSP_colver:
             self.ro_to_ind[comb_ro].append(comb_id)
             self.comb_to_id[comb] = comb_id
             self.comb_id_to_ro[comb_id] = comb_ro
+        print("# Extracted and indexed {} combinations".format(self.base_combs_num))
 
     def __comb_compat(self):
         """Create comb compatibility matrix."""
@@ -216,7 +221,13 @@ class BDCSP_colver:
     def __check_enough(self):
         """Check, it trivial cobinations are enough to make a decision."""
         # TODO: grow each compatible chain of combinations, if enough:
-        # abort and assign self.answer = True
+        self.sup = self._ro[0]
+        print("# Redefined sup: {}".format(self.sup))
+        if self.exp_ave_ro > self.sup:
+            print("# Redefined sup < average expected ro")
+            self.answer = False
+            return
+        
         pass
 
     def solve(self):
@@ -235,6 +246,7 @@ class BDCSP_colver:
         self.__make_combs_index()
         # check if basepoints are enough to get an answer
         self.__comb_compat()
+        print(self.comb_to_id)
         self.__check_enough()
         if self.answer is not None:
             return self.answer

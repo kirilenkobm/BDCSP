@@ -1,6 +1,6 @@
 .vscode/
-libs/*.so
-libs/*.dll
+*.so
+*.dll
 *.o
 *.d
 *.obj

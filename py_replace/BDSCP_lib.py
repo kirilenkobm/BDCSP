@@ -142,7 +142,6 @@ class BDCSP_colver:
         """Resolve case of ro = 1/N."""
         chain = [((x,), self.non_intersects[x]) for x in self.size_to_pattern[s_path[0]]]
         path_left = s_path[1:]
-        left_len = len(path_left)
         for size in path_left:
             if size == 1:
                 tailed = self.__add_1_tails(chain)
@@ -282,10 +281,50 @@ class BDCSP_colver:
 
     def __get_tail_from_positions(self, positions):
         """For a list of positions given extract the best possible combination."""
-        for pos in positions:
-            pats = self.position_to_patterns[pos]
-            # print(self.id_to_pattern[pats[0]], self.id_to_pattern[pats[1]])
-        return 0
+        pats = [self.position_to_patterns[p] for p in positions]
+        pos_len = len(positions)
+        indexes = [0 for _ in range(pos_len)]
+        switched = [0 for _ in range(pos_len)]
+        switch_infl = [0 for _ in range(pos_len)]
+        comb = [pats[i][indexes[i]] for i in range(pos_len)]
+        comb_k = min(self.__comb_sum(comb))
+        excluded = set()
+        possible = True
+        while possible:
+            for i in range(pos_len):
+                if switched[i] >= 3:
+                    excluded.add(i)
+            infl_round = {1: [], 0: [], -1: []}
+            for n_p in range(pos_len):
+                if n_p in excluded:
+                    continue
+                switched = indexes.copy()
+                switched[n_p] =  1 if switched[n_p] == 0 else 0
+                i_comb = [pats[i][switched[i]] for i in range(pos_len)]
+                i_comb_k = min(self.__comb_sum(i_comb))
+                infl = i_comb_k - comb_k
+                switch_infl[n_p] = infl
+                infl_round[infl].append(n_p)
+            if infl_round[1]:
+                to_swicth = infl_round[1][0]
+                switched[to_swicth] += 1
+                indexes[to_swicth] = 1 if indexes[to_swicth] == 0 else 0
+                comb_k += 1
+                continue
+            elif infl_round[0]:
+                to_swicth = infl_round[0][0]
+                switched[to_swicth] += 1
+                indexes[to_swicth] = 1 if indexes[to_swicth] == 0 else 0
+                continue
+            possible = False
+            if not infl_round[1] and not infl_round[0]:
+                break
+            elif max(switched) > 3:
+                break
+            elif min(switched) == 2:
+                break
+        result_comb = [pats[i][indexes[i]] for i in range(pos_len)]
+        return min(self.__comb_sum(result_comb))
 
     def __check_enough(self):
         """Check, it trivial cobinations are enough to make a decision."""
@@ -298,19 +337,24 @@ class BDCSP_colver:
             return
         cliques_gen = self.__generate_base_cliques()
         for cliq in cliques_gen:
-            print(cliq)
             cliq_pats = flatten([self.comb_index[c[0]][c[1]] for c in cliq])
             cliq_pos = [set(self.pattern_id_to_positions[p]) for p in cliq_pats]
             not_occ = self.__get_pos_left(cliq_pos)
             cliq_len = len(cliq_pats)
             pos_left = self.act_col_num - cliq_len
             cliq_cov = min(self.__comb_sum(cliq_pats))
+            print("# Clique covers {}".format(cliq_cov))
             left_on_the_rest = self.__get_tail_from_positions(not_occ)
+            print("# Other positions cover {}".format(left_on_the_rest))
             total_cover = left_on_the_rest + cliq_cov
             if total_cover >= self.to_cover:
                 print("# Basepoints cover enoung positions: {}".format(total_cover))
                 self.answer = True
                 return
+
+    def __get_non_trivial_points(self):
+        """Final part, get non_trivial points."""
+        pass
 
     def solve(self):
         """Return True if reachable, False otherwise."""
@@ -331,6 +375,7 @@ class BDCSP_colver:
         self.__check_enough()
         if self.answer is not None:
             return self.answer
+        self.__get_non_trivial_points()
         return None
 
 

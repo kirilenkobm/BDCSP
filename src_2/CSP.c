@@ -16,6 +16,7 @@
 #define MAXCHAR 255
 #define W 100
 #define H 100
+#define REALLOC_STEP 50
 
 bool v = false;
 
@@ -87,13 +88,23 @@ int main(int argc, char ** argv)
     char ch;
     bool first_line = true;
     uint32_t line_num = 0;
-    uint32_t lines_allocated = 1;
-    uint32_t act_line_len = H;
+    uint32_t line_len = H;
     uint32_t char_num = 0;
+    uint32_t act_str_len = 0;
     uint8_t **in_arr = (uint8_t**)malloc(W * sizeof(uint8_t*));
-    in_arr[line_num] = (uint8_t*)malloc(act_line_len * sizeof(uint8_t));
-    uint8_t num;
+    in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
     while ((ch = fgetc(fp)) != EOF){
+        if ((char_num >= line_len - 1) && first_line){
+            line_len += REALLOC_STEP;
+            in_arr[line_num] = (uint8_t*)realloc(in_arr[line_num], line_len * sizeof(uint8_t));
+        } else if ((char_num >= line_len - 1) && !first_line){
+            fprintf(stderr, "Error! Strings expected to have the same length!\n");
+            fprintf(stderr, "Violating string: %u\n", line_num);
+            for (uint32_t i = 0; i < (line_num + 1); ++i){free(in_arr[i]);}
+            free(in_arr);
+            exit(1);
+        }
+
         switch (ch)
         {
         case 49:  // 1
@@ -105,19 +116,53 @@ int main(int argc, char ** argv)
             ++char_num;
             break;
         case 10:  // \n
-            first_line = false;
+            if (first_line){
+                act_str_len = char_num;
+                first_line = false;
+            }
+            if (char_num != act_str_len)
+            {
+                fprintf(stderr, "Error! Strings expected to have the same length!\n");
+                fprintf(stderr, "Violating string: %u\n", line_num + 1);
+                for (uint32_t i = 0; i < (line_num + 1); ++i){free(in_arr[i]);}
+                free(in_arr);
+                exit(1);
+            }
+            ++line_num;
+            char_num = 0;
+            in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));            
             break;
         default:  // something else, error
             fprintf(stderr, "Error: found character which is not 1, 0 or \\n \n");
-            for (uint32_t i = 0; i < lines_allocated; ++i){free(in_arr[i]);}
+            for (uint32_t i = 0; i < (line_num + 1); ++i){free(in_arr[i]);}
             free(in_arr);
             exit(1);
             break;
         }
     }
-    printf("\n");
+    if (char_num == 0){
+        // \n -terminated file
+        free(in_arr[line_num]);
+    } else if (char_num != act_str_len){
+        fprintf(stderr, "Error: the last line of the file has different lenght!\n");
+        for (uint32_t i = 0; i < (line_num + 1); ++i){free(in_arr[i]);}
+        free(in_arr);
+        exit(1);
+    } else {
+        ++line_num;
+    }
+    verbose("Lines lenght: %u\n", char_num);
+    verbose("Lines num: %u\n", line_num);
 
-    for (uint32_t i = 0; i < lines_allocated; ++i){free(in_arr[i]);}
+    for (uint32_t j = 0; j < line_num; j++){
+        printf("Str num: %u:\n", j + 1);
+        for (uint32_t i = 0; i < act_str_len; i++){
+            printf("%u ", in_arr[j][i]);
+        }
+        printf("\n");
+    }
+    // free memory
+    for (uint32_t i = 0; i < (line_num); ++i){free(in_arr[i]);}
     free(in_arr);
     return 0;
 }

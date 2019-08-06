@@ -21,6 +21,15 @@
 bool v = false;
 
 
+typedef struct
+{
+    uint8_t **in_arr;
+    uint32_t str_num;
+    uint32_t str_len;
+    uint32_t k;
+} Input_data;
+
+
 // show help and exit
 void _show_usage_and_quit(char * executable)
 {
@@ -48,15 +57,11 @@ void verbose(const char * restrict format, ...)
 void free_all(){return;}
 
 
-// entry point
-int main(int argc, char ** argv)
+// read and check input stuff
+Input_data read_input(char **argv)
 {
-    if (argc < 3){_show_usage_and_quit(argv[0]);}
-    // enable verbosity; TODO: do it nicer
-    if (argc >= 4 && strcmp(argv[3], "-v") == 0){
-        v = true;
-        verbose("Verbose mode activated\n");
-    }
+    // TODO: move this in a different file
+    Input_data input_data;
     // ok, read K
     char *c;
     for (c = argv[2]; *c; ++c)
@@ -68,12 +73,13 @@ int main(int argc, char ** argv)
             _show_usage_and_quit(argv[0]);
         }
     }
+    input_data.k = strtoul(argv[2], 0L, 10);
+    if (input_data.k == 4294967295){
+        fprintf(stderr, "Warning: k value read as 4294967295, probably an overflow\n");
+    }
+    verbose("k = %u \n", input_data.k);
 
-    uint32_t k = strtoul(argv[2], 0L, 10);
-    if (k == 4294967295){fprintf(stderr, "Warning: k value read as 4294967295, probably an overflow\n");}
-    verbose("k = %u \n", k);
-
-    // read input array
+    // and the input array
     FILE *fp = NULL;
     if (strcmp(argv[1], "stdin") == 0) {
         fp = stdin;  // if stdin --> ok
@@ -91,28 +97,30 @@ int main(int argc, char ** argv)
     uint32_t line_len = H;
     uint32_t char_num = 0;
     uint32_t act_str_len = 0;
-    uint8_t **in_arr = (uint8_t**)malloc(W * sizeof(uint8_t*));
-    in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
+    input_data.in_arr = (uint8_t**)malloc(W * sizeof(uint8_t*));
+    input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
+
     while ((ch = fgetc(fp)) != EOF){
         if ((char_num >= line_len - 1) && first_line){
             line_len += REALLOC_STEP;
-            in_arr[line_num] = (uint8_t*)realloc(in_arr[line_num], line_len * sizeof(uint8_t));
+            input_data.in_arr[line_num] = (uint8_t*)realloc(input_data.in_arr[line_num],
+                                                            line_len * sizeof(uint8_t));
         } else if ((char_num >= line_len - 1) && !first_line){
             fprintf(stderr, "Error! Strings expected to have the same length!\n");
             fprintf(stderr, "Violating string: %u\n", line_num);
-            for (uint32_t i = 0; i < (line_num + 1); ++i){free(in_arr[i]);}
-            free(in_arr);
+            for (uint32_t i = 0; i < (line_num + 1); ++i){free(input_data.in_arr[i]);}
+            free(input_data.in_arr);
             exit(1);
         }
 
         switch (ch)
         {
         case 49:  // 1
-            in_arr[line_num][char_num] = 1;
+            input_data.in_arr[line_num][char_num] = 1;
             ++char_num;
             break;
         case 48:  // 0
-            in_arr[line_num][char_num] = 0;
+            input_data.in_arr[line_num][char_num] = 0;
             ++char_num;
             break;
         case 10:  // \n
@@ -124,45 +132,64 @@ int main(int argc, char ** argv)
             {
                 fprintf(stderr, "Error! Strings expected to have the same length!\n");
                 fprintf(stderr, "Violating string: %u\n", line_num + 1);
-                for (uint32_t i = 0; i < (line_num + 1); ++i){free(in_arr[i]);}
-                free(in_arr);
+                for (uint32_t i = 0; i < (line_num + 1); ++i){
+                    free(input_data.in_arr[i]);
+                }
+                free(input_data.in_arr);
                 exit(1);
             }
             ++line_num;
             char_num = 0;
-            in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));            
+            input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));            
             break;
         default:  // something else, error
             fprintf(stderr, "Error: found character which is not 1, 0 or \\n \n");
-            for (uint32_t i = 0; i < (line_num + 1); ++i){free(in_arr[i]);}
-            free(in_arr);
+            for (uint32_t i = 0; i < (line_num + 1); ++i){free(input_data.in_arr[i]);}
+            free(input_data.in_arr);
             exit(1);
             break;
         }
     }
     if (char_num == 0){
         // \n -terminated file
-        free(in_arr[line_num]);
+        free(input_data.in_arr[line_num]);
     } else if (char_num != act_str_len){
         fprintf(stderr, "Error: the last line of the file has different lenght!\n");
-        for (uint32_t i = 0; i < (line_num + 1); ++i){free(in_arr[i]);}
-        free(in_arr);
+        for (uint32_t i = 0; i < (line_num + 1); ++i){free(input_data.in_arr[i]);}
+        free(input_data.in_arr);
         exit(1);
     } else {
         ++line_num;
     }
-    verbose("Lines lenght: %u\n", char_num);
-    verbose("Lines num: %u\n", line_num);
 
-    for (uint32_t j = 0; j < line_num; j++){
-        printf("Str num: %u:\n", j + 1);
-        for (uint32_t i = 0; i < act_str_len; i++){
-            printf("%u ", in_arr[j][i]);
-        }
-        printf("\n");
+    // realloc memory; it is likely a bit too much now
+    for (uint32_t i = 0; i < line_num; i++){
+        input_data.in_arr[i] = (uint8_t*)realloc(input_data.in_arr[i],
+                                                 act_str_len * sizeof(uint8_t));
     }
+
+    verbose("Lines lenght: %u\n", act_str_len);
+    verbose("Lines num: %u\n", line_num);
+    input_data.str_len = act_str_len;
+    input_data.str_num = line_num;
+    return input_data;
+}
+
+
+// entry point
+int main(int argc, char ** argv)
+{
+    if (argc < 3){_show_usage_and_quit(argv[0]);}
+    // enable verbosity; TODO: do it nicer
+    if (argc >= 4 && strcmp(argv[3], "-v") == 0){
+        v = true;
+        verbose("Verbose mode activated\n");
+    }
+
+    Input_data input_data = read_input(argv);
+
     // free memory
-    for (uint32_t i = 0; i < (line_num); ++i){free(in_arr[i]);}
-    free(in_arr);
+    for (uint32_t i = 0; i < (input_data.str_num); ++i){free(input_data.in_arr[i]);}
+    free(input_data.in_arr);
     return 0;
 }

@@ -32,6 +32,10 @@ bool are_the_same(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_size);
 void is_it_in(Pattern_num *patterns, uint8_t *column, uint32_t col_size, bool *is_in,
               uint32_t *ind_if_in, uint32_t extracted_num, uint32_t pat_size);
 
+int diff_as_numbers(uint8_t *pat_a, uint8_t *pat_b);
+
+int compare_patterns(const void *a, const void *b);
+
 Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num, uint32_t *act_col_num);
 
 #endif // !PATTERNS_H

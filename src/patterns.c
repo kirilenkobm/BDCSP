@@ -86,6 +86,32 @@ void is_it_in(Pattern_num *patterns, uint8_t *column, uint32_t col_size, bool *i
 }
 
 
+// compare patterns as binary numbers
+int diff_as_numbers(uint8_t *pat_a, uint8_t *pat_b)
+{
+    // return positive number if a is bigger
+    // else negative number
+    // they must not be equal
+    uint32_t p = 0;
+    while (1){
+        if (pat_a[p] != pat_b[p]){return pat_a[p] - pat_b[p];}
+        ++p;
+    }
+}
+
+// func to compare patterns while sorting
+int compare_patterns(const void *a, const void *b)
+{ 
+    Pattern_num *ia = (Pattern_num *)a;
+    Pattern_num *ib = (Pattern_num *)b;
+    if (ia->size != ib->size){
+        return ib->size - ia->size;
+    } else {
+        return diff_as_numbers(ib->pattern, ia->pattern);
+    }
+}
+
+
 // split input data in patterns
 Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num, uint32_t *act_col_num)
 {
@@ -132,6 +158,8 @@ Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num, uint32_
         free(column);
     }
     patterns = (Pattern_num*)realloc(patterns, extracted_patterns * sizeof(Pattern_num));
+    // now sort this stuff
+    qsort(patterns, extracted_patterns, sizeof(Pattern_num), compare_patterns);
     *patterns_num = extracted_patterns;
     verbose("# Found %u variable columns\n", *act_col_num);
     verbose("# Extracted %u direct patterns\n", extracted_patterns);

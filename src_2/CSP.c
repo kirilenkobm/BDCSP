@@ -14,6 +14,7 @@
 #include <limits.h>
 #include "CSP.h"
 #include "read_input.h"
+#include "patterns.h"
 
 bool v = false;
 
@@ -55,10 +56,13 @@ int main(int argc, char ** argv)
     }
 
     Input_data input_data = read_input(argv);
-    
+    uint32_t patterns_num = 0;
+    uint8_t **patterns = get_patterns(input_data, &patterns_num);
 
     // free memory
-    for (uint32_t i = 0; i < (input_data.str_num); ++i){free(input_data.in_arr[i]);}
+    for (uint32_t i = 0; i < input_data.str_len; ++i){free(patterns[i]);}
+    free(patterns);
+    for (uint32_t i = 0; i < input_data.str_num; ++i){free(input_data.in_arr[i]);}
     free(input_data.in_arr);
     return 0;
 }

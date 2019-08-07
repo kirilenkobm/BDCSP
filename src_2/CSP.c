@@ -12,6 +12,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <limits.h>
+#include "CSP.h"
 
 #define MAXCHAR 255
 #define W 100
@@ -19,16 +20,6 @@
 #define REALLOC_STEP 50
 
 bool v = false;
-
-
-typedef struct
-{
-    uint8_t **in_arr;
-    uint32_t str_num;
-    uint32_t str_len;
-    uint32_t k;
-} Input_data;
-
 
 // show help and exit
 void _show_usage_and_quit(char * executable)

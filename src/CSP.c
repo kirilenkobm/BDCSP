@@ -17,16 +17,18 @@
 #include "patterns.h"
 
 bool v = false;
+bool show_patterns = false;
 Input_data input_data;
 Pattern_num *patterns;
 
 // show help and exit
 void _show_usage_and_quit(char * executable)
 {
-    fprintf(stderr, "Usage: %s [input file] [k] [-v]\n", executable);
+    fprintf(stderr, "Usage: %s [input file] [k] [-v] [-p]\n", executable);
     fprintf(stderr, "[input file]: text file containing input or stdin\n");
     fprintf(stderr, "[k]: minimal distance to check, positive integer number\n");
     fprintf(stderr, "[-v]: enable verosity mode\n");
+    fprintf(stderr, "[-p]: show patterns\n");
     exit(1);
 }
 
@@ -54,14 +56,30 @@ void free_all(uint32_t str_len, uint32_t str_num, uint32_t patterns_num)
 }
 
 
+// get initial densities
+void get_init_density_range(uint32_t to_cover, double *inf, double *sup, double *exp_dens)
+{
+
+}
+
 // entry point
 int main(int argc, char ** argv)
 {
+    // check args number, read extra args
     if (argc < 3){_show_usage_and_quit(argv[0]);}
-    // enable verbosity; TODO: do it nicer
-    if (argc >= 4 && strcmp(argv[3], "-v") == 0){
-        v = true;
-        verbose("# Verbose mode activated\n");
+    for (int op = 3; op < argc; ++op)
+    {
+        if (strcmp(argv[op], "-v") == 0){
+            // enable verbose
+            v = true;
+            verbose("# Verbose mode activated\n");
+        } else if (strcmp(argv[op], "-p") == 0){
+            // show patterns
+            show_patterns = true;
+        } else {
+            fprintf(stderr, "Error: unknown parameter %s\n", argv[op]);
+            _show_usage_and_quit(argv[0]);
+        }
     }
 
     // read and check input
@@ -69,9 +87,20 @@ int main(int argc, char ** argv)
     uint32_t patterns_num = 0;
     uint32_t act_col_num = 0;
     patterns = get_patterns(input_data, &patterns_num, &act_col_num);
+    if (show_patterns)  // show patterns if required
+    {
+        printf("# Patterns are:\n");
+        for (uint32_t i = 0; i < patterns_num; ++i){
+            for (uint32_t j = 0; j < input_data.str_num; j++){printf("%u ", patterns[i].pattern[j]);}
+            printf("\n");
+            printf("Appears: %u; size: %u\n", patterns[i].times, patterns[i].size);
+        }
+    }
+    
+    // case if K is too high and no need to compute anything
     if (input_data.k >= act_col_num){
-        // obvious case, no need to search combinations
         printf("The answer is:\nTrue\n");
+        free_all(input_data.str_len, input_data.str_num, patterns_num);
         return 0;
     }
     uint32_t to_cover = act_col_num - input_data.k;
@@ -81,16 +110,7 @@ int main(int argc, char ** argv)
     double sup;
     double inf;
     double exp_dens;
-
-
-    // temp: show patterns
-    for (uint32_t i = 0; i < patterns_num; ++i){
-        for (uint32_t j = 0; j < input_data.str_num; j++){
-            printf("%u ", patterns[i].pattern[j]);
-        }
-        printf("\n");
-        printf("%u %u\n", patterns[i].times, patterns[i].size);
-    }
+    get_init_density_range(to_cover, &inf, &sup, &exp_dens);
 
     free_all(input_data.str_len, input_data.str_num, patterns_num);
     return 0;

@@ -6,6 +6,7 @@ import sys
 import subprocess
 
 TESTS_DIR = os.path.join(os.path.dirname(__file__), "tests")
+README = os.path.join(TESTS_DIR, "_readme.txt")
 UINT32_MAX = 4294967295
 
 
@@ -40,7 +41,9 @@ def main():
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "clean":
-        subprocess.call("rm -rf {}/*".format(TESTS_DIR), shell=True)
+        # clean, but don't touch _readme.txt
+        clean_cmd = "ls {}/* | grep -v {} | xargs rm".format(TESTS_DIR, README)
+        subprocess.call(clean_cmd, shell=True)
         sys.exit("Cleaned")
     main()
 

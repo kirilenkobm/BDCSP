@@ -75,11 +75,11 @@ Input_data read_input(char **argv)
     input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
 
     while ((ch = fgetc(fp)) != EOF){
-        if ((char_num >= line_len - 1) && first_line){
+        if (first_line && (char_num >= line_len - 1)){
             line_len += REALLOC_STEP;
             input_data.in_arr[line_num] = (uint8_t*)realloc(input_data.in_arr[line_num],
                                                             line_len * sizeof(uint8_t));
-        } else if ((char_num >= UINT32_MAX - REALLOC_STEP) && first_line){
+        } else if (first_line && (char_num >= UINT32_MAX - REALLOC_STEP)){
             fprintf(stderr, "Overflow error! Matrix size should not exceed UINT32_MAX x UINT32_MAX\n");
             free_in_data(input_data, line_num);
             exit(1);
@@ -122,7 +122,7 @@ Input_data read_input(char **argv)
             input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));            
             break;
         default:  // something else, error
-            fprintf(stderr, "Error: found character which is not 1, 0 or \\n \n");
+            fprintf(stderr, "Error: found character %c which is not 1, 0 or \\n \n", ch);
             free_in_data(input_data, line_num);
             exit(1);
             break;

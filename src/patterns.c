@@ -113,7 +113,8 @@ int compare_patterns(const void *a, const void *b)
 
 
 // split input data in patterns
-Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num, uint32_t *act_col_num)
+Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num,
+                          uint32_t *all_pat_num, uint32_t *act_col_num)
 {
     Pattern_num *patterns = (Pattern_num*)malloc(input_data.str_len * sizeof(Pattern_num));
     uint32_t extracted_patterns = 0;
@@ -121,7 +122,7 @@ Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num, uint32_
     uint32_t col_size = 0;
 
     for (uint32_t i = 0; i < input_data.str_len; ++i){
-        patterns[i].pattern = (uint8_t*)calloc(input_data.str_num, sizeof(uint8_t));
+        patterns[i].pattern = (uint8_t*)calloc(input_data.str_num + 1, sizeof(uint8_t));
         patterns[i].times = 0;
         patterns[i].size = 0;
     }
@@ -157,11 +158,32 @@ Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num, uint32_
         *act_col_num = *act_col_num + 1;
         free(column);
     }
+    // add fake 0-pattern
+    for (uint32_t i = 0; i < input_data.str_num; ++i){patterns[extracted_patterns].pattern[i] = 1;}
+    patterns[extracted_patterns].size = input_data.str_num;
+    patterns[extracted_patterns].times = 0;
+    ++extracted_patterns;
+
     patterns = (Pattern_num*)realloc(patterns, extracted_patterns * sizeof(Pattern_num));
     // now sort this stuff
     qsort(patterns, extracted_patterns, sizeof(Pattern_num), compare_patterns);
     *patterns_num = extracted_patterns;
+    uint32_t full_len = (2 * extracted_patterns - 1);
     verbose("# Found %u variable columns\n", *act_col_num);
-    verbose("# Extracted %u direct patterns\n", extracted_patterns);
+    verbose("# Extracted %u direct patterns\n", extracted_patterns - 1);
+    verbose("# Full patterns array takes %u\n", full_len);
+
+    // add negative patterns; TODO: possible overflow
+    *all_pat_num = full_len;
+    patterns = (Pattern_num*)realloc(patterns, full_len * sizeof(Pattern_num));
+    for (uint32_t i = 1; i < extracted_patterns; ++i){
+        uint32_t minus_i = full_len - i;
+        patterns[minus_i].times = patterns[i].times;
+        patterns[minus_i].size = input_data.str_num - patterns[i].size;
+        patterns[minus_i].pattern = (uint8_t*)calloc(input_data.str_num + 1, sizeof(uint8_t));
+        for (uint32_t j = 0; j < input_data.str_num; ++j){patterns[minus_i].pattern[j] = patterns[i].pattern[j];}
+        invert_pattern(patterns[minus_i].pattern, input_data.str_num);
+    }
+
     return patterns;
 }

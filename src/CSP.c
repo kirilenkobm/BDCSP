@@ -128,15 +128,17 @@ int main(int argc, char ** argv)
     // read and check input
     input_data = read_input(argv);
     uint32_t patterns_num = 0;
+    uint32_t pat_arr_size = 0;
     uint32_t act_col_num = 0;
-    patterns = get_patterns(input_data, &patterns_num, &act_col_num);
+    patterns = get_patterns(input_data, &patterns_num, &pat_arr_size, &act_col_num);
     if (show_patterns)  // show patterns if required
     {
-        printf("# Patterns are:\n");
+        printf("# Direct patterns are:\n");
         for (uint32_t i = 0; i < patterns_num; ++i){
+            printf("# ID: %u:\n", i);
             for (uint32_t j = 0; j < input_data.str_num; j++){printf("%u ", patterns[i].pattern[j]);}
             printf("\n");
-            printf("Appears: %u; size: %u\n", patterns[i].times, patterns[i].size);
+            printf("# Appears: %u; size: %u\n\n", patterns[i].times, patterns[i].size);
         }
     }
     
@@ -172,6 +174,7 @@ int main(int argc, char ** argv)
     }
 
     // not so obvious
+
 
     free_all(input_data.str_len, input_data.str_num, patterns_num);
     return 0;

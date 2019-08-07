@@ -15,6 +15,7 @@
 #include "CSP.h"
 #include "read_input.h"
 #include "patterns.h"
+#include "grid.h"
 
 bool v = false;
 bool pat_intersect_allocated = false;
@@ -135,7 +136,7 @@ int main(int argc, char ** argv)
     uint32_t pat_arr_size = 0;
     uint32_t act_col_num = 0;
     patterns = get_patterns(input_data, &patterns_num, &pat_arr_size, &act_col_num);
-    if (patterns == NULL){free_all(input_data.str_len, input_data.str_num, patterns_num); exit(2);}
+    if (patterns == NULL){free_all(input_data.str_len, input_data.str_num, pat_arr_size); exit(2);}
 
     if (show_patterns)  // show patterns if required
     {
@@ -152,7 +153,7 @@ int main(int argc, char ** argv)
     if (input_data.k >= act_col_num){
         verbose("# Answer branch 1\n");
         printf("The answer is:\nTrue\n");
-        free_all(input_data.str_len, input_data.str_num, patterns_num);
+        free_all(input_data.str_len, input_data.str_num, pat_arr_size);
         return 0;
     }
     uint32_t to_cover = act_col_num - input_data.k;
@@ -170,19 +171,23 @@ int main(int argc, char ** argv)
     if (exp_dens <= inf){
         verbose("# Answer branch 2\n");
         printf("The answer is:\nTrue\n");
-        free_all(input_data.str_len, input_data.str_num, patterns_num);
+        free_all(input_data.str_len, input_data.str_num, pat_arr_size);
         return 0;
     } else if (exp_dens > sup){
         verbose("# Answer branch 2\n");
         printf("The answer is:\nFalse\n");
-        free_all(input_data.str_len, input_data.str_num, patterns_num);
+        free_all(input_data.str_len, input_data.str_num, pat_arr_size);
         return 0;
     }
 
     // not so obvious case, get intersection data first
     get_intersection_data(patterns, pat_arr_size, input_data.str_num);
     pat_intersect_allocated = true;
+    // and create the grid
+    Point *grid = make_grid(patterns, pat_arr_size, max_comb_len);
 
-    free_all(input_data.str_len, input_data.str_num, patterns_num);
+
+    free_all(input_data.str_len, input_data.str_num, pat_arr_size);
     return 0;
 }
+

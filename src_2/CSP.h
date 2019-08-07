@@ -16,7 +16,7 @@ void _show_usage_and_quit(char * executable);
 
 void verbose(const char * restrict format, ...);
 
-void free_all();
+void free_all(uint32_t str_len, uint32_t str_num, uint32_t patterns_num);
 
 int main(int argc, char ** argv);
 

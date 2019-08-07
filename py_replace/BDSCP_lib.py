@@ -394,15 +394,18 @@ class BDCSP_colver:
                 ptr = self.__get_next(ptr)
                 continue
             chain.append(ptr)
-            chain_sum = self.__comb_sum(chain)
-            if all(chain_sum[i] == chain_sum[i + 1] for i in range(self.str_num)):
-                self.non_trivial.append(chain)
-                return chain
             ctr += ptr_ctr
             exclude.add(self.pat_neg[ptr])
             ptr = self.__get_next(ptr)
         return chain
     
+    def __split_non_tri(self, chain):
+        """Slices to get non-trivial combinations."""
+        sum_ = [0 for _ in range(self.str_num)]
+        for i, pat_id in enumerate(chain):
+            pat = self.id_to_pattern[pat_id]
+
+
     def __get_non_trivial_points(self):
         """Final part, get non_trivial points."""
         self.non_trivial = []
@@ -421,9 +424,7 @@ class BDCSP_colver:
             path = chain[: col_num]
             path.append(decr_val)
             chain = self.__build_chain(path)
-            chain_sum = self.__comb_sum(chain)
-            if all(chain_sum[i] == chain_sum[i + 1] for i in range(self.str_num)):
-                self.non_trivial.append(chain)
+            non_tri_splits = self.__split_non_tri(chain)
             break
 
     def solve(self):

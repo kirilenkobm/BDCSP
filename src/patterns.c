@@ -82,7 +82,7 @@ uint32_t pattern_seq_to_id(Pat_list_search_elem *pat_search_list, int l, int r, 
         } else if (pat_search_list[mid].pat_num > x) {
             return pattern_seq_to_id(pat_search_list, l, mid - 1, x);
         } else {
-        return pattern_seq_to_id(pat_search_list, mid + 1, r, x);
+            return pattern_seq_to_id(pat_search_list, mid + 1, r, x);
         }
     }
     // nothing found; should never happen, but...

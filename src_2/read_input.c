@@ -51,7 +51,7 @@ Input_data read_input(char **argv)
         fprintf(stderr, "Error! K expected to be > 0!");
         _show_usage_and_quit(argv[0]);
     }
-    verbose("k = %u \n", input_data.k);
+    verbose("# k = %u \n", input_data.k);
 
     // and the input array
     FILE *fp = NULL;
@@ -145,8 +145,8 @@ Input_data read_input(char **argv)
                                                  act_str_len * sizeof(uint8_t));
     }
 
-    verbose("Lines lenght: %u\n", act_str_len);
-    verbose("Lines num: %u\n", line_num);
+    verbose("# Lines lenght: %u\n", act_str_len);
+    verbose("# Lines num: %u\n", line_num);
     if ((act_str_len < 2) || (line_num < 2)){
         fprintf(stderr, "Error! Minimal input size is 2x2!\n");
         free_in_data(input_data, line_num);

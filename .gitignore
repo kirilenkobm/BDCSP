@@ -7,3 +7,5 @@
 *.exp
 *.lib
 __pycache__/
+old_py_replace/
+old_src/

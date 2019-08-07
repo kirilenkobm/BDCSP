@@ -142,6 +142,7 @@ int main(int argc, char ** argv)
     
     // case if K is too high and no need to compute anything
     if (input_data.k >= act_col_num){
+        verbose("# Answer branch 1\n");
         printf("The answer is:\nTrue\n");
         free_all(input_data.str_len, input_data.str_num, patterns_num);
         return 0;
@@ -159,10 +160,12 @@ int main(int argc, char ** argv)
 
     // in case if expected density is not in [inf, sup)
     if (exp_dens <= inf){
+        verbose("# Answer branch 2\n");
         printf("The answer is:\nTrue\n");
         free_all(input_data.str_len, input_data.str_num, patterns_num);
         return 0;
     } else if (exp_dens > sup){
+        verbose("# Answer branch 2\n");
         printf("The answer is:\nFalse\n");
         free_all(input_data.str_len, input_data.str_num, patterns_num);
         return 0;

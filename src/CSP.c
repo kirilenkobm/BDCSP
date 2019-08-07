@@ -64,10 +64,24 @@ int main(int argc, char ** argv)
         verbose("# Verbose mode activated\n");
     }
 
+    // read and check input
     input_data = read_input(argv);
     uint32_t patterns_num = 0;
     uint32_t act_col_num = 0;
     patterns = get_patterns(input_data, &patterns_num, &act_col_num);
+    if (input_data.k >= act_col_num){
+        // obvious case, no need to search combinations
+        printf("The answer is:\nTrue\n");
+        return 0;
+    }
+    uint32_t to_cover = act_col_num - input_data.k;
+    verbose("# Need to cover %u columns\n", to_cover);
+
+    // get initial values
+    double sup;
+    double inf;
+    double exp_dens;
+
 
     // temp: show patterns
     for (uint32_t i = 0; i < patterns_num; ++i){

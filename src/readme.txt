@@ -1,1 +1,3 @@
-C sourse code to be compiled as shared library.
+BDCSP solver source code is here
+Contents:
+(to be filled)

@@ -1,8 +1,3 @@
-/*
-Copyright: Bogdan Kirilenko
-Dresden, Germany, 2019
-kirilenkobm@gmail.com
-*/
 #ifndef PATTERNS_H
 #define PATTERNS_H
 #include <stdio.h>
@@ -12,53 +7,31 @@ kirilenkobm@gmail.com
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <ctype.h> 
+#include <stdarg.h>
+#include <unistd.h>
+#include <limits.h>
+#include "read_input.h"
 
 
-struct pattern
+typedef struct
 {
-    uint8_t *pattern_seq;
-    uint32_t *occupies;
-    uint32_t occupies_num;   // equal to size
-    uint32_t *intersects_with;
-    uint32_t inters_num;
-    uint32_t * not_intersects_with;
-    uint32_t non_inters_num;
-    uint32_t *positions;
-    uint32_t pattern_rev;
-    uint32_t id;
-};
+    uint8_t *pattern;
+    uint32_t times;
+    uint32_t size;
+} Pattern_num;
 
+void invert_pattern(uint8_t *pattern, uint32_t size);
 
-struct position
-{
-    uint32_t number;
-    uint32_t patterns[2];
-};
+bool all_eq(uint8_t *col, uint32_t size);
 
+uint32_t get_col_size(uint8_t *col, uint32_t size);
 
-struct pat_list_search_elem
-{
-    uint32_t pat_num;
-    uint32_t pat_id;
-};
+bool are_the_same(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_size);
 
-typedef struct pattern Pattern;
-typedef struct position Position;
-typedef struct pat_list_search_elem Pat_list_search_elem;
+void is_it_in(Pattern_num *patterns, uint8_t *column, uint32_t col_size, bool *is_in,
+              uint32_t *ind_if_in, uint32_t extracted_num, uint32_t pat_size);
 
-uint64_t *get_max_pat_num(uint32_t lvl_size);
-
-uint64_t C_n_k(uint32_t n, uint32_t k);
-
-uint32_t pat_to_num(uint32_t pattern_len, uint8_t * pattern_seq);
-
-uint32_t sum_pattern(uint32_t pattern_len, uint8_t * pattern_seq); 
-
-int comp_search_elems(const void *a, const void *b);
-
-bool intersect_by_occ(uint32_t *occupies_1, uint32_t occ_num_1,
-                      uint32_t *occupies_2, uint32_t occ_num_2);
-
-uint32_t pattern_seq_to_id(Pat_list_search_elem *pat_search_list, int l, int r, uint32_t x);
+Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num, uint32_t *act_col_num);
 
 #endif // !PATTERNS_H

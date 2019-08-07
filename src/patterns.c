@@ -1,122 +1,139 @@
-/*
-Copyright: Bogdan Kirilenko
-Dresden, Germany, 2019
-kirilenkobm@gmail.com
-*/
+
+// Bogdan Kirilenko
+// 2019, Dresden
+// Split input array in patterns
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdlib.h>
+#include <ctype.h> 
+#include <stdarg.h>
+#include <unistd.h>
+#include <limits.h>
 #include "patterns.h"
+#include "CSP.h"
+#include "read_input.h"
 
 
-uint32_t pat_to_num(uint32_t pattern_len, uint8_t * pattern_seq)
-// convert pattern sequence to a characteristic number
+// just invert the pattern
+void invert_pattern(uint8_t *pattern, uint32_t size)
 {
-    int kt = 0;
-    uint32_t answer = 0;
-    for (int i = pattern_len - 1, j = 1; i >= 0; i--, j++){
-        kt = j * 2;
-        answer += pattern_seq[i] * kt;
+    for (uint32_t i = 0; i < size; ++i){
+        pattern[i] = (pattern[i] == 0) ? 1 : 0;
     }
-    return answer;
 }
 
 
-uint32_t sum_pattern(uint32_t pattern_len, uint8_t * pattern_seq)
-// for a pattern sequence just compute a sum
+// check if all numbers are the same
+bool all_eq(uint8_t *col, uint32_t size)
 {
-    int sum = 0;
-    uint8_t *ptr = pattern_seq;
-    while (ptr < &pattern_seq[pattern_len])
-    {
-        sum += *ptr;
-        ptr++;
+    for (uint32_t i = 1; i < size; ++i){
+        if (col[i] != col[i - 1]){return false;}
     }
-    return sum;
-}
-
-int comp_search_elems(const void *a, const void *b)
-// function to compare search elems in qsort
-{ 
-    Pat_list_search_elem *ia = (Pat_list_search_elem *)a;
-    Pat_list_search_elem *ib = (Pat_list_search_elem *)b;
-    return ia->pat_num - ib->pat_num;
+    return true;
 }
 
 
-bool intersect_by_occ(uint32_t *occupies_1, uint32_t occ_num_1,
-                      uint32_t *occupies_2, uint32_t occ_num_2)
-// return true if patterns intersect, false otherwise
-{   
-    if ((occupies_1[occ_num_1] < occupies_2[0]) || (occupies_1[0] > occupies_2[occ_num_2]))
-    {
-        return false;
+// count ones in the patterns
+uint32_t get_col_size(uint8_t *col, uint32_t size)
+{
+    uint32_t ans = 0;
+    for (uint32_t i = 0; i < size; ++i){ans += col[i];}
+    return ans;
+}
+
+
+// compare two patterns
+bool are_the_same(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_size)
+{
+    for (uint32_t i = 0; i < pat_size; ++i){
+        if (pat_1[i] != pat_2[i]){return false;}
     }
-    for (uint32_t i = 0; i < occ_num_1; i++){
-        // if smaller that the smallest element in other arr then continue
-        if (occupies_1[i] < occupies_2[0]){continue;}
-        else if (occupies_1[i] > occupies_2[occ_num_2 - 1]){return false;}
-        for (uint32_t j = 0; j <= occ_num_2; j++){
-            if (occupies_1[i] == occupies_2[j]){
-                return true;
-            }
+    return true;
+}
+
+
+// check if the pattern was already added
+void is_it_in(Pattern_num *patterns, uint8_t *column, uint32_t col_size, bool *is_in,
+              uint32_t *ind_if_in, uint32_t extracted_num, uint32_t pat_size)
+{
+    if (extracted_num == 0){
+        // a priori not here
+        *is_in = false;
+        *ind_if_in = 0;
+        return;
+    }
+    bool the_same = false;
+    // ok, need to check
+    for (uint32_t i = 0; i < extracted_num; ++i)
+    {
+        if (patterns[i].size != col_size){continue;}
+        // ok, size matching
+        the_same = are_the_same(patterns[i].pattern, column, pat_size);
+        if (the_same){
+            // it is inside
+            *is_in = true;
+            *ind_if_in = i;
+            return;
         }
     }
-    return false;
+    // nothing found
+    *is_in = false;
+    *ind_if_in = 0;
 }
 
 
-uint32_t pattern_seq_to_id(Pat_list_search_elem *pat_search_list, int l, int r, uint32_t x)
-// binary search, find pattern id by characteristic number of a pattern
+// split input data in patterns
+Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num, uint32_t *act_col_num)
 {
-    if (r >= l)
-    { 
-        int mid = l + (r - l) / 2; 
-        if (pat_search_list[mid].pat_num == x) {
-            return pat_search_list[mid].pat_id;
-        } else if (pat_search_list[mid].pat_num > x) {
-            return pattern_seq_to_id(pat_search_list, l, mid - 1, x);
+    Pattern_num *patterns = (Pattern_num*)malloc(input_data.str_len * sizeof(Pattern_num));
+    uint32_t extracted_patterns = 0;
+    bool drop_col = false;
+    uint32_t col_size = 0;
+
+    for (uint32_t i = 0; i < input_data.str_len; ++i){
+        patterns[i].pattern = (uint8_t*)calloc(input_data.str_num, sizeof(uint8_t));
+        patterns[i].times = 0;
+        patterns[i].size = 0;
+    }
+    // go over the columns
+    for (uint32_t col_num = 0; col_num < input_data.str_len; ++col_num){
+        uint8_t *column = (uint8_t*)calloc(input_data.str_num, sizeof(uint8_t));
+        for (uint32_t row_num = 0; row_num < input_data.str_num; ++row_num){
+            column[row_num] = input_data.in_arr[row_num][col_num];
+        }
+        drop_col = all_eq(column, input_data.str_num);
+        if (drop_col){
+            free(column);
+            continue;
+        }
+        if (column[0] == 0){invert_pattern(column, input_data.str_num);}
+        col_size = get_col_size(column, input_data.str_num);
+
+        // check if already in
+        bool is_in = false;
+        uint32_t ind_if_in = 0;
+        is_it_in(patterns, column, col_size, &is_in, &ind_if_in,
+                 extracted_patterns, input_data.str_num);
+        if (is_in){
+            // if in: just increase times
+            ++patterns[ind_if_in].times;
         } else {
-            return pattern_seq_to_id(pat_search_list, mid + 1, r, x);
+            // not in - add a new patterns
+            for (uint32_t i = 0; i < input_data.str_num; ++i){patterns[extracted_patterns].pattern[i] = column[i];}
+            patterns[extracted_patterns].size = col_size;
+            patterns[extracted_patterns].times = 1;
+            ++extracted_patterns;
         }
+        *act_col_num = *act_col_num + 1;
+        free(column);
     }
-    // nothing found; should never happen, but...
-    return 0;
-}
-
-uint64_t C_n_k(uint32_t n, uint32_t k)
-// compute combinations
-{
-    if (k > n) return 0;
-    if (k * 2 > n) k = n-k;
-    if (k == 0) return 1;
-
-    uint64_t result = n;
-    for(uint32_t i = 2; i <= k; ++i)
-    {
-        result *= (n - i + 1);
-        result /= i;
-    }
-    return result;
-}
-
-
-uint64_t *get_max_pat_num(uint32_t lvl_size)
-// compute maximal number of patterns for this lvl size
-{
-    uint64_t *comb_size_num = (uint64_t*)calloc(lvl_size, sizeof(uint64_t));
-    for (uint32_t k = 1; k < lvl_size; k++)
-    // how many times can I select k size patterns with a given lvl size?
-    {
-        // n! / k!(n - k)!
-        uint64_t pat_num_at_lvl = C_n_k(lvl_size, k);
-        comb_size_num[k] = pat_num_at_lvl;
-
-    }
-    return comb_size_num;
+    patterns = (Pattern_num*)realloc(patterns, extracted_patterns * sizeof(Pattern_num));
+    *patterns_num = extracted_patterns;
+    verbose("# Found %u variable columns\n", *act_col_num);
+    verbose("# Extracted %u direct patterns\n", extracted_patterns);
+    return patterns;
 }

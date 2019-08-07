@@ -202,6 +202,18 @@ bool patterns_intersect(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_len)
     return false;
 }
 
+
+// make logical AND over the lists of bools
+bool *inter_and(bool *a, bool *b, uint32_t size)
+{
+    bool *ans = (bool*)calloc(size, sizeof(bool));
+    for (uint32_t i = 0; i < size; ++i){
+        if (a[i] && b[i]){ans[i] = true;}
+    }
+    return ans;
+}
+
+
 // fill intersections data
 void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pat_len)
 {

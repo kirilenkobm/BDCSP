@@ -40,6 +40,8 @@ int compare_patterns(const void *a, const void *b);
 Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
                           uint32_t *all_pat_num, uint32_t *act_col_num);
 
+bool *inter_and(bool *a, bool *b, uint32_t size);
+
 void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pat_len);
 
 #endif // !PATTERNS_H

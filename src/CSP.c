@@ -56,11 +56,54 @@ void free_all(uint32_t str_len, uint32_t str_num, uint32_t patterns_num)
 }
 
 
-// get initial densities
-void get_init_density_range(uint32_t to_cover, double *inf, double *sup, double *exp_dens)
+// just return min of three numbers
+uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
 {
-
+    if (*a < *b && *a < *c){
+        return *a;
+    // ok, not a, min of b and c
+    } else if (*b < *c){
+        return *b;
+    // not b and not a -> clearly c
+    } else {
+        return *c;
+    }
 }
+
+
+// get initial densities
+void get_init_density_range(uint32_t to_cover, double *inf, double *sup,
+                            double *exp_dens, uint32_t pat_num, uint32_t act_col_num)
+{
+    *sup = (double)(input_data.str_num - 1) / input_data.str_num;
+    *exp_dens = (double)to_cover / input_data.str_len;
+
+    uint32_t cur_pat_size = 0;
+    uint32_t cur_pat_times = 0;
+    uint32_t unit = 0;
+    uint32_t min_lvl_cov = 0;
+    uint32_t col_left = act_col_num;
+    bool stop = false;
+
+    // lower density is the most complicated thing
+    for (uint32_t pat_id = 0; pat_id < pat_num; ++pat_id){
+        cur_pat_size = patterns[pat_id].size;
+        cur_pat_times = patterns[pat_id].times;
+        unit = input_data.str_num - cur_pat_size + 1;
+        for (uint32_t i = 0; i < cur_pat_times; i++){
+            if (unit > col_left){
+                stop = true;
+                break;
+            }
+            col_left -= unit;
+            ++min_lvl_cov;
+        }
+        if (stop) {break;}
+    }
+    verbose("# Min covered levels: %u\n", min_lvl_cov);
+    *inf = (double)min_lvl_cov / act_col_num;
+}
+
 
 // entry point
 int main(int argc, char ** argv)
@@ -107,10 +150,25 @@ int main(int argc, char ** argv)
     verbose("# Need to cover %u columns\n", to_cover);
 
     // get initial values
+    uint32_t max_comb_len = min_of_three(&input_data.str_num, &input_data.str_len, &patterns_num);
     double sup;
     double inf;
     double exp_dens;
-    get_init_density_range(to_cover, &inf, &sup, &exp_dens);
+    get_init_density_range(to_cover, &inf, &sup, &exp_dens, patterns_num, act_col_num);
+    verbose("# Inf: %f; Exp dens: %f; Sup: %f\n", inf, exp_dens, sup);
+
+    // in case if expected density is not in [inf, sup)
+    if (exp_dens <= inf){
+        printf("The answer is:\nTrue\n");
+        free_all(input_data.str_len, input_data.str_num, patterns_num);
+        return 0;
+    } else if (exp_dens > sup){
+        printf("The answer is:\nFalse\n");
+        free_all(input_data.str_len, input_data.str_num, patterns_num);
+        return 0;
+    }
+
+    // not so obvious
 
     free_all(input_data.str_len, input_data.str_num, patterns_num);
     return 0;

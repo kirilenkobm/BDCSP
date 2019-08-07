@@ -79,8 +79,8 @@ uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
 void get_init_density_range(uint32_t to_cover, double *inf, double *sup,
                             double *exp_dens, uint32_t pat_num, uint32_t act_col_num)
 {
-    *sup = (double)(input_data.str_num - 1) / input_data.str_num;
-    *exp_dens = (double)to_cover / input_data.str_len;
+    *sup = (double)(act_col_num - 1) / act_col_num;
+    *exp_dens = (double)to_cover / act_col_num;
 
     uint32_t cur_pat_size = 0;
     uint32_t cur_pat_times = 0;

@@ -57,7 +57,7 @@ bool are_the_same(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_size)
 
 
 // check if the pattern was already added
-void is_it_in(Pattern_num *patterns, uint8_t *column, uint32_t col_size, bool *is_in,
+void is_it_in(Pattern *patterns, uint8_t *column, uint32_t col_size, bool *is_in,
               uint32_t *ind_if_in, uint32_t extracted_num, uint32_t pat_size)
 {
     if (extracted_num == 0){
@@ -102,8 +102,8 @@ int diff_as_numbers(uint8_t *pat_a, uint8_t *pat_b)
 // func to compare patterns while sorting
 int compare_patterns(const void *a, const void *b)
 { 
-    Pattern_num *ia = (Pattern_num *)a;
-    Pattern_num *ib = (Pattern_num *)b;
+    Pattern *ia = (Pattern *)a;
+    Pattern *ib = (Pattern *)b;
     if (ia->size != ib->size){
         return ib->size - ia->size;
     } else {
@@ -113,10 +113,10 @@ int compare_patterns(const void *a, const void *b)
 
 
 // split input data in patterns
-Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num,
+Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
                           uint32_t *all_pat_num, uint32_t *act_col_num)
 {
-    Pattern_num *patterns = (Pattern_num*)malloc(input_data.str_len * sizeof(Pattern_num));
+    Pattern *patterns = (Pattern*)malloc(input_data.str_len * sizeof(Pattern));
     uint32_t extracted_patterns = 0;
     bool drop_col = false;
     uint32_t col_size = 0;
@@ -169,9 +169,9 @@ Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num,
         return NULL;
     }
 
-    patterns = (Pattern_num*)realloc(patterns, extracted_patterns * sizeof(Pattern_num));
+    patterns = (Pattern*)realloc(patterns, extracted_patterns * sizeof(Pattern));
     // now sort this stuff
-    qsort(patterns, extracted_patterns, sizeof(Pattern_num), compare_patterns);
+    qsort(patterns, extracted_patterns, sizeof(Pattern), compare_patterns);
     *patterns_num = extracted_patterns;
     uint32_t full_len = (2 * extracted_patterns - 1);
     verbose("# Found %u variable columns\n", *act_col_num);
@@ -179,7 +179,7 @@ Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num,
     verbose("# Full patterns array takes %u\n", full_len);
 
     *all_pat_num = full_len;
-    patterns = (Pattern_num*)realloc(patterns, full_len * sizeof(Pattern_num));
+    patterns = (Pattern*)realloc(patterns, full_len * sizeof(Pattern));
     for (uint32_t i = 1; i < extracted_patterns; ++i){
         uint32_t minus_i = full_len - i;
         patterns[minus_i].times = patterns[i].times;
@@ -190,4 +190,47 @@ Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num,
     }
 
     return patterns;
+}
+
+
+// check if patterns intersect
+bool patterns_intersect(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_len)
+{
+    for (uint32_t i = 0; i < pat_len; ++i){
+        if ((pat_1[i] == 1) && (pat_2[i] == 1)){return true;}
+    }
+    return false;
+}
+
+// fill intersections data
+void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pat_len)
+{
+    uint32_t f_pat_size = 0;
+    uint32_t f_minus = 0;
+    uint32_t s_pat_size = 0;
+    bool p_and_s_intersect;
+    // allocate a ton of memory first and then shrink it down
+    for (uint32_t p_id = 1; p_id < patterns_num; ++p_id){
+        patterns[p_id].no_intersect = (bool*)malloc(patterns_num * sizeof(bool));
+    }
+
+    for (uint32_t p_id = 1; p_id < patterns_num; ++p_id){
+        f_pat_size = patterns[p_id].size;
+        f_minus = patterns_num - p_id;
+        // Sadly O^2
+        for (uint32_t s_id = 1; s_id < patterns_num; ++s_id)
+        {
+            if ((p_id == s_id) || (s_id == f_minus)){continue;}
+            p_and_s_intersect = patterns_intersect(patterns[p_id].pattern,
+                                                   patterns[s_id].pattern,
+                                                   pat_len);
+            if (p_and_s_intersect){
+                patterns[p_id].no_intersect[s_id] = false;
+                patterns[s_id].no_intersect[p_id] = false;
+            } else {
+                patterns[p_id].no_intersect[s_id] = true;
+                patterns[s_id].no_intersect[p_id] = true;
+            }
+        }
+    }
 }

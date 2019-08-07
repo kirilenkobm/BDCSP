@@ -17,9 +17,10 @@
 #include "patterns.h"
 
 bool v = false;
+bool pat_intersect_allocated = false;
 bool show_patterns = false;
 Input_data input_data;
-Pattern_num *patterns;
+Pattern *patterns;
 
 // show help and exit
 void _show_usage_and_quit(char * executable)
@@ -50,6 +51,9 @@ void free_all(uint32_t str_len, uint32_t str_num, uint32_t patterns_num)
 {
     // free memory
     for (uint32_t i = 0; i < patterns_num; ++i){free(patterns[i].pattern);}
+    if (pat_intersect_allocated){
+        for (uint32_t i = 0; i < patterns_num; ++i){free(patterns[i].no_intersect);}
+    }
     free(patterns);
     for (uint32_t i = 0; i < str_num; ++i){free(input_data.in_arr[i]);}
     free(input_data.in_arr);
@@ -175,8 +179,9 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-    // not so obvious
-
+    // not so obvious case, get intersection data first
+    get_intersection_data(patterns, pat_arr_size, input_data.str_num);
+    pat_intersect_allocated = true;
 
     free_all(input_data.str_len, input_data.str_num, patterns_num);
     return 0;

@@ -9,3 +9,6 @@
 __pycache__/
 old_py_replace/
 old_src/
+*.bc
+*.i
+*.s

@@ -131,6 +131,8 @@ int main(int argc, char ** argv)
     uint32_t pat_arr_size = 0;
     uint32_t act_col_num = 0;
     patterns = get_patterns(input_data, &patterns_num, &pat_arr_size, &act_col_num);
+    if (patterns == NULL){free_all(input_data.str_len, input_data.str_num, patterns_num); exit(2);}
+
     if (show_patterns)  // show patterns if required
     {
         printf("# Direct patterns are:\n");

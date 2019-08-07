@@ -35,9 +35,11 @@ def parse_args():
         sys.exit("Error, ones_percent must be in [0.0, 1.0]")
     return args
 
+
 def main():
     """Entry point."""
     args = parse_args()
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "clean":

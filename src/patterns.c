@@ -164,6 +164,11 @@ Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num,
     patterns[extracted_patterns].times = 0;
     ++extracted_patterns;
 
+    if (extracted_patterns > (UINT32_MAX / 2)) {
+        fprintf(stderr, "Overflow error. Number of patterns > UINT32_MAX\n");
+        return NULL;
+    }
+
     patterns = (Pattern_num*)realloc(patterns, extracted_patterns * sizeof(Pattern_num));
     // now sort this stuff
     qsort(patterns, extracted_patterns, sizeof(Pattern_num), compare_patterns);
@@ -173,7 +178,6 @@ Pattern_num *get_patterns(Input_data input_data, uint32_t *patterns_num,
     verbose("# Extracted %u direct patterns\n", extracted_patterns - 1);
     verbose("# Full patterns array takes %u\n", full_len);
 
-    // add negative patterns; TODO: possible overflow
     *all_pat_num = full_len;
     patterns = (Pattern_num*)realloc(patterns, full_len * sizeof(Pattern_num));
     for (uint32_t i = 1; i < extracted_patterns; ++i){

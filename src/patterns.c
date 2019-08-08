@@ -274,3 +274,34 @@ Size_index *index_sizes(Pattern *patterns, uint32_t pat_arr_size, uint32_t sizes
     free(prts);
     return sizes_index;
 }
+
+
+// return a number where index == 1
+uint32_t _get_one_ind(uint8_t *pattern, uint32_t str_num)
+{
+    uint32_t ans = 0;
+    for (uint32_t i = 0; i < str_num; ++i){
+        if (pattern[i] == 1){
+            ans = i;
+            break;
+        }
+    }
+    return ans;
+}
+
+// return positions occupied by one-dot patterns
+uint32_t *index_ones(Pattern *patterns, uint32_t arr_size, uint32_t str_num)
+{
+    uint32_t *ans = (uint32_t*)calloc(str_num, sizeof(uint32_t));
+    uint32_t ind = 0;
+    for (uint32_t i = 0; i < arr_size; ++i)
+    {
+        if (patterns[i].size != 1){continue;}
+        // if one -> get occupied position
+        ind = _get_one_ind(patterns[i].pattern, str_num);
+        ans[ind] = i;
+    }
+    for (uint32_t i = 0; i < str_num; ++i){printf("%u ", ans[i]);}
+    printf("\n");
+    return ans;
+}

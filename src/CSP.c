@@ -16,19 +16,24 @@
 #include "read_input.h"
 #include "patterns.h"
 #include "grid.h"
+#include "combinations.h"
 
 
 bool v = false;
 bool pat_intersect_allocated = false;
 bool grid_allocated = false;
 bool sizes_index_allocated = false;
+bool ones_index_allocated = false;
 bool show_patterns = false;
 
 uint32_t grid_size;
 Input_data input_data;
 Pattern *patterns;
 Point *grid;
+uint32_t *ones_index;
 Size_index *size_index;
+Combination *combinations;
+
 
 // show help and exit
 void _show_usage_and_quit(char * executable)
@@ -73,6 +78,7 @@ void free_all(uint32_t str_len, uint32_t str_num, uint32_t patterns_num)
         for (uint32_t i = 1; i < str_num; ++i){free(size_index[i].ids);}
         free(size_index);
     }
+    if (ones_index_allocated){free(ones_index);}
 }
 
 
@@ -204,6 +210,10 @@ int main(int argc, char ** argv)
     grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
     grid_allocated = true;
     grid_size = max_comb_len - 1;
+    // to simplify pats with [...1, 1, 1, 1]
+    ones_index = index_ones(patterns, pat_arr_size, input_data.str_num);
+    ones_index_allocated = true;
+
     free_all(input_data.str_len, input_data.str_num, pat_arr_size);
     return 0;
 }

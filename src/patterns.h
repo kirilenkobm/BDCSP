@@ -55,4 +55,6 @@ void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pa
 
 Size_index *index_sizes(Pattern *patterns, uint32_t pat_arr_size, uint32_t sizes_num);
 
+uint32_t *index_ones(Pattern *patterns, uint32_t arr_size, uint32_t str_num);
+
 #endif // !PATTERNS_H

@@ -384,7 +384,7 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
         }
         free(first_path);
     }
-    verbose("Found %u size-paths\n", paths_found);
+    verbose("# Found %u size-paths\n", paths_found);
     free(num_count);
     free(f_max);
     free(f_min);

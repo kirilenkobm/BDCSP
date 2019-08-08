@@ -28,7 +28,8 @@ uint32_t *f_max_acc;
 uint32_t *f_min_acc;
 
 // comparing function for qsort
-int cmpfunc (const void * a, const void * b) {
+int cmpfunc (const void * a, const void * b)
+{
    return (*(int*)a - *(int*)b);
 }
 
@@ -288,7 +289,6 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
 
     for (uint32_t subset_size = 2; subset_size < (max_comb_size + 1); ++subset_size)
     {
-        printf("Subset size %u\n", subset_size);
         point_id = subset_size - 2;
         grid[point_id].lvl = 1;
         grid[point_id].density = (double)1 / subset_size;
@@ -368,6 +368,7 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
                         grid[point_id].combinations[cmb_ptr + i] = try_res[i];
                     }
                     grid[point_id].comb_num += 1;
+                    cmb_ptr += subset_size;
                 }
                 if (grid[point_id].comb_num >= alloc_times - 1){
                     alloc_times += ALLOC_INIT;

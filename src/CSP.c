@@ -21,8 +21,10 @@ bool v = false;
 bool pat_intersect_allocated = false;
 bool grid_allocated = false;
 bool show_patterns = false;
+uint32_t grid_size;
 Input_data input_data;
 Pattern *patterns;
+Point *grid;
 
 // show help and exit
 void _show_usage_and_quit(char * executable)
@@ -59,7 +61,10 @@ void free_all(uint32_t str_len, uint32_t str_num, uint32_t patterns_num)
     free(patterns);
     for (uint32_t i = 0; i < str_num; ++i){free(input_data.in_arr[i]);}
     free(input_data.in_arr);
-    // TODO: add grid free
+    if (grid_allocated){
+        for (uint32_t i = 0; i < grid_size; ++i){free(grid[i].combinations);}
+        free(grid);
+    }
 }
 
 
@@ -186,9 +191,9 @@ int main(int argc, char ** argv)
     get_intersection_data(patterns, pat_arr_size, input_data.str_num);
     pat_intersect_allocated = true;
     // and create the grid
-    Point *grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
+    grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
     grid_allocated = true;
-
+    grid_size = max_comb_len - 1;
     free_all(input_data.str_len, input_data.str_num, pat_arr_size);
     return 0;
 }

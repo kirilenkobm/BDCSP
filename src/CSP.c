@@ -191,6 +191,7 @@ int main(int argc, char ** argv)
     get_intersection_data(patterns, pat_arr_size, input_data.str_num);
     pat_intersect_allocated = true;
     // and create the grid
+    Size_index *size_index = index_sizes(patterns, pat_arr_size, input_data.str_num);
     grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
     grid_allocated = true;
     grid_size = max_comb_len - 1;

@@ -219,7 +219,6 @@ void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pa
 {
     uint32_t f_pat_size = 0;
     uint32_t f_minus = 0;
-    uint32_t s_pat_size = 0;
     bool p_and_s_intersect;
     // allocate a ton of memory first and then shrink it down
     for (uint32_t p_id = 1; p_id < patterns_num; ++p_id){
@@ -245,4 +244,33 @@ void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pa
             }
         }
     }
+}
+
+
+// create size index: to find patterns by size
+Size_index *index_sizes(Pattern *patterns, uint32_t pat_arr_size, uint32_t sizes_num)
+{
+    Size_index *sizes_index = (Size_index*)malloc(sizes_num * sizeof(Size_index));
+    uint32_t *prts = (uint32_t*)calloc(sizes_num, sizeof(uint32_t));
+    for (uint32_t i = 0; i < sizes_num; ++i){
+        sizes_index[i].size = i;
+        sizes_index[i].num = 0;
+    }
+    uint32_t cur_size = 0;
+    for (uint32_t i = 1; i < pat_arr_size; ++i){
+        cur_size = patterns[i].size;
+        sizes_index[cur_size].num += 1;
+    }
+    for (uint32_t i = 0; i < sizes_num; ++i){
+        sizes_index[i].ids = (uint32_t*)calloc(sizes_index[i].num, sizeof(uint32_t));
+    }
+    uint32_t cur_ind = 0;
+    for (uint32_t i = 1; i < pat_arr_size; ++i){
+        cur_size = patterns[i].size;
+        cur_ind = prts[cur_size];
+        sizes_index[cur_size].ids[cur_ind] = i;
+        prts[cur_size] += 1;
+    }
+    free(prts);
+    return sizes_index;
 }

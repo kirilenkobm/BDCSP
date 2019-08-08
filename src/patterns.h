@@ -22,6 +22,15 @@ typedef struct
     bool *no_intersect;
 } Pattern;
 
+
+typedef struct
+{
+    uint32_t size;
+    uint32_t num;
+    uint32_t *ids;
+} Size_index;
+
+
 void invert_pattern(uint8_t *pattern, uint32_t size);
 
 bool all_eq(uint8_t *col, uint32_t size);
@@ -43,5 +52,7 @@ Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
 bool *inter_and(bool *a, bool *b, uint32_t size);
 
 void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pat_len);
+
+Size_index *index_sizes(Pattern *patterns, uint32_t pat_arr_size, uint32_t sizes_num);
 
 #endif // !PATTERNS_H

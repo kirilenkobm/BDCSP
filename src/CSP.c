@@ -21,6 +21,7 @@
 
 bool v = false;
 bool pat_intersect_allocated = false;
+bool dir_rev_ind_allocated = false;
 bool grid_allocated = false;
 bool sizes_index_allocated = false;
 bool ones_index_allocated = false;
@@ -29,6 +30,7 @@ bool show_patterns = false;
 uint32_t grid_size;
 Input_data input_data;
 Pattern *patterns;
+Dir_Rev *dir_rev_index;
 Point *grid;
 uint32_t *ones_index;
 Size_index *size_index;
@@ -161,15 +163,15 @@ int main(int argc, char ** argv)
 
     if (show_patterns)  // show patterns if required
     {
-        printf("# Direct patterns are:\n");
-        for (uint32_t i = 0; i < patterns_num; ++i){
+        printf("# Extracted patterns are:\n");
+        for (uint32_t i = 0; i < pat_arr_size; ++i){
             printf("# ID: %u:\n", i);
             for (uint32_t j = 0; j < input_data.str_num; j++){printf("%u ", patterns[i].pattern[j]);}
-            printf("\n");
-            printf("# Appears: %u; size: %u\n\n", patterns[i].times, patterns[i].size);
+            printf("\t# Appears: %u; size: %u\n\n", patterns[i].times, patterns[i].size);
         }
     }
-    
+    dir_rev_index = get_dir_rev_data(patterns, pat_arr_size, input_data.str_num);
+
     // case if K is too high and no need to compute anything
     if (input_data.k >= act_col_num){
         verbose("# Answer branch 1\n");

@@ -31,6 +31,12 @@ typedef struct
 } Size_index;
 
 
+typedef struct{
+    uint32_t dir;
+    uint32_t rev;
+} Dir_Rev;
+
+
 void invert_pattern(uint8_t *pattern, uint32_t size);
 
 bool all_eq(uint8_t *col, uint32_t size);
@@ -56,5 +62,7 @@ void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pa
 Size_index *index_sizes(Pattern *patterns, uint32_t pat_arr_size, uint32_t sizes_num);
 
 uint32_t *index_ones(Pattern *patterns, uint32_t arr_size, uint32_t str_num);
+
+Dir_Rev *get_dir_rev_data(Pattern *patterns, uint32_t pat_arr_size, uint32_t str_num);
 
 #endif // !PATTERNS_H

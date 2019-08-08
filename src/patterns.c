@@ -175,7 +175,7 @@ Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
     *patterns_num = extracted_patterns;
     uint32_t full_len = (2 * extracted_patterns - 1);
     verbose("# Found %u variable columns\n", *act_col_num);
-    verbose("# Extracted %u direct patterns\n", extracted_patterns - 1);
+    verbose("# Extracted %u direct patterns\n", extracted_patterns - 2);
     verbose("# Full patterns array takes %u\n", full_len);
 
     *all_pat_num = full_len;
@@ -188,10 +188,50 @@ Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
         for (uint32_t j = 0; j < input_data.str_num; ++j){patterns[minus_i].pattern[j] = patterns[i].pattern[j];}
         invert_pattern(patterns[minus_i].pattern, input_data.str_num);
     }
-
+    qsort(patterns, full_len, sizeof(Pattern), compare_patterns);
     return patterns;
 }
 
+
+// check if rev pattern is rev
+bool _check_is_rev(uint8_t *dir, uint8_t *rev, uint32_t str_num)
+{
+    // if patterns are inverted, xor must be 1 all the time
+    for (uint32_t i = 0; i < str_num; ++i){
+        if (!(dir[i] ^ rev[i])){return false;}
+    }
+    return true;
+}
+
+
+// get direct - inverted pattern index
+Dir_Rev *get_dir_rev_data(Pattern *patterns, uint32_t pat_arr_size, uint32_t str_num)
+{
+    // actually not optimal decision
+    // just to make it work now, it must be a more optimal solution
+    // hopefully, it will be implemented at some point
+    Dir_Rev *dir_rev_index = (Dir_Rev*)malloc(pat_arr_size * sizeof(Dir_Rev));
+    dir_rev_index[0].dir = 0;
+    dir_rev_index[0].rev = 0;
+    uint32_t cur_size = 0;
+    uint32_t rev_size = 0;
+    bool is_rev = false;
+    for (uint32_t i = 1; i < pat_arr_size; ++i)
+    {
+        dir_rev_index[i].dir = i;
+        cur_size = patterns[i].size;
+        rev_size = str_num - cur_size;
+        for (uint32_t j = 1; j < pat_arr_size; ++j)
+        {
+            if (patterns[j].size != rev_size){continue;}
+            is_rev = _check_is_rev(patterns[i].pattern, patterns[j].pattern, str_num);
+            if (is_rev){
+                dir_rev_index[i].rev = j;
+            }
+        }
+    }
+    return dir_rev_index;
+}
 
 // check if patterns intersect
 bool patterns_intersect(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_len)
@@ -231,7 +271,7 @@ void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pa
         // Sadly O^2
         for (uint32_t s_id = 1; s_id < patterns_num; ++s_id)
         {
-            if ((p_id == s_id) || (s_id == f_minus)){continue;}
+            // if ((p_id == s_id) || (s_id == f_minus)){continue;}
             p_and_s_intersect = patterns_intersect(patterns[p_id].pattern,
                                                    patterns[s_id].pattern,
                                                    pat_len);
@@ -301,7 +341,8 @@ uint32_t *index_ones(Pattern *patterns, uint32_t arr_size, uint32_t str_num)
         ind = _get_one_ind(patterns[i].pattern, str_num);
         ans[ind] = i;
     }
-    for (uint32_t i = 0; i < str_num; ++i){printf("%u ", ans[i]);}
-    printf("\n");
+    verbose("Single-dot patterns distribution:\n");
+    for (uint32_t i = 0; i < str_num; ++i){verbose("%u ", ans[i]);}
+    verbose("\n");
     return ans;
 }

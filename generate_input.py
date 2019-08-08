@@ -48,6 +48,17 @@ def main():
     # TODO: actually is not very floating-point errors resistsant
     origin_str = [1 for _ in range(ones_num)] + [0 for _ in range(zeros_num)]
     np.random.shuffle(origin_str)
+    dataset_in_dir = os.path.join(INPUT_FILES_DIR, args.dataset_name)
+    os.mkdir(dataset_in_dir) if not os.path.isdir(dataset_in_dir) else None
+    dataset_ans_file = os.path.join(ANSWER_FILES_DIR, "{}.ans.txt".format(args.dataset_name))
+    ans_buff = open(dataset_ans_file, "w")
+    ans_buff.write("# Dataset={}\n".format(args.dataset_name))
+    ans_buff.write("# str_len={} str_num={}\n".format(args.W, args.H))
+    ans_buff.write("# Replicates_num={}\n".format(args.r))
+    for samlpe_num in range(args.r):
+        sample_in_file = os.path.join(dataset_in_dir, "{}.in.txt".format(samlpe_num))
+        ans_buff.write("# Sample_num={}\n".format(samlpe_num))
+    ans_buff.close()
 
 
 if __name__ == "__main__":

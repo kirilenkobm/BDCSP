@@ -17,14 +17,18 @@
 #include "patterns.h"
 #include "grid.h"
 
+
 bool v = false;
 bool pat_intersect_allocated = false;
 bool grid_allocated = false;
+bool sizes_index_allocated = false;
 bool show_patterns = false;
+
 uint32_t grid_size;
 Input_data input_data;
 Pattern *patterns;
 Point *grid;
+Size_index *size_index;
 
 // show help and exit
 void _show_usage_and_quit(char * executable)
@@ -64,6 +68,10 @@ void free_all(uint32_t str_len, uint32_t str_num, uint32_t patterns_num)
     if (grid_allocated){
         for (uint32_t i = 0; i < grid_size; ++i){free(grid[i].combinations);}
         free(grid);
+    }
+    if (sizes_index_allocated){
+        for (uint32_t i = 1; i < str_num; ++i){free(size_index[i].ids);}
+        free(size_index);
     }
 }
 
@@ -191,7 +199,8 @@ int main(int argc, char ** argv)
     get_intersection_data(patterns, pat_arr_size, input_data.str_num);
     pat_intersect_allocated = true;
     // and create the grid
-    Size_index *size_index = index_sizes(patterns, pat_arr_size, input_data.str_num);
+    size_index = index_sizes(patterns, pat_arr_size, input_data.str_num);
+    sizes_index_allocated = true;
     grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
     grid_allocated = true;
     grid_size = max_comb_len - 1;

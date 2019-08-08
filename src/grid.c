@@ -286,6 +286,7 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
     uint32_t cur_val = 0;
     uint32_t alloc_times = 0;
     uint32_t cmb_ptr = 0;
+    uint32_t paths_found = 0;
 
     for (uint32_t subset_size = 2; subset_size < (max_comb_size + 1); ++subset_size)
     {
@@ -311,6 +312,7 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
                 grid[point_id].combinations[p_ptr] = neg_s;
                 ++p_ptr;
                 grid[point_id].comb_num += 1;
+                ++paths_found;
             }
             continue;
         }
@@ -331,6 +333,7 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
         grid[point_id].combinations = (uint32_t*)calloc(subset_size * alloc_times, sizeof(uint32_t));
         for (uint32_t i = 0; i < subset_size; ++i){grid[point_id].combinations[i] = first_path[i];}
         cmb_ptr = subset_size;
+        ++paths_found;
 
         uint32_t p = 0;
         uint32_t pointed;
@@ -369,6 +372,7 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
                     }
                     grid[point_id].comb_num += 1;
                     cmb_ptr += subset_size;
+                    ++paths_found;
                 }
                 if (grid[point_id].comb_num >= alloc_times - 1){
                     alloc_times += ALLOC_INIT;
@@ -380,7 +384,7 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
         }
         free(first_path);
     }
-
+    verbose("Found %u size-paths\n", paths_found);
     free(num_count);
     free(f_max);
     free(f_min);

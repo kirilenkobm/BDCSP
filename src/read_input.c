@@ -92,42 +92,43 @@ Input_data read_input(char **argv)
 
         switch (ch)
         {
-        case 49:  // 1
-            input_data.in_arr[line_num][char_num] = 1;
-            ++char_num;
-            break;
-        case 48:  // 0
-            input_data.in_arr[line_num][char_num] = 0;
-            ++char_num;
-            break;
-        case 10:  // \n
-            if (first_line){
-                act_str_len = char_num;
-                first_line = false;
-            }
-            if (char_num != act_str_len)
-            {
-                fprintf(stderr, "Error! Strings expected to have the same length!\n");
-                fprintf(stderr, "Violating string: %u\n", line_num + 1);
+            case 49:  // 1
+                input_data.in_arr[line_num][char_num] = 1;
+                ++char_num;
+                break;
+            case 48:  // 0
+                input_data.in_arr[line_num][char_num] = 0;
+                ++char_num;
+                break;
+            case 10:  // \n
+                if (first_line){
+                    act_str_len = char_num;
+                    first_line = false;
+                }
+                if (char_num != act_str_len)
+                {
+                    fprintf(stderr, "Error! Strings expected to have the same length!\n");
+                    fprintf(stderr, "Violating string: %u\n", line_num + 1);
+                    free_in_data(input_data, line_num);
+                    exit(1);
+                }
+                if (line_num == UINT32_MAX){
+                    fprintf(stderr, "Overflow error! Matrix size should not exceed UINT32_MAX x UINT32_MAX\n");
+                    free_in_data(input_data, line_num);
+                    exit(1);
+                }
+                ++line_num;
+                char_num = 0;
+                input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));            
+                break;
+            default:  // something else, error
+                fprintf(stderr, "Error: found character %c which is not 1, 0 or \\n \n", ch);
                 free_in_data(input_data, line_num);
                 exit(1);
-            }
-            if (line_num == UINT32_MAX){
-                fprintf(stderr, "Overflow error! Matrix size should not exceed UINT32_MAX x UINT32_MAX\n");
-                free_in_data(input_data, line_num);
-                exit(1);
-            }
-            ++line_num;
-            char_num = 0;
-            input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));            
-            break;
-        default:  // something else, error
-            fprintf(stderr, "Error: found character %c which is not 1, 0 or \\n \n", ch);
-            free_in_data(input_data, line_num);
-            exit(1);
-            break;
+                break;
         }
     }
+
     if (char_num == 0){
         // \n -terminated file
         free(input_data.in_arr[line_num]);

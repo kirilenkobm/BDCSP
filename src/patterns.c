@@ -261,7 +261,7 @@ Size_index *index_sizes(Pattern *patterns, uint32_t pat_arr_size, uint32_t sizes
         cur_size = patterns[i].size;
         sizes_index[cur_size].num += 1;
     }
-    for (uint32_t i = 0; i < sizes_num; ++i){
+    for (uint32_t i = 1; i < sizes_num; ++i){
         sizes_index[i].ids = (uint32_t*)calloc(sizes_index[i].num, sizeof(uint32_t));
     }
     uint32_t cur_ind = 0;

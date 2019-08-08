@@ -19,6 +19,7 @@
 
 bool v = false;
 bool pat_intersect_allocated = false;
+bool grid_allocated = false;
 bool show_patterns = false;
 Input_data input_data;
 Pattern *patterns;
@@ -184,10 +185,9 @@ int main(int argc, char ** argv)
     get_intersection_data(patterns, pat_arr_size, input_data.str_num);
     pat_intersect_allocated = true;
     // and create the grid
-    Point *grid = make_grid(patterns, pat_arr_size, max_comb_len);
-
+    Point *grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
+    grid_allocated = true;
 
     free_all(input_data.str_len, input_data.str_num, pat_arr_size);
     return 0;
 }
-

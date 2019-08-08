@@ -22,6 +22,12 @@ typedef struct
     uint32_t *combinations;
 } Point;
 
-Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size);
+typedef struct
+{
+    uint32_t number;
+    uint32_t quantity;
+} Num_q;
+
+Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, uint32_t level_size);
 
 #endif // !GRID_H

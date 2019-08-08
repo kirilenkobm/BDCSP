@@ -19,6 +19,7 @@
 #include "patterns.h"
 
 #define CHUNK 5
+#define ALLOC_INIT 5
 Num_q *num_count;
 uint32_t uniq_num;
 uint32_t *f_max;
@@ -282,6 +283,8 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
     uint32_t point_id = 0;
     uint32_t cur_ind = 0;
     uint32_t cur_val = 0;
+    uint32_t alloc_times = 0;
+    uint32_t cmb_ptr = 0;
 
     for (uint32_t subset_size = 2; subset_size < (max_comb_size + 1); ++subset_size)
     {
@@ -291,6 +294,7 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
         grid[point_id].density = (double)1 / subset_size;
         grid[point_id].comb_size = subset_size;
         grid[point_id].comb_num = 0;
+        alloc_times = 0;
 
         if (subset_size == 2){
             // simple case, can do it differently
@@ -315,9 +319,64 @@ Point *make_grid(Pattern *patterns, uint32_t pat_num, uint32_t max_comb_size, ui
         cur_ind = 0;
         cur_val = num_count[cur_ind].number;
         uint32_t *first_path = get_path(subset_size, NULL, 0, cur_val, cur_ind, level_size, pat_num);
-        for (uint32_t i = 0; i < subset_size; ++i){printf("%u ", first_path[i]);}
-        printf("\n");
-        
+        uint32_t path_sum = arr_sum(first_path, subset_size);
+        if (path_sum != level_size){
+            free(first_path);
+            grid[point_id].comb_num = 0;
+            grid[point_id].combinations = NULL;
+            continue;
+        }
+        grid[point_id].comb_num = 1;
+        alloc_times = ALLOC_INIT;
+        grid[point_id].combinations = (uint32_t*)calloc(subset_size * alloc_times, sizeof(uint32_t));
+        for (uint32_t i = 0; i < subset_size; ++i){grid[point_id].combinations[i] = first_path[i];}
+        cmb_ptr = subset_size;
+
+        uint32_t p = 0;
+        uint32_t pointed;
+        uint32_t pointed_ind;
+        uint32_t lower;
+        uint32_t lower_ind;
+        bool possible;
+        // find extra paths
+        for (uint64_t p_ = (subset_size - 1); p_ > 0; p_--)
+        {
+            p = p_ - 1;  // if >= then it is an infinite loop
+            pointed = first_path[p];
+            if (pointed == 0) {continue;}
+            pointed_ind = _elem_search(0, (int64_t)uniq_num, pointed);
+            possible = true;
+            while (possible)
+            // decrease while decreseable
+            {
+                lower_ind = pointed_ind + 1;
+                lower = num_count[lower_ind].number;
+                if (lower == 0) {possible = false; break;}
+                if (lower == 0){possible = false; break;}
+                uint32_t *try_path = (uint32_t*)calloc(subset_size + CHUNK, sizeof(uint32_t));
+                for (uint32_t i = 0; i < p; i++){try_path[i] = first_path[i];}
+                try_path[p] = lower;
+                uint32_t *try_res = get_path(subset_size, try_path, p + 1, lower, lower_ind, 
+                                             level_size, pat_num);
+                pointed = lower;
+                pointed_ind = lower_ind;
+                // do not forget!
+                free(try_path);
+                uint64_t try_res_sum = arr_sum(try_res, subset_size);
+                if (try_res_sum == level_size){
+                    for (uint32_t i = 0; i < subset_size; ++i){
+                        grid[point_id].combinations[cmb_ptr + i] = try_res[i];
+                    }
+                    grid[point_id].comb_num += 1;
+                }
+                if (grid[point_id].comb_num >= alloc_times - 1){
+                    alloc_times += ALLOC_INIT;
+                    grid[point_id].combinations = (uint32_t*)realloc(grid[point_id].combinations,
+                                                                     alloc_times * subset_size * sizeof(uint32_t));
+                }
+                free(try_res);
+            }
+        }
         free(first_path);
     }
 

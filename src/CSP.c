@@ -59,6 +59,7 @@ void free_all(uint32_t str_len, uint32_t str_num, uint32_t patterns_num)
     free(patterns);
     for (uint32_t i = 0; i < str_num; ++i){free(input_data.in_arr[i]);}
     free(input_data.in_arr);
+    // TODO: add grid free
 }
 
 

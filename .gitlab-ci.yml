@@ -1,0 +1,8 @@
+stages:
+  - build
+
+build:
+  stage: uild
+  script:
+  - make
+  - ./CSP input_data/test_2.txt 13 -v

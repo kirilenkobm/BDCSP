@@ -3,6 +3,9 @@ stages:
 
 build:
   stage: build
+  allow_failure: true
   script:
   - make
   - ./CSP input_data/test_2.txt 13 -v
+  only:
+  - master

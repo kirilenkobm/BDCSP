@@ -175,7 +175,7 @@ Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
     *patterns_num = extracted_patterns;
     uint32_t full_len = (2 * extracted_patterns - 1);
     verbose("# Found %u variable columns\n", *act_col_num);
-    verbose("# Extracted %u direct patterns\n", extracted_patterns - 2);
+    verbose("# Extracted %u direct patterns\n", extracted_patterns - 1);
     verbose("# Full patterns array takes %u\n", full_len);
 
     *all_pat_num = full_len;

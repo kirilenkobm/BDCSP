@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+echo "Testing build"
+make clean
+make
+
+if [[ $? -ne 0 ]]
+then
+    echo "Make failed"
+    exit 1
+fi
+
 echo "Running test 1, should return False"
 test1=$(./CSP input_data/test_0.txt 2> /dev/null 1)
 

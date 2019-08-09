@@ -25,6 +25,6 @@ typedef struct
 
 Combination *extract_combinations(Point *grid, uint32_t grid_size, Pattern *patterns, uint32_t pat_num,
                                   Size_index *size_index, uint32_t str_len, uint32_t str_num, uint32_t *ones_ind,
-                                  Dir_Rev *dir_rev);
+                                  Dir_Rev *dir_rev, uint32_t *combinations_num);
 
 #endif // COMBINATIONS_H

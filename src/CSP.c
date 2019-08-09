@@ -28,13 +28,14 @@ bool sizes_index_allocated = false;
 bool ones_index_allocated = false;
 bool combinations_allocated = false;
 
-uint32_t grid_size;
 Input_data input_data;
 Pattern *patterns;
 Dir_Rev *dir_rev_index;
+uint32_t grid_size;
 Point *grid;
 uint32_t *ones_index;
 Size_index *size_index;
+uint32_t combinations_num = 0;
 Combination *combinations;
 
 
@@ -226,6 +227,7 @@ int main(int argc, char ** argv)
     }
 
     // not so obvious case, get intersection data first
+    // add not intersect data to Pattern struct
     get_intersection_data(patterns, pat_arr_size, input_data.str_num);
     pat_intersect_allocated = true;
     // and create the grid
@@ -239,7 +241,8 @@ int main(int argc, char ** argv)
     ones_index_allocated = true;
 
     combinations = extract_combinations(grid, max_comb_len - 1, patterns, pat_arr_size, size_index,
-                                        input_data.str_len, input_data.str_num, ones_index, dir_rev_index);
+                                        input_data.str_len, input_data.str_num, ones_index, dir_rev_index,
+                                        &combinations_num);
     combinations_allocated = true;
 
     free_all(input_data.str_len, input_data.str_num, pat_arr_size);

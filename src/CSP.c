@@ -20,12 +20,13 @@
 
 
 bool v = false;
+bool show_patterns = false;
 bool pat_intersect_allocated = false;
 bool dir_rev_ind_allocated = false;
 bool grid_allocated = false;
 bool sizes_index_allocated = false;
 bool ones_index_allocated = false;
-bool show_patterns = false;
+bool combinations_allocated = false;
 
 uint32_t grid_size;
 Input_data input_data;
@@ -147,6 +148,10 @@ void get_init_density_range(uint32_t to_cover, double *inf, double *sup, double 
     uint64_t max_covered_levels = max_pat_sum / level_size;
     verbose("# Max covered levels: %llu\n", max_covered_levels);
     *sup = (double)max_covered_levels / act_col_num;
+
+    assert((*sup > 0.0) && (*sup < 1.0));
+    assert((*inf > 0.0) && (*inf < 1.0));
+    assert(*inf <= *sup);
 }
 
 
@@ -232,6 +237,10 @@ int main(int argc, char ** argv)
     // to simplify pats with [...1, 1, 1, 1]
     ones_index = index_ones(patterns, pat_arr_size, input_data.str_num);
     ones_index_allocated = true;
+
+    combinations = extract_combinations(grid, max_comb_len - 1, patterns, pat_arr_size, size_index,
+                                        input_data.str_len, input_data.str_num, ones_index, dir_rev_index);
+    combinations_allocated = true;
 
     free_all(input_data.str_len, input_data.str_num, pat_arr_size);
     return 0;

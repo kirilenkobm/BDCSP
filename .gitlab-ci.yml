@@ -6,6 +6,6 @@ build:
   allow_failure: true
   script:
   - make
-  - ./CSP input_data/test_2.txt 13 -v
+  - ./run_tests.sh
   only:
   - master

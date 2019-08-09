@@ -100,10 +100,9 @@ uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
 
 
 // get initial densities
-void get_init_density_range(uint32_t to_cover, double *inf, double *sup,
-                            double *exp_dens, uint32_t pat_num, uint32_t act_col_num)
+void get_init_density_range(uint32_t to_cover, double *inf, double *sup, double *exp_dens,
+                            uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
 {
-    *sup = (double)(act_col_num - 1) / act_col_num;
     *exp_dens = (double)to_cover / act_col_num;
 
     uint32_t cur_pat_size = 0;
@@ -113,7 +112,7 @@ void get_init_density_range(uint32_t to_cover, double *inf, double *sup,
     uint32_t col_left = act_col_num;
     bool stop = false;
 
-    // lower density is the most complicated thing
+    // compute the lowest density
     for (uint32_t pat_id = 0; pat_id < pat_num; ++pat_id){
         cur_pat_size = patterns[pat_id].size;
         cur_pat_times = patterns[pat_id].times;
@@ -128,8 +127,26 @@ void get_init_density_range(uint32_t to_cover, double *inf, double *sup,
         }
         if (stop) {break;}
     }
+
+    stop = false;
     verbose("# Min covered levels: %u\n", min_lvl_cov);
     *inf = (double)min_lvl_cov / act_col_num;
+    uint32_t max_size = 0;
+    uint64_t max_pat_sum = 0;
+    uint32_t rev_id = 0;
+
+    // then the highest potential density
+    for (uint32_t pat_id = 0; pat_id < pat_num; ++pat_id){
+        if (!dir_rev_index[pat_id].is_dir){continue;}
+        // consider only direct primers
+        rev_id = dir_rev_index[pat_id].rev;
+        cur_pat_times = patterns[pat_id].times;
+        max_size = (patterns[pat_id].size > patterns[rev_id].size) ? patterns[pat_id].size : patterns[rev_id].size;
+        max_pat_sum += ((uint64_t)max_size * cur_pat_times);
+    }
+    uint64_t max_covered_levels = max_pat_sum / level_size;
+    verbose("# Max covered levels: %llu\n", max_covered_levels);
+    *sup = (double)max_covered_levels / act_col_num;
 }
 
 
@@ -187,7 +204,7 @@ int main(int argc, char ** argv)
     double sup;
     double inf;
     double exp_dens;
-    get_init_density_range(to_cover, &inf, &sup, &exp_dens, patterns_num, act_col_num);
+    get_init_density_range(to_cover, &inf, &sup, &exp_dens, pat_arr_size, act_col_num, input_data.str_num);
     verbose("# Inf: %f; Exp dens: %f; Sup: %f\n", inf, exp_dens, sup);
 
     // in case if expected density is not in [inf, sup)

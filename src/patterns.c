@@ -221,6 +221,9 @@ Dir_Rev *get_dir_rev_data(Pattern *patterns, uint32_t pat_arr_size, uint32_t str
         dir_rev_index[i].dir = i;
         cur_size = patterns[i].size;
         rev_size = str_num - cur_size;
+        if (patterns[i].pattern[0] == 1){dir_rev_index[i].is_dir = true;}
+        else {dir_rev_index[i].is_dir = false;}
+
         for (uint32_t j = 1; j < pat_arr_size; ++j)
         {
             if (patterns[j].size != rev_size){continue;}
@@ -341,7 +344,7 @@ uint32_t *index_ones(Pattern *patterns, uint32_t arr_size, uint32_t str_num)
         ind = _get_one_ind(patterns[i].pattern, str_num);
         ans[ind] = i;
     }
-    verbose("Single-dot patterns distribution:\n");
+    verbose("# Single-dot patterns distribution:\n# ");
     for (uint32_t i = 0; i < str_num; ++i){verbose("%u ", ans[i]);}
     verbose("\n");
     return ans;

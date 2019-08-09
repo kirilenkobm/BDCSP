@@ -20,8 +20,8 @@ void free_all(uint32_t str_len, uint32_t str_num, uint32_t patterns_num);
 
 uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c);
 
-void get_init_density_range(uint32_t to_cover, double *inf, double *sup,
-                            double *exp_dens, uint32_t pat_num, uint32_t act_col_num);
+void get_init_density_range(uint32_t to_cover, double *inf, double *sup, double *exp_dens,
+                            uint32_t pat_num, uint32_t act_col_num, uint32_t level_size);
 
 int main(int argc, char ** argv);
 

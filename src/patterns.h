@@ -34,6 +34,7 @@ typedef struct
 typedef struct{
     uint32_t dir;
     uint32_t rev;
+    bool is_dir;
 } Dir_Rev;
 
 

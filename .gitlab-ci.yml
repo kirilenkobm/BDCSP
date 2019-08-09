@@ -2,7 +2,7 @@ stages:
   - build
 
 build:
-  stage: uild
+  stage: build
   script:
   - make
   - ./CSP input_data/test_2.txt 13 -v

@@ -56,9 +56,10 @@ Combination *extract_combinations(Point *grid, uint32_t grid_size, Pattern *patt
     // go point-by-point
     for (uint32_t p_num = 0; p_num < grid_size; ++p_num)
     {
-        if (grid[p_num].comb_size == 2){
+        if (grid[p_num].comb_size == 2)
+        {
             uint32_t found_num = 0;
-            uint32_t *combs_of_two = _get_combs_of_two(grid[p_num], patterns, size_index, str_num,
+            uint32_t *combs_of_two = _get_combs_of_two(patterns, size_index, str_num,
                                                        pat_num, dir_rev, &found_num);
             uint32_t found_pt = 0;
             uint32_t to_fill = found_num / 2;
@@ -81,6 +82,7 @@ Combination *extract_combinations(Point *grid, uint32_t grid_size, Pattern *patt
             continue;
         }
         // ok, more complicated case
+
 
     }
     return combinations;

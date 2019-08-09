@@ -71,7 +71,8 @@ Input_data read_input(char **argv)
     uint32_t line_len = H;
     uint32_t char_num = 0;
     uint32_t act_str_len = 0;
-    input_data.in_arr = (uint8_t**)malloc(W * sizeof(uint8_t*));
+    uint32_t lines_allocated = W;
+    input_data.in_arr = (uint8_t**)malloc(lines_allocated * sizeof(uint8_t*));
     input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
 
     while ((ch = fgetc(fp)) != EOF){
@@ -92,7 +93,7 @@ Input_data read_input(char **argv)
 
         switch (ch)
         {
-            case 49:  // 1
+            case 49:  // 1 -> add to current line
                 input_data.in_arr[line_num][char_num] = 1;
                 ++char_num;
                 break;
@@ -100,7 +101,7 @@ Input_data read_input(char **argv)
                 input_data.in_arr[line_num][char_num] = 0;
                 ++char_num;
                 break;
-            case 10:  // \n
+            case 10:  // new line, switch to the netx line then
                 if (first_line){
                     act_str_len = char_num;
                     first_line = false;
@@ -118,8 +119,15 @@ Input_data read_input(char **argv)
                     exit(1);
                 }
                 ++line_num;
+                if (line_num > lines_allocated - 1){
+                    // too much lines, need to add some extra lines
+                    lines_allocated += W;
+                    input_data.in_arr = (uint8_t**)realloc(input_data.in_arr, lines_allocated * sizeof(uint8_t*));
+                }
                 char_num = 0;
                 input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));            
+                break;
+            case 32:  // space, do nothing
                 break;
             default:  // something else, error
                 fprintf(stderr, "Error: found character %c which is not 1, 0 or \\n \n", ch);
@@ -128,7 +136,6 @@ Input_data read_input(char **argv)
                 break;
         }
     }
-
     if (char_num == 0){
         // \n -terminated file
         free(input_data.in_arr[line_num]);
@@ -141,6 +148,7 @@ Input_data read_input(char **argv)
     }
 
     // realloc memory; it is likely a bit too much now
+    input_data.in_arr = (uint8_t**)realloc(input_data.in_arr, line_num * sizeof(uint8_t*));
     for (uint32_t i = 0; i < line_num; i++){
         input_data.in_arr[i] = (uint8_t*)realloc(input_data.in_arr[i],
                                                  act_str_len * sizeof(uint8_t));
@@ -153,7 +161,6 @@ Input_data read_input(char **argv)
         free_in_data(input_data, line_num);
         exit(1);
     }
-    // TODO: overflow check
     input_data.str_len = act_str_len;
     input_data.str_num = line_num;
     return input_data;

@@ -113,16 +113,16 @@ Input_data read_input(char **argv)
                     free_in_data(input_data, line_num);
                     exit(1);
                 }
-                if (line_num == UINT32_MAX){
-                    fprintf(stderr, "Overflow error! Matrix size should not exceed UINT32_MAX x UINT32_MAX\n");
-                    free_in_data(input_data, line_num);
-                    exit(1);
-                }
                 ++line_num;
                 if (line_num > lines_allocated - 1){
                     // too much lines, need to add some extra lines
-                    lines_allocated += W;
+                    lines_allocated += REALLOC_STEP;
                     input_data.in_arr = (uint8_t**)realloc(input_data.in_arr, lines_allocated * sizeof(uint8_t*));
+                }
+                if (lines_allocated >= UINT32_MAX){
+                    fprintf(stderr, "Overflow error! Matrix size should not exceed UINT32_MAX x UINT32_MAX\n");
+                    free_in_data(input_data, line_num);
+                    exit(1);
                 }
                 char_num = 0;
                 input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));            

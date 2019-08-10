@@ -17,6 +17,13 @@
 #define HCOMB_LEN 2
 
 
+void __print_arr(uint32_t *arr, uint32_t size)
+{
+    for (uint32_t i = 0; i < size; ++i){printf("%u ", arr[i]);}
+    printf("\n");
+}
+
+
 // get combinations of density == 1/2
 uint32_t *_get_combs_of_two(Pattern *patterns, uint32_t pat_num, Dir_Rev *dir_rev, uint32_t *found_num)
 {
@@ -41,48 +48,6 @@ uint32_t *_get_combs_of_two(Pattern *patterns, uint32_t pat_num, Dir_Rev *dir_re
         *found_num += 1;
     }
     found = (uint32_t*)realloc(found, *found_num * sizeof(uint32_t));
-    return found;
-}
-
-
-// extractor itself; need to fix confusing function names
-uint32_t *_get_combs(uint32_t *sizes_arr, Size_index *size_index, Pattern *patterns, Dir_Rev *dir_rev,
-                    uint32_t size, uint32_t pat_num, uint32_t *ones_ind, uint32_t str_num, uint32_t *_found)
-{
-    uint32_t allocated = ALLOC_STEP * size;
-    uint32_t *ans = (uint32_t*)calloc(allocated, sizeof(uint32_t));
-    return ans;
-}
-
-
-// heavy stuff - extract trivial combinations, wrapper
-uint32_t *_get_combs_from_point(Point point, Pattern *patterns, Dir_Rev *dir_rev, uint32_t pat_num,
-                                Size_index *size_index, uint32_t *ones_ind, uint32_t str_num, uint32_t *found_num)
-{
-    uint32_t size = point.comb_size;
-    uint32_t *sizes_arr = (uint32_t*)calloc(size, sizeof(uint32_t));
-    uint32_t s_arr_start = 0;
-    uint32_t s_arr_end = 0;
-    uint32_t found_in_iter = 0;
-    uint32_t found_allocated = ALLOC_STEP * size;
-    uint32_t *found = (uint32_t*)calloc(found_allocated, sizeof(uint32_t));
-    for (uint32_t comb_num = 0; comb_num < point.comb_num; ++comb_num)
-    {
-        s_arr_start = comb_num * size;
-        s_arr_end = s_arr_start + size;
-        for (uint32_t i = s_arr_start, j = 0; i < s_arr_end; ++i, ++j){
-            sizes_arr[j] = point.combinations[i];
-        }
-        found_in_iter = 0;
-        uint32_t *combs_found = _get_combs(sizes_arr, size_index, patterns, dir_rev, size,
-                                           pat_num, ones_ind, str_num, &found_in_iter);
-        if (found_in_iter == 0){
-            free(combs_found);
-            continue;
-        }
-        free(combs_found);
-    }
-    free(sizes_arr);
     return found;
 }
 
@@ -130,13 +95,6 @@ Combination *extract_combinations(Point *grid, uint32_t grid_size, Pattern *patt
         }
         // ok, more complicated case
         found_num = 0;
-        uint32_t *combs_here = _get_combs_from_point(grid[p_num], patterns, dir_rev, pat_num,
-                                                     size_index, ones_ind, str_num, &found_num);
-        if (found_num == 0){
-            free(combs_here);
-            continue;
-        }
-        free(combs_here);
     }
     return combinations;
 }

@@ -102,8 +102,9 @@ uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
 
 
 // get initial densities
-void get_init_density_range(uint32_t to_cover, double *inf, double *sup, double *exp_dens,
-                            uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
+void get_init_density_range
+(uint32_t to_cover, double *inf, double *sup, double *exp_dens,
+uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
 {
     *exp_dens = (double)to_cover / act_col_num;
 
@@ -143,7 +144,8 @@ void get_init_density_range(uint32_t to_cover, double *inf, double *sup, double 
         // consider only direct primers
         rev_id = dir_rev_index[pat_id].rev;
         cur_pat_times = patterns[pat_id].times;
-        max_size = (patterns[pat_id].size > patterns[rev_id].size) ? patterns[pat_id].size : patterns[rev_id].size;
+        max_size = (patterns[pat_id].size > patterns[rev_id].size) ? 
+            patterns[pat_id].size : patterns[rev_id].size;
         max_pat_sum += ((uint64_t)max_size * cur_pat_times);
     }
     uint64_t max_covered_levels = max_pat_sum / level_size;
@@ -182,7 +184,10 @@ int main(int argc, char ** argv)
     uint32_t pat_arr_size = 0;
     uint32_t act_col_num = 0;
     patterns = get_patterns(input_data, &patterns_num, &pat_arr_size, &act_col_num);
-    if (patterns == NULL){free_all(input_data.str_len, input_data.str_num, pat_arr_size); exit(2);}
+    if (patterns == NULL){
+        free_all(input_data.str_len, input_data.str_num, pat_arr_size);
+        exit(2);
+    }
 
     if (show_patterns)  // show patterns if required
     {

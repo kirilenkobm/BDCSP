@@ -68,10 +68,27 @@ bool *_get_compatibles(uint32_t *chain, Pattern *patterns, uint32_t chain_len, u
     for (uint32_t i = 0; i < chain_len; ++i){
         _and_over_bool_arr(compatibles, patterns[chain[i]].no_intersect, pat_num);
     }
-    for (uint32_t i = 0; i < pat_num; i++){printf("%d ", compatibles[i]);}
-    printf("\n");
+    // for (uint32_t i = 0; i < pat_num; i++){printf("%d ", compatibles[i]);}
+    // printf("\n");
     return compatibles;
 }
+
+
+// get pattern ids we can continue with
+uint32_t *_get_to_continue
+(uint32_t *size_fit, uint32_t size_fit_size, bool *compat_mask,
+uint32_t pat_num, uint32_t *counter, uint32_t last_elem)
+{
+    uint32_t *answer = (uint32_t*)calloc(size_fit_size, sizeof(uint32_t));
+    for (uint32_t i = 0; i < size_fit_size; ++i){
+        if (size_fit[i] < last_elem){continue;}
+        else if (!compat_mask[size_fit[i]]){continue;}
+        answer[*counter] = size_fit[i];
+        *counter += 1;
+    }
+    return answer;
+}
+
 
 // find combinations forming the size path
 uint32_t **_find_combinations
@@ -98,6 +115,7 @@ Pattern *patterns, uint32_t pat_num, uint32_t *count)
         for (uint32_t ch_num = 0; ch_num < allocated_chain; ++ch_num)
         {
             uint32_t *current_chain = chain[ch_num];
+            uint32_t last_in_the_chain = current_chain[iter_num - 1];
             // get compatibility mask
             bool *chain_compatibles = _get_compatibles(current_chain, patterns, iter_num, pat_num);
             sizes_fit = size_index[size_path[iter_num]].ids;
@@ -106,7 +124,17 @@ Pattern *patterns, uint32_t pat_num, uint32_t *count)
             // - less than the last id in the chain
             // - compatible with the chain
             // - have proper size
+            uint32_t continue_size = 0;
+            uint32_t *continue_with = _get_to_continue(sizes_fit, sizes_num_here, chain_compatibles,
+                                                       pat_num, &continue_size, last_in_the_chain);
 
+            if (continue_size == 0){
+                // no way to continue chain
+                free(chain_compatibles);
+                free(continue_with);
+                continue;
+            }
+            free(continue_with);
             free(chain_compatibles);
         }
         // no extensions -> couldn't grow the chain -> failed

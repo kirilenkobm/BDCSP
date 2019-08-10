@@ -1,6 +1,8 @@
 
 # BDCSP - Binary, Decisional, Closest String Problem version
 
+[![pipeline status](https://gitlab.com/kirilenkobm/bdcsp/badges/master/pipeline.svg)](https://gitlab.com/user/userproject/commits/master)
+
 ## What is the problem
 
 What is the problem: [1]. Is also np complete in case of binary alphabet:[2]. Coming soon.

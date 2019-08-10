@@ -76,6 +76,10 @@ uint32_t *_get_combs_from_point(Point point, Pattern *patterns, Dir_Rev *dir_rev
         found_in_iter = 0;
         uint32_t *combs_found = _get_combs(sizes_arr, size_index, patterns, dir_rev, size,
                                            pat_num, ones_ind, str_num, &found_in_iter);
+        if (found_in_iter == 0){
+            free(combs_found);
+            continue;
+        }
         free(combs_found);
     }
     free(sizes_arr);
@@ -128,6 +132,10 @@ Combination *extract_combinations(Point *grid, uint32_t grid_size, Pattern *patt
         found_num = 0;
         uint32_t *combs_here = _get_combs_from_point(grid[p_num], patterns, dir_rev, pat_num,
                                                      size_index, ones_ind, str_num, &found_num);
+        if (found_num == 0){
+            free(combs_here);
+            continue;
+        }
         free(combs_here);
     }
     return combinations;

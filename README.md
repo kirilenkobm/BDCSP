@@ -1,7 +1,7 @@
 
 # BDCSP - Binary, Decisional, Closest String Problem version
 
-[![pipeline status](https://gitlab.com/kirilenkobm/bdcsp/badges/master/pipeline.svg)](https://gitlab.com/user/userproject/commits/master)
+[![pipeline status](https://gitlab.com/kirilenkobm/bdcsp/badges/master/pipeline.svg)](https://gitlab.com/kirilenkobm/bdcsp/commits/master)
 
 ## What is the problem
 

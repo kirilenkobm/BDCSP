@@ -114,6 +114,7 @@ uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
     uint32_t min_lvl_cov = 0;
     uint32_t col_left = act_col_num;
     bool stop = false;
+    double inf_2 = 0.0;
 
     // compute the lowest density
     for (uint32_t pat_id = 0; pat_id < pat_num; ++pat_id){
@@ -145,7 +146,7 @@ uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
         rev_id = dir_rev_index[pat_id].rev;
         cur_pat_times = patterns[pat_id].times;
         max_size = (patterns[pat_id].size > patterns[rev_id].size) ? 
-            patterns[pat_id].size : patterns[rev_id].size;
+            patterns[pat_id].size : patterns[rev_id].size;        
         max_pat_sum += ((uint64_t)max_size * cur_pat_times);
     }
     uint64_t max_covered_levels = max_pat_sum / level_size;
@@ -238,18 +239,19 @@ int main(int argc, char ** argv)
     // and create the grid
     size_index = index_sizes(patterns, pat_arr_size, input_data.str_num);
     sizes_index_allocated = true;
-    grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
-    grid_allocated = true;
-    grid_size = max_comb_len - 1;
-    // to simplify pats with [...1, 1, 1, 1]
-    ones_index = index_ones(patterns, pat_arr_size, input_data.str_num);
-    ones_index_allocated = true;
+    // grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
+    // grid_allocated = true;
+    // grid_size = max_comb_len - 1;
+    // // to simplify pats with [...1, 1, 1, 1]
+    // ones_index = index_ones(patterns, pat_arr_size, input_data.str_num);
+    // ones_index_allocated = true;
 
-    combinations = extract_combinations(grid, max_comb_len - 1, patterns, pat_arr_size, size_index,
-                                        input_data.str_len, input_data.str_num, ones_index, dir_rev_index,
-                                        &combinations_num);
-    combinations_allocated = true;
+    // combinations = extract_combinations(grid, max_comb_len - 1, patterns, pat_arr_size, size_index,
+    //                                     input_data.str_len, input_data.str_num, ones_index, dir_rev_index,
+    //                                     &combinations_num);
+    // combinations_allocated = true;
 
     free_all(input_data.str_len, input_data.str_num, pat_arr_size);
+    printf("The answer is:\nUndefined\n");
     return 0;
 }

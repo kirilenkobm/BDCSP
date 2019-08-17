@@ -90,6 +90,37 @@ uint32_t pat_num, uint32_t *counter, uint32_t last_elem)
 }
 
 
+// copy from one arr to another
+void _copy_to_buff(uint32_t *to, uint32_t *from, uint32_t num)
+{
+    for (uint32_t i = 0; i < num; ++i){to[i] = from[i];}
+}
+
+
+// copy paste buffer to chain
+void _copy_buf_to_chain
+(uint32_t **chain, uint32_t **buffer, uint32_t iter_num, uint32_t buff_used, uint32_t path_len)
+{   
+    for (uint32_t i = 0; i < buff_used; ++i){
+        chain[i] = calloc(path_len, sizeof(uint32_t));
+        for (uint32_t j = 0; j < iter_num; ++j){
+            chain[i][j] = buffer[i][j];
+        }
+    }
+}
+
+
+void __print_chain(uint32_t **chain, uint32_t chains_num, uint32_t depth)
+{
+    for (uint32_t i = 0; i < chains_num; ++i){
+        for (uint32_t d = 0; d < depth; ++d){
+            printf("%u ", chain[i][d]);
+        }
+        printf("\n");
+    }
+}
+
+
 // find combinations forming the size path
 uint32_t **_find_combinations
 (uint32_t *size_path, uint32_t path_size, Size_index *size_index, uint32_t str_num,
@@ -108,14 +139,24 @@ Pattern *patterns, uint32_t pat_num, uint32_t *count)
     uint32_t extensions = 0;
     uint32_t sizes_num_here = 0;
     uint32_t *sizes_fit;
+    uint32_t buff_used = 0;
+
+
     // add elements to chain one-by-one
     for (uint32_t iter_num = 1; iter_num < path_size; ++iter_num)
     {
-        // go over the chain elements
-        for (uint32_t ch_num = 0; ch_num < allocated_chain; ++ch_num)
+        // initiate buffer to keep intermediate results
+        printf("PRINTED CHAIN:\n");
+        __print_chain(chain, allocated_chain - 1, path_size);
+        uint32_t buff_allocated = ALLOC_STEP;
+        buff_used = 0;
+        uint32_t **buffer = (uint32_t**)malloc(buff_allocated * sizeof(uint32_t));
+        // go over the chain elements, find extensions
+        for (uint32_t ch_num = 0; ch_num < allocated_chain - 1; ++ch_num)
         {
             uint32_t *current_chain = chain[ch_num];
             uint32_t last_in_the_chain = current_chain[iter_num - 1];
+            printf("Last in the chain %u\n", last_in_the_chain);
             // get compatibility mask
             bool *chain_compatibles = _get_compatibles(current_chain, patterns, iter_num, pat_num);
             sizes_fit = size_index[size_path[iter_num]].ids;
@@ -130,24 +171,54 @@ Pattern *patterns, uint32_t pat_num, uint32_t *count)
 
             if (continue_size == 0){
                 // no way to continue chain
+                printf("Nothing found for %u\n", last_in_the_chain);
                 free(chain_compatibles);
                 free(continue_with);
                 continue;
             }
+
+            // extend buffer if needed
+            if ((buff_used + continue_size) > (buff_allocated - 1)){
+                buff_allocated += (continue_size + ALLOC_STEP);
+                buffer = (uint32_t**)realloc(buffer, buff_allocated * sizeof(uint32_t*));
+            }
+
+            // fill buffer with chain data + extensions
+            for (uint32_t i = 0; i < continue_size; ++i){
+                buffer[buff_used] = (uint32_t*)calloc(path_size, sizeof(uint32_t));
+                _copy_to_buff(buffer[buff_used], chain[ch_num], iter_num);
+                buffer[buff_used][iter_num] = continue_with[i];
+                ++buff_used;
+            }
+            // add data to buffer  
             free(continue_with);
             free(chain_compatibles);
         }
-        // no extensions -> couldn't grow the chain -> failed
-
-        if (extensions == 0){
-            for (uint32_t i = 0; i < allocated_chain; ++i){free(chain[i]);}
-            free(chain);
+        printf("buf_used is %u \n", buff_used);
+        // for (uint32_t i = 0; i < allocated_chain; ++i){free(chain[i]);}
+        // free(chain);
+        // no extensions -> couldn't grow the chain -> faile
+        if (buff_used == 0){
+            free(buffer);
             return answer;
         }
+        // extended: replace chain with buffer
+        allocated_chain = buff_used;
+        chain = (uint32_t**)realloc(chain, allocated_chain * sizeof(uint32_t*));
+
+        __print_chain(buffer, buff_used, path_size);
+        _copy_buf_to_chain(chain, buffer, iter_num + 1, buff_used, path_size);
+        for (uint32_t i = 0; i < buff_used; ++i){free(buffer[i]);}
+        free(buffer);
     }
+
+    printf("OK NEED TO RETURN ANSWER\n");
+    printf("In result the chain is:\n");
+    __print_chain(chain, allocated_chain, path_size);
     // free chain
     for (uint32_t i = 0; i < allocated_chain; ++i){free(chain[i]);}
     free(chain);
+    exit(0);
     return answer;
 }
 

@@ -16,7 +16,7 @@
 #include "read_input.h"
 #include "patterns.h"
 #include "grid.h"
-#include "combinations.h"
+// #include "combinations.h"
 
 
 bool v = false;
@@ -35,7 +35,6 @@ Point *grid;
 uint32_t *ones_index;
 Size_index *size_index;
 uint32_t combinations_num = 0;
-Combination *combinations;
 
 
 // in support for free_all func

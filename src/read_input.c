@@ -40,9 +40,10 @@ bool __are_same(uint8_t *l_1, uint8_t *l_2, uint32_t len)
 
 
 // check if new line is in array
-bool __check_is_in(uint8_t **in_arr, uint32_t str_len, uint32_t line_num)
+bool __check_is_in(uint8_t **in_arr, uint32_t str_len, uint32_t line_num, bool n_r)
 {
     if (line_num == 0){return false;}
+    if (n_r){return false;}
     uint8_t *cur = in_arr[line_num];
     bool same = false;
     for (uint32_t i = 0; i < line_num; ++i){
@@ -54,7 +55,7 @@ bool __check_is_in(uint8_t **in_arr, uint32_t str_len, uint32_t line_num)
 
 
 // read and check input stuff
-Input_data read_input(char **argv)
+Input_data read_input(char **argv, bool n_r)
 {
     Input_data input_data;
     // ok, read K
@@ -153,7 +154,7 @@ Input_data read_input(char **argv)
 
                 // check if there is a repeat
                 // not the most efficien solution, yes
-                is_in = __check_is_in(input_data.in_arr, act_str_len, line_num);
+                is_in = __check_is_in(input_data.in_arr, act_str_len, line_num, n_r);
                 if (is_in){
                     ++repeats;
                     char_num = 0;
@@ -197,7 +198,7 @@ Input_data read_input(char **argv)
         exit(1);
     } else {
         // not \n - terminated file; need to check if the last line is not a repeat
-        is_in = __check_is_in(input_data.in_arr, act_str_len, line_num);
+        is_in = __check_is_in(input_data.in_arr, act_str_len, line_num, n_r);
         if (!is_in){++line_num;}
         else {++repeats;}
     }

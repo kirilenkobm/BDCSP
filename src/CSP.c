@@ -21,7 +21,6 @@
 
 
 bool v = false;
-bool show_patterns = false;
 
 
 // in support for free_all func
@@ -45,7 +44,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[k]: minimal distance to check, positive integer number\n");
     fprintf(stderr, "[-v]: enable verosity mode\n");
     fprintf(stderr, "[-p]: show patterns\n");
-    fprintf(stderr, "[-r]: you promise there are no repetative strings (not recommended) =)\n");
+    fprintf(stderr, "[-nr]: you promise there are no repetative strings (not recommended) =)\n");
     exit(1);
 }
 
@@ -160,8 +159,12 @@ Dir_Rev *dir_rev_index, Pattern *patterns)
 // entry point
 int main(int argc, char ** argv)
 {
+    // some default parameters
+    bool no_repeats = false;
+    bool show_patterns = false;
     // check args number, read extra args
     if (argc < 3){_show_usage_and_quit(argv[0]);}
+    // TODO: move to another function?
     for (int op = 3; op < argc; ++op)
     {
         if (strcmp(argv[op], "-v") == 0){
@@ -171,6 +174,9 @@ int main(int argc, char ** argv)
         } else if (strcmp(argv[op], "-p") == 0){
             // show patterns
             show_patterns = true;
+        } else if (strcmp(argv[op], "--nr") == 0){
+            // user promises there are no repeats
+            no_repeats = true;
         } else {
             fprintf(stderr, "Error: unknown parameter %s\n", argv[op]);
             _show_usage_and_quit(argv[0]);
@@ -187,7 +193,7 @@ int main(int argc, char ** argv)
     allocated.size_index = NULL;
 
     // read and check input
-    Input_data input_data = read_input(argv);
+    Input_data input_data = read_input(argv, no_repeats);
     allocated.input_arr = input_data.in_arr;
     allocated.str_num = input_data.str_num;
 

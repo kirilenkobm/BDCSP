@@ -29,6 +29,6 @@ typedef struct
 
 void free_in_data(Input_data input_data, uint32_t line_num);
 
-Input_data read_input(char **argv);
+Input_data read_input(char **argv, bool n_r);
 
 #endif  // !READ_INPUT_H

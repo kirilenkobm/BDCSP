@@ -53,8 +53,7 @@ int diff_as_numbers(uint8_t *pat_a, uint8_t *pat_b);
 
 int compare_patterns(const void *a, const void *b);
 
-Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
-                          uint32_t *all_pat_num, uint32_t *act_col_num);
+Pattern *get_patterns(Input_data *input_data);
 
 bool *inter_and(bool *a, bool *b, uint32_t size);
 

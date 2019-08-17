@@ -21,11 +21,6 @@
 
 bool v = false;
 bool show_patterns = false;
-bool pat_intersect_allocated = false;
-bool dir_rev_ind_allocated = false;
-bool grid_allocated = false;
-bool sizes_index_allocated = false;
-bool combinations_allocated = false;
 
 
 // in support for free_all func
@@ -84,6 +79,7 @@ void free_all()
         free(allocated.size_index);
     }
     free(allocated.ones_index);
+    verbose("# Memory freed\n");
 }
 
 
@@ -193,33 +189,26 @@ int main(int argc, char ** argv)
     Input_data input_data = read_input(argv);
     allocated.input_arr = input_data.in_arr;
     allocated.str_num = input_data.str_num;
-    // TODO: put directly in the input arr struct
-    uint32_t patterns_num = 0;
-    uint32_t pat_arr_size = 0;
-    uint32_t act_col_num = 0;
 
-    Pattern *patterns = get_patterns(input_data, &patterns_num, &pat_arr_size, &act_col_num);
+    Pattern *patterns = get_patterns(&input_data);
     if (patterns == NULL){
         free_all();
         exit(2);
     }
     allocated.patterns = patterns;
-    allocated.patterns_num = pat_arr_size;
-    input_data.pat_num = pat_arr_size;
-    input_data.act_col_num = act_col_num;
+    allocated.patterns_num = input_data.pat_num;
 
     if (show_patterns)  // show patterns if required
     {
         printf("# Extracted patterns are:\n");
-        for (uint32_t i = 0; i < pat_arr_size; ++i){
+        for (uint32_t i = 0; i < input_data.pat_num; ++i){
             printf("# ID: %u:\n", i);
             for (uint32_t j = 0; j < input_data.str_num; j++){printf("%u ", patterns[i].pattern[j]);}
             printf("\t# Appears: %u; size: %u\n\n", patterns[i].times, patterns[i].size);
         }
     }
-    Dir_Rev *dir_rev_index = get_dir_rev_data(patterns, pat_arr_size, input_data.str_num);
+    Dir_Rev *dir_rev_index = get_dir_rev_data(patterns, input_data.pat_num, input_data.str_num);
     allocated.dir_rev_index = dir_rev_index;
-
 
     // case if K is too high and no need to compute anything
     if (input_data.k >= input_data.act_col_num){
@@ -233,12 +222,13 @@ int main(int argc, char ** argv)
     verbose("# Need to cover %u columns\n", input_data.to_cover);
 
     // get initial values
-    uint32_t max_comb_len = min_of_three(&input_data.str_num, &input_data.str_len, &patterns_num);
+    uint32_t max_comb_len = min_of_three(&input_data.str_num, &input_data.str_len, &input_data.pat_num);
     double sup;
     double inf;
     double exp_dens;
     get_init_density_range(&inf, &sup, &exp_dens, &input_data, dir_rev_index, patterns);
     verbose("# Inf: %f; Exp dens: %f; Sup: %f\n", inf, exp_dens, sup);
+    verbose("# Max comb length: %u\n", max_comb_len);
 
     // in case if expected density is not in [inf, sup)
     if (exp_dens <= inf){
@@ -255,18 +245,16 @@ int main(int argc, char ** argv)
 
     // not so obvious case, get intersection data first
     // add not intersect data to Pattern struct
-    get_intersection_data(patterns, pat_arr_size, input_data.str_num);
-    pat_intersect_allocated = true;
+    get_intersection_data(patterns, input_data.pat_num, input_data.str_num);
     // and create the grid
-    Size_index *size_index = index_sizes(patterns, pat_arr_size, input_data.str_num);
-    sizes_index_allocated = true;
+    Size_index *size_index = index_sizes(patterns, input_data.pat_num, input_data.str_num);
     allocated.size_index_alloc = true;
     allocated.size_index = size_index;
     // grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
     // grid_allocated = true;
     // grid_size = max_comb_len - 1;
     // // to simplify pats with [...1, 1, 1, 1]
-    uint32_t *ones_index = index_ones(patterns, pat_arr_size, input_data.str_num);
+    uint32_t *ones_index = index_ones(patterns, input_data.pat_num, input_data.str_num);
     allocated.ones_index = ones_index;
 
     // combinations = extract_combinations(grid, max_comb_len - 1, patterns, pat_arr_size, size_index,

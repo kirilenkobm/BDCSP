@@ -54,6 +54,7 @@ pip install -r requirements.txt
   - input_files/ - folder for input datasets
   - answers/ - folder with answers for each dataset
 - Makefile and Win_make.bat - build instructions for Linux/MacOS and Windows
+- run_tests.sh - shell script to check that everything builds and returns correct results for sample data
 - requirements.txt - libraries required for performance tests and input generation in python
 - Minor stuff:
   - LICENSE

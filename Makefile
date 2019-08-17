@@ -1,4 +1,3 @@
-# Took a template from https://gist.github.com/xuhdev/1873316
 # Makefile for shared library
 CC = gcc
 # CFLAGS = -fPIC -Wall -Wextra -O2 -g

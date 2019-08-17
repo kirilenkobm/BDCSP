@@ -45,6 +45,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-v]: enable verosity mode\n");
     fprintf(stderr, "[-p]: show patterns\n");
     fprintf(stderr, "[-nr]: you promise there are no repetative strings (not recommended) =)\n");
+    fprintf(stderr, "[-r]: render initial state (not recommended on big datasets)\n");
     exit(1);
 }
 
@@ -162,6 +163,8 @@ int main(int argc, char ** argv)
     // some default parameters
     bool no_repeats = false;
     bool show_patterns = false;
+    bool init_render = false;
+
     // check args number, read extra args
     if (argc < 3){_show_usage_and_quit(argv[0]);}
     // TODO: move to another function?
@@ -174,9 +177,12 @@ int main(int argc, char ** argv)
         } else if (strcmp(argv[op], "-p") == 0){
             // show patterns
             show_patterns = true;
-        } else if (strcmp(argv[op], "--nr") == 0){
+        } else if (strcmp(argv[op], "-nr") == 0){
             // user promises there are no repeats
             no_repeats = true;
+        } else if (strcmp(argv[op], "-r") == 0){
+            // we need initial render of program state
+            init_render = true;
         } else {
             fprintf(stderr, "Error: unknown parameter %s\n", argv[op]);
             _show_usage_and_quit(argv[0]);
@@ -271,6 +277,10 @@ int main(int argc, char ** argv)
     //                                     &combinations_num);
     // combinations_allocated = true;
 
+    if (init_render){
+        printf("# Initial program state is:\n");
+        render__show__first(patterns, &input_data);
+    }
     printf("The answer is:\nUndefined\n");
     free_all();
     return 0;

@@ -18,5 +18,6 @@
 #include "read_input.h"
 #include "patterns.h"
 
+void render__show__first(Pattern *patterns, Input_data *input_data);
 
 #endif // !RENDER_H

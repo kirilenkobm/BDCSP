@@ -72,6 +72,7 @@ Input_data read_input(char **argv)
     uint32_t char_num = 0;
     uint32_t act_str_len = 0;
     uint32_t lines_allocated = W;
+    bool prev_newline = false;
     input_data.in_arr = (uint8_t**)malloc(lines_allocated * sizeof(uint8_t*));
     input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
 
@@ -94,14 +95,17 @@ Input_data read_input(char **argv)
         switch (ch)
         {
             case 49:  // 1 -> add to current line
+                prev_newline = false;
                 input_data.in_arr[line_num][char_num] = 1;
                 ++char_num;
                 break;
             case 48:  // 0
+                prev_newline = false;
                 input_data.in_arr[line_num][char_num] = 0;
                 ++char_num;
                 break;
             case 10:  // new line, switch to the netx line then
+                if (prev_newline){break;}
                 if (first_line){
                     act_str_len = char_num;
                     first_line = false;
@@ -125,12 +129,13 @@ Input_data read_input(char **argv)
                     exit(1);
                 }
                 char_num = 0;
-                input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));            
+                input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
+                prev_newline = true;
                 break;
             case 32:  // space, do nothing
                 break;
             default:  // something else, error
-                fprintf(stderr, "Error: found character %c which is not 1, 0 or \\n \n", ch);
+                fprintf(stderr, "Error: found character %c which is not 1, 0, space or newline.\n", ch);
                 free_in_data(input_data, line_num);
                 exit(1);
                 break;

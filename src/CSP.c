@@ -27,15 +27,6 @@ bool grid_allocated = false;
 bool sizes_index_allocated = false;
 bool combinations_allocated = false;
 
-Input_data input_data;
-Pattern *patterns;
-Dir_Rev *dir_rev_index;
-uint32_t grid_size;
-Point *grid;
-uint32_t *ones_index;
-Size_index *size_index;
-uint32_t combinations_num = 0;
-
 
 // in support for free_all func
 struct allocated_data{
@@ -58,6 +49,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[k]: minimal distance to check, positive integer number\n");
     fprintf(stderr, "[-v]: enable verosity mode\n");
     fprintf(stderr, "[-p]: show patterns\n");
+    fprintf(stderr, "[-r]: you promise there are no repetative strings (not recommended) =)\n");
     exit(1);
 }
 
@@ -109,26 +101,26 @@ uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
     }
 }
 
-
 // get initial densities
 void get_init_density_range
-(uint32_t to_cover, double *inf, double *sup, double *exp_dens,
-uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
+(double *inf, double *sup, double *exp_dens, Input_data *input_data,
+Dir_Rev *dir_rev_index, Pattern *patterns)
+// TODO: TOO MANY VARIABLES
 {
-    *exp_dens = (double)to_cover / act_col_num;
+    *exp_dens = (double)input_data->to_cover / input_data->act_col_num;
 
     uint32_t cur_pat_size = 0;
     uint32_t cur_pat_times = 0;
     uint32_t unit = 0;
     uint32_t min_lvl_cov = 0;
-    uint32_t col_left = act_col_num;
+    uint32_t col_left = input_data->act_col_num;
     bool stop = false;
 
     // compute the lowest density
-    for (uint32_t pat_id = 0; pat_id < pat_num; ++pat_id){
+    for (uint32_t pat_id = 0; pat_id < input_data->pat_num; ++pat_id){
         cur_pat_size = patterns[pat_id].size;
         cur_pat_times = patterns[pat_id].times;
-        unit = input_data.str_num - cur_pat_size + 1;
+        unit = input_data->str_num - cur_pat_size + 1;
         for (uint32_t i = 0; i < cur_pat_times; i++){
             if (unit > col_left){
                 stop = true;
@@ -142,14 +134,14 @@ uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
 
     stop = false;
     verbose("# Min covered levels: %u\n", min_lvl_cov);
-    *inf = (double)min_lvl_cov / act_col_num;
+    *inf = (double)min_lvl_cov / input_data->act_col_num;
     uint32_t max_size = 0;
     uint64_t max_pat_sum = 0;
     uint32_t max_pat_id = 0;
     uint32_t rev_id = 0;
 
     // then the highest potential density
-    for (uint32_t pat_id = 0; pat_id < pat_num; ++pat_id){
+    for (uint32_t pat_id = 0; pat_id < input_data->pat_num; ++pat_id){
         if (!dir_rev_index[pat_id].is_dir){continue;}
         // consider only direct primers
         rev_id = dir_rev_index[pat_id].rev;
@@ -158,9 +150,9 @@ uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
         max_size = patterns[max_pat_id].size;
         max_pat_sum += ((uint64_t)max_size * cur_pat_times);
     }
-    uint64_t max_covered_levels = max_pat_sum / level_size;
+    uint64_t max_covered_levels = max_pat_sum / input_data->level_size;
     verbose("# Max covered levels: %llu\n", max_covered_levels);
-    *sup = (double)max_covered_levels / act_col_num;
+    *sup = (double)max_covered_levels / input_data->act_col_num;
 
     // if fails here -> I did a mistake
     assert((*sup > 0.0) && (*sup < 1.0));
@@ -199,20 +191,22 @@ int main(int argc, char ** argv)
     allocated.size_index = NULL;
 
     // read and check input
-    input_data = read_input(argv);
+    Input_data input_data = read_input(argv);
     allocated.input_arr = input_data.in_arr;
     allocated.str_num = input_data.str_num;
     uint32_t patterns_num = 0;
     uint32_t pat_arr_size = 0;
     uint32_t act_col_num = 0;
 
-    patterns = get_patterns(input_data, &patterns_num, &pat_arr_size, &act_col_num);
+    Pattern *patterns = get_patterns(input_data, &patterns_num, &pat_arr_size, &act_col_num);
     if (patterns == NULL){
         free_all();
         exit(2);
     }
     allocated.patterns = patterns;
     allocated.patterns_num = pat_arr_size;
+    input_data.pat_num = pat_arr_size;
+    input_data.act_col_num = act_col_num;  // TODO: replace act col num variable with it
 
     if (show_patterns)  // show patterns if required
     {
@@ -223,7 +217,7 @@ int main(int argc, char ** argv)
             printf("\t# Appears: %u; size: %u\n\n", patterns[i].times, patterns[i].size);
         }
     }
-    dir_rev_index = get_dir_rev_data(patterns, pat_arr_size, input_data.str_num);
+    Dir_Rev *dir_rev_index = get_dir_rev_data(patterns, pat_arr_size, input_data.str_num);
     allocated.dir_rev_index = dir_rev_index;
 
 
@@ -236,14 +230,14 @@ int main(int argc, char ** argv)
     }
     uint32_t to_cover = act_col_num - input_data.k;
     verbose("# Need to cover %u columns\n", to_cover);
+    input_data.to_cover = to_cover;  // TODO: replace to_cover variable
 
     // get initial values
     uint32_t max_comb_len = min_of_three(&input_data.str_num, &input_data.str_len, &patterns_num);
     double sup;
     double inf;
     double exp_dens;
-    get_init_density_range(to_cover, &inf, &sup, &exp_dens, pat_arr_size,
-                           act_col_num, input_data.str_num);
+    get_init_density_range(&inf, &sup, &exp_dens, &input_data, dir_rev_index, patterns);
     verbose("# Inf: %f; Exp dens: %f; Sup: %f\n", inf, exp_dens, sup);
 
     // in case if expected density is not in [inf, sup)
@@ -264,7 +258,7 @@ int main(int argc, char ** argv)
     get_intersection_data(patterns, pat_arr_size, input_data.str_num);
     pat_intersect_allocated = true;
     // and create the grid
-    size_index = index_sizes(patterns, pat_arr_size, input_data.str_num);
+    Size_index *size_index = index_sizes(patterns, pat_arr_size, input_data.str_num);
     sizes_index_allocated = true;
     allocated.size_index_alloc = true;
     allocated.size_index = size_index;
@@ -272,7 +266,7 @@ int main(int argc, char ** argv)
     // grid_allocated = true;
     // grid_size = max_comb_len - 1;
     // // to simplify pats with [...1, 1, 1, 1]
-    ones_index = index_ones(patterns, pat_arr_size, input_data.str_num);
+    uint32_t *ones_index = index_ones(patterns, pat_arr_size, input_data.str_num);
     allocated.ones_index = ones_index;
 
     // combinations = extract_combinations(grid, max_comb_len - 1, patterns, pat_arr_size, size_index,

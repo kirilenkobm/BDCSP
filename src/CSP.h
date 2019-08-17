@@ -11,6 +11,8 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <limits.h>
+#include "patterns.h"
+
 
 void _show_usage_and_quit(char * executable);
 
@@ -20,8 +22,9 @@ void free_all();
 
 uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c);
 
-void get_init_density_range(uint32_t to_cover, double *inf, double *sup, double *exp_dens,
-                            uint32_t pat_num, uint32_t act_col_num, uint32_t level_size);
+void get_init_density_range
+(double *inf, double *sup, double *exp_dens, Input_data *input_data,
+Dir_Rev *dir_rev_index, Pattern *patterns);
 
 int main(int argc, char ** argv);
 

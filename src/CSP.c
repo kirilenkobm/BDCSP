@@ -145,6 +145,7 @@ uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
     *inf = (double)min_lvl_cov / act_col_num;
     uint32_t max_size = 0;
     uint64_t max_pat_sum = 0;
+    uint32_t max_pat_id = 0;
     uint32_t rev_id = 0;
 
     // then the highest potential density
@@ -153,14 +154,15 @@ uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
         // consider only direct primers
         rev_id = dir_rev_index[pat_id].rev;
         cur_pat_times = patterns[pat_id].times;
-        max_size = (patterns[pat_id].size > patterns[rev_id].size) ? 
-            patterns[pat_id].size : patterns[rev_id].size;        
+        max_pat_id = (patterns[pat_id].size > patterns[rev_id].size) ? pat_id : rev_id;
+        max_size = patterns[max_pat_id].size;
         max_pat_sum += ((uint64_t)max_size * cur_pat_times);
     }
     uint64_t max_covered_levels = max_pat_sum / level_size;
     verbose("# Max covered levels: %llu\n", max_covered_levels);
     *sup = (double)max_covered_levels / act_col_num;
 
+    // if fails here -> I did a mistake
     assert((*sup > 0.0) && (*sup < 1.0));
     assert((*inf > 0.0) && (*inf < 1.0));
     assert(*inf <= *sup);
@@ -240,7 +242,8 @@ int main(int argc, char ** argv)
     double sup;
     double inf;
     double exp_dens;
-    get_init_density_range(to_cover, &inf, &sup, &exp_dens, pat_arr_size, act_col_num, input_data.str_num);
+    get_init_density_range(to_cover, &inf, &sup, &exp_dens, pat_arr_size,
+                           act_col_num, input_data.str_num);
     verbose("# Inf: %f; Exp dens: %f; Sup: %f\n", inf, exp_dens, sup);
 
     // in case if expected density is not in [inf, sup)
@@ -277,7 +280,7 @@ int main(int argc, char ** argv)
     //                                     &combinations_num);
     // combinations_allocated = true;
 
-    free_all();
     printf("The answer is:\nUndefined\n");
+    free_all();
     return 0;
 }

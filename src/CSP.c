@@ -265,21 +265,12 @@ int main(int argc, char ** argv)
     Size_index *size_index = index_sizes(patterns, input_data.pat_num, input_data.str_num);
     allocated.size_index_alloc = true;
     allocated.size_index = size_index;
-    // grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
-    // grid_allocated = true;
-    // grid_size = max_comb_len - 1;
-    // // to simplify pats with [...1, 1, 1, 1]
     uint32_t *ones_index = index_ones(patterns, input_data.pat_num, input_data.str_num);
     allocated.ones_index = ones_index;
 
-    // combinations = extract_combinations(grid, max_comb_len - 1, patterns, pat_arr_size, size_index,
-    //                                     input_data.str_len, input_data.str_num, ones_index, dir_rev_index,
-    //                                     &combinations_num);
-    // combinations_allocated = true;
-
     if (init_render){
         printf("# Initial program state is:\n");
-        render__show__first(patterns, &input_data);
+        render__show_(patterns, &input_data);
     }
     printf("The answer is:\nUndefined\n");
     free_all();

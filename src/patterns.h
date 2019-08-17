@@ -21,6 +21,7 @@ typedef struct
 {
     uint8_t *pattern;
     uint32_t times;
+    uint32_t reverses;
     uint32_t size;
     bool *no_intersect;
 } Pattern;

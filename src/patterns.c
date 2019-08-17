@@ -1,7 +1,6 @@
-
 // Bogdan Kirilenko
 // 2019, Dresden
-// Split input array in patterns
+// Operations with patterns
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

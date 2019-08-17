@@ -1,3 +1,6 @@
+// Bogdan Kirilenko
+// 2019, Dresden
+// Read input array and check it
 #ifndef READ_INPUT_H
 #define READ_INPUT_H
 #include <stdio.h>

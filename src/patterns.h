@@ -1,3 +1,6 @@
+// Bogdan Kirilenko
+// 2019, Dresden
+// Operations with patterns
 #ifndef PATTERNS_H
 #define PATTERNS_H
 #include <stdio.h>

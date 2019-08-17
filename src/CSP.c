@@ -17,6 +17,7 @@
 #include "patterns.h"
 // #include "grid.h"
 // #include "combinations.h"
+#include "render.h"
 
 
 bool v = false;

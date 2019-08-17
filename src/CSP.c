@@ -105,7 +105,6 @@ uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
 void get_init_density_range
 (double *inf, double *sup, double *exp_dens, Input_data *input_data,
 Dir_Rev *dir_rev_index, Pattern *patterns)
-// TODO: TOO MANY VARIABLES
 {
     *exp_dens = (double)input_data->to_cover / input_data->act_col_num;
 
@@ -194,6 +193,7 @@ int main(int argc, char ** argv)
     Input_data input_data = read_input(argv);
     allocated.input_arr = input_data.in_arr;
     allocated.str_num = input_data.str_num;
+    // TODO: put directly in the input arr struct
     uint32_t patterns_num = 0;
     uint32_t pat_arr_size = 0;
     uint32_t act_col_num = 0;
@@ -206,7 +206,7 @@ int main(int argc, char ** argv)
     allocated.patterns = patterns;
     allocated.patterns_num = pat_arr_size;
     input_data.pat_num = pat_arr_size;
-    input_data.act_col_num = act_col_num;  // TODO: replace act col num variable with it
+    input_data.act_col_num = act_col_num;
 
     if (show_patterns)  // show patterns if required
     {
@@ -222,15 +222,15 @@ int main(int argc, char ** argv)
 
 
     // case if K is too high and no need to compute anything
-    if (input_data.k >= act_col_num){
+    if (input_data.k >= input_data.act_col_num){
         verbose("# Answer branch 1\n");
         printf("The answer is:\nTrue\n");
         free_all();
         return 0;
     }
-    uint32_t to_cover = act_col_num - input_data.k;
-    verbose("# Need to cover %u columns\n", to_cover);
-    input_data.to_cover = to_cover;  // TODO: replace to_cover variable
+
+    input_data.to_cover = input_data.act_col_num - input_data.k;
+    verbose("# Need to cover %u columns\n", input_data.to_cover);
 
     // get initial values
     uint32_t max_comb_len = min_of_three(&input_data.str_num, &input_data.str_len, &patterns_num);

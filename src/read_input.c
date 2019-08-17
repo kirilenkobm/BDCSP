@@ -219,6 +219,7 @@ Input_data read_input(char **argv)
     }
     input_data.str_len = act_str_len;
     input_data.str_num = line_num;
+    input_data.act_col_num = 0;
     // for explicity:
     input_data.level_size = line_num;
     return input_data;

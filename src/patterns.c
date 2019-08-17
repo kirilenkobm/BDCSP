@@ -195,6 +195,7 @@ Pattern *get_patterns
         invert_pattern(patterns[minus_i].pattern, input_data.str_num);
     }
     qsort(patterns, full_len, sizeof(Pattern), compare_patterns);
+    for (uint32_t i = 0; i < full_len; ++i){patterns[i].no_intersect = NULL;}
     return patterns;
 }
 

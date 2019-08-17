@@ -25,7 +25,6 @@ bool pat_intersect_allocated = false;
 bool dir_rev_ind_allocated = false;
 bool grid_allocated = false;
 bool sizes_index_allocated = false;
-bool ones_index_allocated = false;
 bool combinations_allocated = false;
 
 Input_data input_data;
@@ -37,6 +36,19 @@ uint32_t *ones_index;
 Size_index *size_index;
 uint32_t combinations_num = 0;
 Combination *combinations;
+
+
+// in support for free_all func
+struct allocated_data{
+    uint8_t **input_arr;
+    uint32_t str_num;
+    uint32_t patterns_num;
+    Pattern *patterns;
+    Dir_Rev *dir_rev_index;
+    uint32_t *ones_index;
+    bool size_index_alloc;
+    Size_index *size_index;
+} allocated;
 
 
 // show help and exit
@@ -64,25 +76,23 @@ void verbose(const char * restrict format, ...)
 
 
 // free all memory
-void free_all(uint32_t str_len, uint32_t str_num, uint32_t patterns_num)
+void free_all()
 {
-    // free memory
-    for (uint32_t i = 0; i < patterns_num; ++i){free(patterns[i].pattern);}
-    if (pat_intersect_allocated){
-        for (uint32_t i = 0; i < patterns_num; ++i){free(patterns[i].no_intersect);}
+    for (uint32_t i = 0; i < allocated.patterns_num; ++i){
+        free(allocated.patterns[i].pattern);
+        free(allocated.patterns[i].no_intersect);
     }
-    free(patterns);
-    for (uint32_t i = 0; i < str_num; ++i){free(input_data.in_arr[i]);}
-    free(input_data.in_arr);
-    if (grid_allocated){
-        for (uint32_t i = 0; i < grid_size; ++i){free(grid[i].combinations);}
-        free(grid);
+    free(allocated.patterns);
+
+    for (uint32_t i = 0; i < allocated.str_num; ++i){free(allocated.input_arr[i]);}
+    free(allocated.input_arr);
+    free(allocated.dir_rev_index);
+
+    if (allocated.size_index_alloc){
+        for (uint32_t i = 1; i < allocated.str_num; ++i){free(allocated.size_index[i].ids);}
+        free(allocated.size_index);
     }
-    if (sizes_index_allocated){
-        for (uint32_t i = 1; i < str_num; ++i){free(size_index[i].ids);}
-        free(size_index);
-    }
-    if (ones_index_allocated){free(ones_index);}
+    free(allocated.ones_index);
 }
 
 
@@ -102,8 +112,9 @@ uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
 
 
 // get initial densities
-void get_init_density_range(uint32_t to_cover, double *inf, double *sup, double *exp_dens,
-                            uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
+void get_init_density_range
+(uint32_t to_cover, double *inf, double *sup, double *exp_dens,
+uint32_t pat_num, uint32_t act_col_num, uint32_t level_size)
 {
     *exp_dens = (double)to_cover / act_col_num;
 
@@ -143,7 +154,8 @@ void get_init_density_range(uint32_t to_cover, double *inf, double *sup, double 
         // consider only direct primers
         rev_id = dir_rev_index[pat_id].rev;
         cur_pat_times = patterns[pat_id].times;
-        max_size = (patterns[pat_id].size > patterns[rev_id].size) ? patterns[pat_id].size : patterns[rev_id].size;
+        max_size = (patterns[pat_id].size > patterns[rev_id].size) ? 
+            patterns[pat_id].size : patterns[rev_id].size;        
         max_pat_sum += ((uint64_t)max_size * cur_pat_times);
     }
     uint64_t max_covered_levels = max_pat_sum / level_size;
@@ -176,13 +188,30 @@ int main(int argc, char ** argv)
         }
     }
 
+    // set defaults to (potentially) allocated stuff
+    allocated.input_arr = NULL;
+    allocated.patterns_num = 0;
+    allocated.patterns = NULL;
+    allocated.dir_rev_index = NULL;
+    allocated.ones_index = NULL;
+    allocated.size_index_alloc = false;
+    allocated.size_index = NULL;
+
     // read and check input
     input_data = read_input(argv);
+    allocated.input_arr = input_data.in_arr;
+    allocated.str_num = input_data.str_num;
     uint32_t patterns_num = 0;
     uint32_t pat_arr_size = 0;
     uint32_t act_col_num = 0;
+
     patterns = get_patterns(input_data, &patterns_num, &pat_arr_size, &act_col_num);
-    if (patterns == NULL){free_all(input_data.str_len, input_data.str_num, pat_arr_size); exit(2);}
+    if (patterns == NULL){
+        free_all();
+        exit(2);
+    }
+    allocated.patterns = patterns;
+    allocated.patterns_num = pat_arr_size;
 
     if (show_patterns)  // show patterns if required
     {
@@ -194,12 +223,14 @@ int main(int argc, char ** argv)
         }
     }
     dir_rev_index = get_dir_rev_data(patterns, pat_arr_size, input_data.str_num);
+    allocated.dir_rev_index = dir_rev_index;
+
 
     // case if K is too high and no need to compute anything
     if (input_data.k >= act_col_num){
         verbose("# Answer branch 1\n");
         printf("The answer is:\nTrue\n");
-        free_all(input_data.str_len, input_data.str_num, pat_arr_size);
+        free_all();
         return 0;
     }
     uint32_t to_cover = act_col_num - input_data.k;
@@ -217,12 +248,12 @@ int main(int argc, char ** argv)
     if (exp_dens <= inf){
         verbose("# Answer branch 2\n");
         printf("The answer is:\nTrue\n");
-        free_all(input_data.str_len, input_data.str_num, pat_arr_size);
+        free_all();
         return 0;
     } else if (exp_dens > sup){
         verbose("# Answer branch 2\n");
         printf("The answer is:\nFalse\n");
-        free_all(input_data.str_len, input_data.str_num, pat_arr_size);
+        free_all();
         return 0;
     }
 
@@ -233,18 +264,21 @@ int main(int argc, char ** argv)
     // and create the grid
     size_index = index_sizes(patterns, pat_arr_size, input_data.str_num);
     sizes_index_allocated = true;
-    grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
-    grid_allocated = true;
-    grid_size = max_comb_len - 1;
-    // to simplify pats with [...1, 1, 1, 1]
+    allocated.size_index_alloc = true;
+    allocated.size_index = size_index;
+    // grid = make_grid(patterns, pat_arr_size, max_comb_len, input_data.str_num);
+    // grid_allocated = true;
+    // grid_size = max_comb_len - 1;
+    // // to simplify pats with [...1, 1, 1, 1]
     ones_index = index_ones(patterns, pat_arr_size, input_data.str_num);
-    ones_index_allocated = true;
+    allocated.ones_index = ones_index;
 
-    combinations = extract_combinations(grid, max_comb_len - 1, patterns, pat_arr_size, size_index,
-                                        input_data.str_len, input_data.str_num, ones_index, dir_rev_index,
-                                        &combinations_num);
-    combinations_allocated = true;
+    // combinations = extract_combinations(grid, max_comb_len - 1, patterns, pat_arr_size, size_index,
+    //                                     input_data.str_len, input_data.str_num, ones_index, dir_rev_index,
+    //                                     &combinations_num);
+    // combinations_allocated = true;
 
-    free_all(input_data.str_len, input_data.str_num, pat_arr_size);
+    free_all();
+    printf("The answer is:\nUndefined\n");
     return 0;
 }

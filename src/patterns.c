@@ -57,8 +57,9 @@ bool are_the_same(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_size)
 
 
 // check if the pattern was already added
-void is_it_in(Pattern *patterns, uint8_t *column, uint32_t col_size, bool *is_in,
-              uint32_t *ind_if_in, uint32_t extracted_num, uint32_t pat_size)
+void is_it_in
+(Pattern *patterns, uint8_t *column, uint32_t col_size, bool *is_in,
+uint32_t *ind_if_in, uint32_t extracted_num, uint32_t pat_size)
 {
     if (extracted_num == 0){
         // a priori not here
@@ -104,17 +105,15 @@ int compare_patterns(const void *a, const void *b)
 { 
     Pattern *ia = (Pattern *)a;
     Pattern *ib = (Pattern *)b;
-    if (ia->size != ib->size){
-        return ib->size - ia->size;
-    } else {
-        return diff_as_numbers(ib->pattern, ia->pattern);
-    }
+    if (ib->size > ia->size){return 1;}
+    else if (ia->size > ib->size){return -1;}
+    else {return diff_as_numbers(ib->pattern, ia->pattern);}
 }
 
 
 // split input data in patterns
-Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
-                          uint32_t *all_pat_num, uint32_t *act_col_num)
+Pattern *get_patterns
+(Input_data input_data, uint32_t *patterns_num, uint32_t *all_pat_num, uint32_t *act_col_num)
 {
     Pattern *patterns = (Pattern*)malloc(input_data.str_len * sizeof(Pattern));
     uint32_t extracted_patterns = 0;
@@ -150,7 +149,9 @@ Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
             ++patterns[ind_if_in].times;
         } else {
             // not in - add a new patterns
-            for (uint32_t i = 0; i < input_data.str_num; ++i){patterns[extracted_patterns].pattern[i] = column[i];}
+            for (uint32_t i = 0; i < input_data.str_num; ++i){
+                patterns[extracted_patterns].pattern[i] = column[i];
+            }
             patterns[extracted_patterns].size = col_size;
             patterns[extracted_patterns].times = 1;
             ++extracted_patterns;
@@ -171,6 +172,7 @@ Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
 
     patterns = (Pattern*)realloc(patterns, extracted_patterns * sizeof(Pattern));
     // now sort this stuff
+    // TODO: actually I don't need this qsort, but if I skip it it raises segfault
     qsort(patterns, extracted_patterns, sizeof(Pattern), compare_patterns);
     *patterns_num = extracted_patterns;
     uint32_t full_len = (2 * extracted_patterns - 1);
@@ -185,10 +187,13 @@ Pattern *get_patterns(Input_data input_data, uint32_t *patterns_num,
         patterns[minus_i].times = patterns[i].times;
         patterns[minus_i].size = input_data.str_num - patterns[i].size;
         patterns[minus_i].pattern = (uint8_t*)calloc(input_data.str_num + 1, sizeof(uint8_t));
-        for (uint32_t j = 0; j < input_data.str_num; ++j){patterns[minus_i].pattern[j] = patterns[i].pattern[j];}
+        for (uint32_t j = 0; j < input_data.str_num; ++j){
+            patterns[minus_i].pattern[j] = patterns[i].pattern[j];
+        }
         invert_pattern(patterns[minus_i].pattern, input_data.str_num);
     }
     qsort(patterns, full_len, sizeof(Pattern), compare_patterns);
+    for (uint32_t i = 0; i < full_len; ++i){patterns[i].no_intersect = NULL;}
     return patterns;
 }
 
@@ -240,7 +245,7 @@ Dir_Rev *get_dir_rev_data(Pattern *patterns, uint32_t pat_arr_size, uint32_t str
 bool patterns_intersect(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_len)
 {
     for (uint32_t i = 0; i < pat_len; ++i){
-        if ((pat_1[i] == 1) && (pat_2[i] == 1)){return true;}
+        if (pat_1[i] && pat_2[i]){return true;}
     }
     return false;
 }
@@ -331,6 +336,7 @@ uint32_t _get_one_ind(uint8_t *pattern, uint32_t str_num)
     }
     return ans;
 }
+
 
 // return positions occupied by one-dot patterns
 uint32_t *index_ones(Pattern *patterns, uint32_t arr_size, uint32_t str_num)

@@ -29,6 +29,30 @@ void free_in_data(Input_data input_data, uint32_t line_num)
 }
 
 
+// check if two lines are the same
+bool __are_same(uint8_t *l_1, uint8_t *l_2, uint32_t len)
+{
+    for (uint32_t i = 0; i < len; ++i){
+        if (l_1[i] != l_2[i]){return false;}
+    }
+    return true;
+}
+
+
+// check if new line is in array
+bool __check_is_in(uint8_t **in_arr, uint32_t str_len, uint32_t line_num)
+{
+    if (line_num == 0){return false;}
+    uint8_t *cur = in_arr[line_num];
+    bool same = false;
+    for (uint32_t i = 0; i < line_num; ++i){
+        same = __are_same(in_arr[i], cur, str_len);
+        if (same){return true;}
+    }
+    return false;
+}
+
+
 // read and check input stuff
 Input_data read_input(char **argv)
 {
@@ -72,6 +96,9 @@ Input_data read_input(char **argv)
     uint32_t char_num = 0;
     uint32_t act_str_len = 0;
     uint32_t lines_allocated = W;
+    uint32_t repeats = 0;
+    bool is_in = false;
+    bool prev_newline = false;
     input_data.in_arr = (uint8_t**)malloc(lines_allocated * sizeof(uint8_t*));
     input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
 
@@ -93,19 +120,29 @@ Input_data read_input(char **argv)
 
         switch (ch)
         {
-            case 49:  // 1 -> add to current line
+            case 49:  // -- "1" -> add to current line
+                prev_newline = false;
                 input_data.in_arr[line_num][char_num] = 1;
                 ++char_num;
                 break;
-            case 48:  // 0
+            case 48:  // == "0"
+                prev_newline = false;
                 input_data.in_arr[line_num][char_num] = 0;
                 ++char_num;
                 break;
-            case 10:  // new line, switch to the netx line then
+            case 10:  // newline, switch to the next line then
+                // new line before this one: continue, do nothing
+                if (prev_newline){break;}
+
+                // it was first line: define length
+                // to check that other's length is the same
                 if (first_line){
                     act_str_len = char_num;
                     first_line = false;
                 }
+                // is_in = check_is_in()
+
+                // error -> this line length != first line length
                 if (char_num != act_str_len)
                 {
                     fprintf(stderr, "Error! Strings expected to have the same length!\n");
@@ -113,6 +150,17 @@ Input_data read_input(char **argv)
                     free_in_data(input_data, line_num);
                     exit(1);
                 }
+
+                // check if there is a repeat
+                // not the most efficien solution, yes
+                is_in = __check_is_in(input_data.in_arr, act_str_len, line_num);
+                if (is_in){
+                    ++repeats;
+                    char_num = 0;
+                    break;
+                }
+
+                // create new line then
                 ++line_num;
                 if (line_num > lines_allocated - 1){
                     // too much lines, need to add some extra lines
@@ -125,26 +173,33 @@ Input_data read_input(char **argv)
                     exit(1);
                 }
                 char_num = 0;
-                input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));            
+                input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
+                prev_newline = true;
                 break;
             case 32:  // space, do nothing
                 break;
             default:  // something else, error
-                fprintf(stderr, "Error: found character %c which is not 1, 0 or \\n \n", ch);
+                fprintf(stderr, "Error: found character %c which is not 1, 0, space or newline.\n", ch);
                 free_in_data(input_data, line_num);
                 exit(1);
                 break;
         }
     }
+
+    // post-processing
     if (char_num == 0){
-        // \n -terminated file
+        // \n - terminated file
         free(input_data.in_arr[line_num]);
     } else if (char_num != act_str_len){
+        // happens if the last line had a different length
         fprintf(stderr, "Error: the last line of the file has different lenght!\n");
         free_in_data(input_data, line_num);
         exit(1);
     } else {
-        ++line_num;
+        // not \n - terminated file; need to check if the last line is not a repeat
+        is_in = __check_is_in(input_data.in_arr, act_str_len, line_num);
+        if (!is_in){++line_num;}
+        else {++repeats;}
     }
 
     // realloc memory; it is likely a bit too much now
@@ -156,6 +211,7 @@ Input_data read_input(char **argv)
 
     verbose("# Lines lenght: %u\n", act_str_len);
     verbose("# Lines num: %u\n", line_num);
+    verbose("# Found %u repeats\n", repeats);
     if ((act_str_len < 2) || (line_num < 2)){
         fprintf(stderr, "Error! Minimal input size is 2x2!\n");
         free_in_data(input_data, line_num);

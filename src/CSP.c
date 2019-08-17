@@ -217,6 +217,8 @@ int main(int argc, char ** argv)
         free_all();
         return 0;
     }
+    // otherwise I did a mistake
+    assert(input_data.act_col_num > 0);
 
     input_data.to_cover = input_data.act_col_num - input_data.k;
     verbose("# Need to cover %u columns\n", input_data.to_cover);

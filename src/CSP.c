@@ -15,7 +15,7 @@
 #include "CSP.h"
 #include "read_input.h"
 #include "patterns.h"
-#include "grid.h"
+// #include "grid.h"
 // #include "combinations.h"
 
 

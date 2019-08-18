@@ -13,7 +13,7 @@ fi
 
 # TODO: make for loop over the commands
 echo "Running test 1, should return False"
-test1=$(./CSP sample_input/test_0.txt 2> /dev/null 1)
+test1=$(./CSP _sample_input/test_0.txt 2> /dev/null 1)
 
 if [[ $? -ne 0 ]]
 then
@@ -28,7 +28,7 @@ else
 fi
 
 echo "Running test 1, should return True"
-test2=$(./CSP sample_input/test_0.txt 2> /dev/null 5)
+test2=$(./CSP _sample_input/test_0.txt 2> /dev/null 5)
 
 if [[ $? -ne 0 ]]
 then

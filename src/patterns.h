@@ -69,4 +69,6 @@ uint32_t *index_ones(Pattern *patterns, uint32_t arr_size, uint32_t str_num);
 
 Dir_Rev *get_dir_rev_data(Pattern *patterns, uint32_t pat_arr_size, uint32_t str_num);
 
+uint32_t *patterns__get_full_mask(Pattern *patterns, uint32_t dir_pat_num);
+
 #endif // !PATTERNS_H

@@ -358,3 +358,16 @@ uint32_t *index_ones(Pattern *patterns, uint32_t arr_size, uint32_t str_num)
     verbose("\n");
     return ans;
 }
+
+
+// get mask max for each pattern
+uint32_t *patterns__get_full_mask(Pattern *patterns, uint32_t dir_pat_num)
+{
+    uint32_t *ans = (uint32_t*)calloc(dir_pat_num + 1, sizeof(uint32_t));
+    for (uint32_t i = 0; i < (dir_pat_num + 1); ++i){
+        ans[i] = patterns[i].times;
+    }
+    return ans;
+}
+
+

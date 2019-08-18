@@ -285,15 +285,24 @@ int main(int argc, char ** argv)
     uint32_t *ones_index = index_ones(patterns, input_data.pat_num, input_data.str_num);
     allocated.ones_index = ones_index;
 
-    uint32_t dir_pat_num = 0;
-    uint8_t **init_render_data = render__draw(patterns, &input_data, &dir_pat_num);
+    uint32_t *zero_mask = (uint32_t*)calloc(input_data.dir_pat_num + 1, sizeof(uint32_t));
+    uint32_t *full_mask = patterns__get_full_mask(patterns, input_data.dir_pat_num);
+
+    uint8_t **init_render_data = render__draw(patterns, zero_mask, &input_data);
     if (init_render_show){
         printf("Initial state render:\n");
-        render__show_arr(init_render_data, input_data.str_num, dir_pat_num);
+        render__show_arr(init_render_data, input_data.str_num, input_data.act_col_num);
     }
-    uint32_t *zeros_nums = render__get_zeros(init_render_data, input_data.str_num, dir_pat_num);
+
+    uint32_t *zeros_nums = render__get_zeros(init_render_data, input_data.str_num, input_data.dir_pat_num);
     uint32_t max_zeros = arr_max(zeros_nums, input_data.str_num);
+    uint32_t min_zeros_amount = render__get_min_zeros_amount(init_render_data, input_data.str_num, input_data.act_col_num);
     uint32_t baseline = input_data.act_col_num - max_zeros;
+    uint32_t allowed_zeros = input_data.act_col_num - input_data.to_cover;
+    uint32_t total_allowed_zeros = allowed_zeros * input_data.str_num;
+    verbose("# Max zeros num %u; min zeros sum %u\n", max_zeros, min_zeros_amount);
+    verbose("# Baseline: %u, max allowed zeros per line: %u\n", baseline, allowed_zeros);
+    verbose("# Total allowed zeros: %u\n", total_allowed_zeros);
 
     if (baseline >= input_data.to_cover){
         // eventually got answer
@@ -301,23 +310,29 @@ int main(int argc, char ** argv)
         printf("The answer is:\nTrue\n");
         free_all();
         return 0;
+    } else if (total_allowed_zeros < min_zeros_amount){
+        // also an answer; not sure if it is possible
+        verbose("# answer branch 3\n");
+        printf("The answer is:\nFalse\n");
+        free_all();
+        return 0;
     }
 
-    uint32_t cover_left = input_data.to_cover - (input_data.act_col_num - max_zeros);
-    if (v){
-        verbose("# Initial zeros nums:\n# ");
-        for (uint32_t i = 0; i < input_data.str_num; ++i){verbose("%u ", zeros_nums[i]);}
-        verbose("\n");
-        verbose("# Max zeros: %u; Left to cover: %u\n", max_zeros, cover_left);
-    }
-    allocated.init_render_data = init_render_data;
-    allocated.init_r_data_depth = input_data.str_num;
-    allocated.zeros_nums = zeros_nums;
+    // uint32_t cover_left = input_data.to_cover - (input_data.act_col_num - max_zeros);
+    // if (v){
+    //     verbose("# Initial zeros nums:\n# ");
+    //     for (uint32_t i = 0; i < input_data.str_num; ++i){verbose("%u ", zeros_nums[i]);}
+    //     verbose("\n");
+    //     verbose("# Max zeros: %u; Left to cover: %u\n", max_zeros, cover_left);
+    // }
+    // allocated.init_render_data = init_render_data;
+    // allocated.init_r_data_depth = input_data.str_num;
+    // allocated.zeros_nums = zeros_nums;
 
-    uint64_t volume = 0;
-    volume = patterns[1].times + 1;
-    for (uint32_t i = 2; i < input_data.dir_pat_num; ++i){volume *= (patterns[i].times + 1);}
-    verbose("# Search hypercube volume is %llu\n", volume);
+    // uint64_t volume = 0;
+    // volume = patterns[1].times + 1;
+    // for (uint32_t i = 2; i < input_data.dir_pat_num; ++i){volume *= (patterns[i].times + 1);}
+    // verbose("# Search hypercube volume is %llu\n", volume);
 
     printf("The answer is:\nUndefined\n");
     free_all();

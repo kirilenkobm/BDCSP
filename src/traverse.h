@@ -13,7 +13,7 @@ typedef struct{
 } Move;
 
 typedef struct{
-    uint32_t *pat_id_reverses;
+    uint32_t *pat_mask;
     Move *moves;
     uint32_t moves_num;
     uint32_t cur_move;

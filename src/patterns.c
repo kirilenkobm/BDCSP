@@ -183,7 +183,9 @@ Pattern *get_patterns(Input_data *input_data)
     patterns = (Pattern*)realloc(patterns, full_len * sizeof(Pattern));
     for (uint32_t i = 1; i < extracted_patterns; ++i){
         uint32_t minus_i = full_len - i;
+        patterns[i].reverses = 0;
         patterns[minus_i].times = patterns[i].times;
+        patterns[minus_i].reverses = patterns[i].times;
         patterns[minus_i].size = input_data->str_num - patterns[i].size;
         patterns[minus_i].pattern = (uint8_t*)calloc(input_data->str_num + 1, sizeof(uint8_t));
         for (uint32_t j = 0; j < input_data->str_num; ++j){
@@ -194,7 +196,6 @@ Pattern *get_patterns(Input_data *input_data)
     qsort(patterns, full_len, sizeof(Pattern), compare_patterns);
     for (uint32_t i = 0; i < full_len; ++i){
         patterns[i].no_intersect = NULL;
-        patterns[i].reverses = 0;
     }
     return patterns;
 }

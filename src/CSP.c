@@ -33,6 +33,8 @@ struct allocated_data{
     uint32_t *ones_index;
     bool size_index_alloc;
     Size_index *size_index;
+    uint32_t init_r_data_depth;
+    uint8_t **init_render_data;
 } allocated;
 
 
@@ -80,6 +82,8 @@ void free_all()
         free(allocated.size_index);
     }
     free(allocated.ones_index);
+    for (uint32_t i = 0; i < allocated.init_r_data_depth; ++i){free(allocated.init_render_data[i]);}
+    free(allocated.init_render_data);
     verbose("# Memory freed\n");
 }
 
@@ -163,7 +167,7 @@ int main(int argc, char ** argv)
     // some default parameters
     bool no_repeats = false;
     bool show_patterns = false;
-    bool init_render = false;
+    bool init_render_show = false;
 
     // check args number, read extra args
     if (argc < 3){_show_usage_and_quit(argv[0]);}
@@ -182,7 +186,7 @@ int main(int argc, char ** argv)
             no_repeats = true;
         } else if (strcmp(argv[op], "-r") == 0){
             // we need initial render of program state
-            init_render = true;
+            init_render_show = true;
         } else {
             fprintf(stderr, "Error: unknown parameter %s\n", argv[op]);
             _show_usage_and_quit(argv[0]);
@@ -197,6 +201,8 @@ int main(int argc, char ** argv)
     allocated.ones_index = NULL;
     allocated.size_index_alloc = false;
     allocated.size_index = NULL;
+    allocated.init_r_data_depth = 0;
+    allocated.init_render_data = NULL;
 
     // read and check input
     Input_data input_data = read_input(argv, no_repeats);
@@ -268,10 +274,15 @@ int main(int argc, char ** argv)
     uint32_t *ones_index = index_ones(patterns, input_data.pat_num, input_data.str_num);
     allocated.ones_index = ones_index;
 
-    if (init_render){
-        printf("# Initial program state is:\n");
-        render__show_(patterns, &input_data);
+    uint32_t dir_pat_num = 0;
+    uint8_t **init_render_data = render__show_(patterns, &input_data, &dir_pat_num);
+    if (init_render_show){
+        printf("Initial state render:\n");
+        render_show_arr(init_render_data, input_data.str_num, dir_pat_num);
     }
+    allocated.init_render_data = init_render_data;
+    allocated.init_r_data_depth = input_data.str_num;
+
     printf("The answer is:\nUndefined\n");
     free_all();
     return 0;

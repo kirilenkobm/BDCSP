@@ -18,6 +18,8 @@
 #include "read_input.h"
 #include "patterns.h"
 
-void render__show_(Pattern *patterns, Input_data *input_data);
+uint8_t **render__show_(Pattern *patterns, Input_data *input_data, uint32_t *dir_pat_num);
+
+void render_show_arr(uint8_t **arr, uint32_t rows, uint32_t cols);
 
 #endif // !RENDER_H

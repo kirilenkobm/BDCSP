@@ -3,6 +3,18 @@
 // Walking over hypercube
 #ifndef TRAVERSE_H
 #define TRAVERSE_H
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <ctype.h> 
+#include <stdarg.h>
+#include <unistd.h>
+#include <limits.h>
+#include "CSP.h"
 #include "patterns.h"
 #include "render.h"
 
@@ -19,5 +31,7 @@ typedef struct{
     uint32_t cur_move;
 } State;
 
+bool traverse__run
+(uint32_t *zero_mask, uint32_t *full_mask, uint32_t *init_z_dist, Input_data *input_data, Pattern *patterns);
 
 #endif // !TRAVERSE_H

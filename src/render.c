@@ -104,3 +104,11 @@ uint32_t render__get_min_zeros_amount(uint8_t **init_render_data, uint32_t rows,
     }
     return zeros_sum;
 }
+
+
+// free allocated render
+void render__free_render(uint8_t **arr, uint32_t depth)
+{
+    for (uint32_t i = 0; i < depth; ++i){free(arr[i]);}
+    free(arr);
+}

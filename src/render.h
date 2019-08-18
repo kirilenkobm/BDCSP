@@ -26,4 +26,6 @@ uint32_t *render__get_zeros(uint8_t **init_render_data, uint32_t rows, uint32_t 
 
 uint32_t render__get_min_zeros_amount(uint8_t **init_render_data, uint32_t rows, uint32_t cols);
 
+void render__free_render(uint8_t **arr, uint32_t depth);
+
 #endif // !RENDER_H

@@ -36,6 +36,8 @@ struct allocated_data{
     uint32_t init_r_data_depth;
     uint8_t **init_render_data;
     uint32_t *zeros_nums;
+    uint32_t *zero_mask;
+    uint32_t *full_mask;
 } allocated;
 
 
@@ -87,6 +89,8 @@ void free_all()
     free(allocated.init_render_data);
 
     free(allocated.zeros_nums);
+    free(allocated.zero_mask);
+    free(allocated.full_mask);
     verbose("# Memory freed\n");
 }
 
@@ -215,6 +219,8 @@ int main(int argc, char ** argv)
     allocated.init_r_data_depth = 0;
     allocated.init_render_data = NULL;
     allocated.zeros_nums = NULL;
+    allocated.zero_mask = NULL;
+    allocated.full_mask = NULL;
 
     // read and check input
     Input_data input_data = read_input(argv, no_repeats);
@@ -287,6 +293,8 @@ int main(int argc, char ** argv)
 
     uint32_t *zero_mask = (uint32_t*)calloc(input_data.dir_pat_num + 1, sizeof(uint32_t));
     uint32_t *full_mask = patterns__get_full_mask(patterns, input_data.dir_pat_num);
+    allocated.zero_mask = zero_mask;
+    allocated.full_mask = full_mask;
 
     uint8_t **init_render_data = render__draw(patterns, zero_mask, &input_data);
     if (init_render_show){
@@ -318,23 +326,21 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-    // uint32_t cover_left = input_data.to_cover - (input_data.act_col_num - max_zeros);
-    // if (v){
-    //     verbose("# Initial zeros nums:\n# ");
-    //     for (uint32_t i = 0; i < input_data.str_num; ++i){verbose("%u ", zeros_nums[i]);}
-    //     verbose("\n");
-    //     verbose("# Max zeros: %u; Left to cover: %u\n", max_zeros, cover_left);
-    // }
-    // allocated.init_render_data = init_render_data;
-    // allocated.init_r_data_depth = input_data.str_num;
-    // allocated.zeros_nums = zeros_nums;
+    uint32_t cover_left = input_data.to_cover - (input_data.act_col_num - max_zeros);
+    if (v){
+        verbose("# Initial zeros nums:\n# ");
+        for (uint32_t i = 0; i < input_data.str_num; ++i){verbose("%u ", zeros_nums[i]);}
+        verbose("\n");
+        verbose("# Max zeros: %u; Left to cover: %u\n", max_zeros, cover_left);
+    }
+    allocated.init_render_data = init_render_data;
+    allocated.init_r_data_depth = input_data.str_num;
+    allocated.zeros_nums = zeros_nums;
 
-    // uint64_t volume = 0;
-    // volume = patterns[1].times + 1;
-    // for (uint32_t i = 2; i < input_data.dir_pat_num; ++i){volume *= (patterns[i].times + 1);}
-    // verbose("# Search hypercube volume is %llu\n", volume);
-
-    printf("The answer is:\nUndefined\n");
+    // "just" extract result and output it
+    bool result = traverse__run(zero_mask, full_mask, zeros_nums, &input_data, patterns);
+    char *answer = (result) ? "True" : "False";
+    printf("The answer is:\n%s\n", answer);
     free_all();
     return 0;
 }

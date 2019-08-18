@@ -108,6 +108,8 @@ bool traverse__run
 
     // initiate moves, only + moves available
     Move *initial_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num);
+    Z_compare* init_compares = (Z_compare*)malloc(sizeof(Z_compare) * input_data->dir_pat_num);
+
     uint32_t i_moves_count = 0;
 
     uint32_t *move_mask = traverse__mask_copy(zero_mask, mask_size);
@@ -123,7 +125,14 @@ bool traverse__run
         // don't check for "possible" because shift=1 possible everywhere
         // orherwise, there is a bug
         Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
+        Move this_move;
+        this_move.pat_id = p_num;
+        this_move.size = 1;
         compare.assign_to = p_num;
+
+        init_compares[i_moves_count] = compare;
+        initial_moves[i_moves_count] = this_move;
+        ++i_moves_count;
         // free allocated stuff, return mask to status-quo
         render__free_render(move_render, input_data->str_num);
         move_mask[p_num] = 0;
@@ -132,6 +141,7 @@ bool traverse__run
 
     free(move_mask);
     free(initial_moves);
+    free(init_compares);
 
     for (uint32_t i = 0; i < states_num; ++i){
         free(states[i].pat_mask);

@@ -31,12 +31,32 @@
 //     uint32_t cur_move;
 // } State;
 
+// typedef struct{
+//     uint32_t min_zeros;
+//     uint32_t min_zeros_delta;
+//     uint32_t minus_;
+//     uint32_t plus_;
+// } Z_compare;
 
+
+// create array copy
 uint32_t *traverse__mask_copy(uint32_t *mask, uint32_t len)
 {
     uint32_t *ans = (uint32_t*)calloc(len, sizeof(uint32_t));
     for (uint32_t i = 0; i < len; ++i){ans[i] = mask[i];}
     return ans;
+}
+
+
+// compare two zero-distr outputs
+Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
+{
+    Z_compare res;
+    res.min_zeros = 0;
+    res.min_zeros_delta = 0;
+    res.minus_ = 0;
+    res.plus_ = 0;
+    return res;
 }
 
 
@@ -74,7 +94,7 @@ bool traverse__run
                                                  input_data->act_col_num);
         // don't check for "possible" because shift=1 possible everywhere
         // orherwise, there is a bug
-        
+        Z_compare compare = compare_Z_dist(init_z_dist, zero_mask, input_data->str_num);
         // free allocated stuff, return mask to status-quo
         render__free_render(move_render, input_data->str_num);
         move_mask[p_num] = 0;

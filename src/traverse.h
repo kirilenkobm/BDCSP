@@ -31,6 +31,13 @@ typedef struct{
     uint32_t cur_move;
 } State;
 
+typedef struct{
+    uint32_t min_zeros;
+    uint32_t min_zeros_delta;
+    uint32_t minus_;
+    uint32_t plus_;
+} Z_compare;
+
 bool traverse__run
 (uint32_t *zero_mask, uint32_t *full_mask, uint32_t *init_z_dist, Input_data *input_data, Pattern *patterns);
 

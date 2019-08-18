@@ -25,7 +25,7 @@ uint8_t _swap(uint8_t x)
 }
 
 // show initial program state
-uint8_t **render__show_(Pattern *patterns, Input_data *input_data, uint32_t *dir_pat_num)
+uint8_t **render__draw(Pattern *patterns, Input_data *input_data, uint32_t *dir_pat_num)
 {
     uint8_t **ans = (uint8_t**)malloc(input_data->str_num * sizeof(uint8_t*));
     uint32_t *dir_pattern_ids = (uint32_t*)calloc(input_data->pat_num, sizeof(uint32_t));
@@ -66,7 +66,7 @@ uint8_t **render__show_(Pattern *patterns, Input_data *input_data, uint32_t *dir
 
 
 // print 2D render
-void render_show_arr(uint8_t **arr, uint32_t rows, uint32_t cols)
+void render__show_arr(uint8_t **arr, uint32_t rows, uint32_t cols)
 {
     for (uint32_t row = 0; row < rows; ++row){
         printf("# ");
@@ -75,5 +75,24 @@ void render_show_arr(uint8_t **arr, uint32_t rows, uint32_t cols)
         }
         printf("\n");
     }
+}
+
+
+// get zeros number from all rows
+uint32_t *render__get_zeros(uint8_t **init_render_data, uint32_t rows, uint32_t cols)
+{
+    uint32_t *ans = (uint32_t*)calloc(rows, sizeof(uint32_t));
+    uint32_t this_row = 0;
+
+    for (uint32_t i = 0; i < rows; ++i)
+    {
+        this_row = 0;
+        for (uint32_t j = 0; j < cols; ++j){
+            if (init_render_data[i][j] == 1){continue;}
+            ++this_row;
+        }
+        ans[i] = this_row;
+    }
+    return ans;
 }
 

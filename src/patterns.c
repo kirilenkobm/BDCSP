@@ -172,11 +172,11 @@ Pattern *get_patterns(Input_data *input_data)
 
     patterns = (Pattern*)realloc(patterns, extracted_patterns * sizeof(Pattern));
     // now sort this stuff
-    // TODO: actually I don't need this qsort, but if I skip it it raises segfault
     qsort(patterns, extracted_patterns, sizeof(Pattern), compare_patterns);
     uint32_t full_len = (2 * extracted_patterns - 1);
     verbose("# Found %u variable columns\n", input_data->act_col_num);
     verbose("# Extracted %u direct patterns\n", extracted_patterns - 1);
+    input_data->dir_pat_num = extracted_patterns - 1;
     verbose("# Full patterns array takes %u\n", full_len);
 
     input_data->pat_num = full_len;
@@ -193,7 +193,7 @@ Pattern *get_patterns(Input_data *input_data)
         }
         invert_pattern(patterns[minus_i].pattern, input_data->str_num);
     }
-    qsort(patterns, full_len, sizeof(Pattern), compare_patterns);
+    // qsort(patterns, full_len, sizeof(Pattern), compare_patterns);
     for (uint32_t i = 0; i < full_len; ++i){
         patterns[i].no_intersect = NULL;
     }

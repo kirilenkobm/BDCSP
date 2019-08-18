@@ -23,6 +23,7 @@ typedef struct
     uint32_t k;
     uint32_t to_cover;
     uint32_t pat_num;
+    uint32_t dir_pat_num;
     uint32_t act_col_num;
     uint32_t level_size;
 } Input_data;

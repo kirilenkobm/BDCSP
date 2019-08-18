@@ -35,6 +35,7 @@ struct allocated_data{
     Size_index *size_index;
     uint32_t init_r_data_depth;
     uint8_t **init_render_data;
+    uint32_t *zeros_nums;
 } allocated;
 
 
@@ -84,6 +85,8 @@ void free_all()
     free(allocated.ones_index);
     for (uint32_t i = 0; i < allocated.init_r_data_depth; ++i){free(allocated.init_render_data[i]);}
     free(allocated.init_render_data);
+
+    free(allocated.zeros_nums);
     verbose("# Memory freed\n");
 }
 
@@ -102,17 +105,27 @@ uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
     }
 }
 
-// get initial densities
-void get_init_density_range
-(double *inf, double *sup, double *exp_dens, Input_data *input_data,
-Dir_Rev *dir_rev_index, Pattern *patterns)
+
+// max of array
+uint32_t arr_max(uint32_t *arr, uint32_t size)
 {
-    *exp_dens = (double)input_data->to_cover / input_data->act_col_num;
+    uint32_t ans = 0;
+    for (uint32_t i = 0; i < size; ++i){
+        if (arr[i] > ans){ans = arr[i];}
+    }
+    return ans;
+}
+
+
+// get initial densities
+void get_init_density_range(uint32_t *inf_cov, uint32_t *sup_cov, Input_data *input_data,
+                            Dir_Rev *dir_rev_index, Pattern *patterns)
+{
+    // *exp_dens = (double)input_data->to_cover / input_data->act_col_num;
 
     uint32_t cur_pat_size = 0;
     uint32_t cur_pat_times = 0;
     uint32_t unit = 0;
-    uint32_t min_lvl_cov = 0;
     uint32_t col_left = input_data->act_col_num;
     bool stop = false;
 
@@ -127,14 +140,14 @@ Dir_Rev *dir_rev_index, Pattern *patterns)
                 break;
             }
             col_left -= unit;
-            ++min_lvl_cov;
+            *inf_cov += 1;
         }
         if (stop) {break;}
     }
 
     stop = false;
-    verbose("# Min covered levels: %u\n", min_lvl_cov);
-    *inf = (double)min_lvl_cov / input_data->act_col_num;
+    verbose("# Min covered levels: %u\n", *inf_cov);
+    // *inf = (double)min_lvl_cov / input_data->act_col_num;
     uint32_t max_size = 0;
     uint64_t max_pat_sum = 0;
     uint32_t max_pat_id = 0;
@@ -150,14 +163,12 @@ Dir_Rev *dir_rev_index, Pattern *patterns)
         max_size = patterns[max_pat_id].size;
         max_pat_sum += ((uint64_t)max_size * cur_pat_times);
     }
-    uint64_t max_covered_levels = max_pat_sum / input_data->level_size;
-    verbose("# Max covered levels: %llu\n", max_covered_levels);
-    *sup = (double)max_covered_levels / input_data->act_col_num;
+    *sup_cov = max_pat_sum / input_data->level_size;
+    verbose("# Max covered levels: %llu\n", *sup_cov);
+    // *sup = (double)max_covered_levels / input_data->act_col_num;
 
     // if fails here -> I did a mistake
-    assert((*sup > 0.0) && (*sup < 1.0));
-    assert((*inf > 0.0) && (*inf < 1.0));
-    assert(*inf <= *sup);
+    assert(*inf_cov <= *sup_cov);
 }
 
 
@@ -203,6 +214,7 @@ int main(int argc, char ** argv)
     allocated.size_index = NULL;
     allocated.init_r_data_depth = 0;
     allocated.init_render_data = NULL;
+    allocated.zeros_nums = NULL;
 
     // read and check input
     Input_data input_data = read_input(argv, no_repeats);
@@ -244,20 +256,19 @@ int main(int argc, char ** argv)
 
     // get initial values
     uint32_t max_comb_len = min_of_three(&input_data.str_num, &input_data.str_len, &input_data.pat_num);
-    double sup;
-    double inf;
-    double exp_dens;
-    get_init_density_range(&inf, &sup, &exp_dens, &input_data, dir_rev_index, patterns);
-    verbose("# Inf: %f; Exp dens: %f; Sup: %f\n", inf, exp_dens, sup);
+    uint32_t inf_cov = 0;
+    uint32_t sup_cov = 0;
+    get_init_density_range(&inf_cov, &sup_cov, &input_data, dir_rev_index, patterns);
+    // verbose("# Inf: %f; Exp dens: %f; Sup: %f\n", inf, exp_dens, sup);
     verbose("# Max comb length: %u\n", max_comb_len);
 
     // in case if expected density is not in [inf, sup)
-    if (exp_dens <= inf){
+    if (input_data.to_cover <= inf_cov){
         verbose("# Answer branch 2\n");
         printf("The answer is:\nTrue\n");
         free_all();
         return 0;
-    } else if (exp_dens > sup){
+    } else if (input_data.to_cover > sup_cov){
         verbose("# Answer branch 2\n");
         printf("The answer is:\nFalse\n");
         free_all();
@@ -275,13 +286,38 @@ int main(int argc, char ** argv)
     allocated.ones_index = ones_index;
 
     uint32_t dir_pat_num = 0;
-    uint8_t **init_render_data = render__show_(patterns, &input_data, &dir_pat_num);
+    uint8_t **init_render_data = render__draw(patterns, &input_data, &dir_pat_num);
     if (init_render_show){
         printf("Initial state render:\n");
-        render_show_arr(init_render_data, input_data.str_num, dir_pat_num);
+        render__show_arr(init_render_data, input_data.str_num, dir_pat_num);
+    }
+    uint32_t *zeros_nums = render__get_zeros(init_render_data, input_data.str_num, dir_pat_num);
+    uint32_t max_zeros = arr_max(zeros_nums, input_data.str_num);
+    uint32_t baseline = input_data.act_col_num - max_zeros;
+
+    if (baseline >= input_data.to_cover){
+        // eventually got answer
+        verbose("# answer branch 3\n");
+        printf("The answer is:\nTrue\n");
+        free_all();
+        return 0;
+    }
+
+    uint32_t cover_left = input_data.to_cover - (input_data.act_col_num - max_zeros);
+    if (v){
+        verbose("# Initial zeros nums:\n# ");
+        for (uint32_t i = 0; i < input_data.str_num; ++i){verbose("%u ", zeros_nums[i]);}
+        verbose("\n");
+        verbose("# Max zeros: %u; Left to cover: %u\n", max_zeros, cover_left);
     }
     allocated.init_render_data = init_render_data;
     allocated.init_r_data_depth = input_data.str_num;
+    allocated.zeros_nums = zeros_nums;
+
+    uint64_t volume = 0;
+    volume = patterns[1].times + 1;
+    for (uint32_t i = 2; i < input_data.dir_pat_num; ++i){volume *= (patterns[i].times + 1);}
+    verbose("# Search hypercube volume is %llu\n", volume);
 
     printf("The answer is:\nUndefined\n");
     free_all();

@@ -17,7 +17,7 @@
 #include "render.h"
 #include "traverse.h"
 #define MOVES_STEP 10
-
+#define N printf("\n");  // temp shit
 
 // typedef struct{
 //     uint32_t pat_id;
@@ -37,6 +37,15 @@
 //     uint32_t minus_;
 //     uint32_t plus_;
 // } Z_compare;
+
+
+// comparator for Z results
+int compare_Z_compares(const void *a, const void *b)
+{ 
+    Z_compare *ia = (Z_compare *)a;
+    Z_compare *ib = (Z_compare *)b;
+    // TODO: compare
+}
 
 
 // create array copy
@@ -60,7 +69,18 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
     for (uint32_t i = 0; i < len; ++i){printf("%u ", before[i]);}
     printf("\nAfter:\n");
     for (uint32_t i = 0; i < len; ++i){printf("%u ", after[i]);}
-    printf("\n\n");
+    N
+    uint32_t before_max =  arr_max(before, len);
+    uint32_t after_max = arr_max(after, len);
+    res.min_zeros_delta = after_max - before_max;
+    printf("Min delta: %d\n", res.min_zeros_delta);
+    for (uint32_t i = 0; i < len; ++i){
+        if (before[i] == after[i]){continue;}
+        else if (before[i] > after[i]){res.minus_ += (before[i] - after[i]);}
+        else {res.plus_ += (after[i] - before[i]);}
+    }
+    printf("Minuses: %u pluses: %u\n", res.minus_, res.plus_);
+    N
     return res;
 }
 
@@ -96,13 +116,14 @@ bool traverse__run
         uint32_t *move_mask = traverse__mask_copy(zero_mask, mask_size);
         move_mask[p_num] = 1;
         uint8_t **move_render = render__draw(patterns, move_mask, input_data);
-        render__show_arr(move_render, input_data->str_num, input_data->act_col_num);
+        // render__show_arr(move_render, input_data->str_num, input_data->act_col_num);
         uint32_t *zeros_dist = render__get_zeros(move_render,
                                                  input_data->str_num, 
                                                  input_data->act_col_num);
         // don't check for "possible" because shift=1 possible everywhere
         // orherwise, there is a bug
         Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
+        compare.assign_to = p_num;
         // free allocated stuff, return mask to status-quo
         render__free_render(move_render, input_data->str_num);
         move_mask[p_num] = 0;

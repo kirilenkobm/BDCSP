@@ -25,6 +25,10 @@ uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c);
 void get_init_density_range(uint32_t *inf_cov, uint32_t *sup_cov, Input_data *input_data,
                             Dir_Rev *dir_rev_index, Pattern *patterns);
 
+uint32_t arr_sum(uint32_t *arr, uint32_t size);
+
+uint32_t arr_max(uint32_t *arr, uint32_t size);
+
 int main(int argc, char ** argv);
 
 #endif // !CSP_H

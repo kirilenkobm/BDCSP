@@ -33,9 +33,10 @@ typedef struct{
 
 typedef struct{
     uint32_t min_zeros;
-    uint32_t min_zeros_delta;
+    int8_t min_zeros_delta;
     uint32_t minus_;
     uint32_t plus_;
+    uint32_t assign_to;
 } Z_compare;
 
 bool traverse__run

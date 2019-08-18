@@ -110,6 +110,15 @@ uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
 }
 
 
+// just array sum
+uint32_t arr_sum(uint32_t *arr, uint32_t size)
+{
+    uint32_t ans = 0;
+    for (uint32_t i = 0; i < size; ++i){ans += arr[i];}
+    return ans;
+}
+
+
 // max of array
 uint32_t arr_max(uint32_t *arr, uint32_t size)
 {

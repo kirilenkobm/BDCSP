@@ -129,6 +129,10 @@ bool traverse__run
         this_move.pat_id = p_num;
         this_move.size = 1;
         compare.assign_to = p_num;
+        if (compare.min_zeros_delta == 1){
+            // we don't need this move
+            continue;
+        }
 
         init_compares[i_moves_count] = compare;
         initial_moves[i_moves_count] = this_move;
@@ -139,6 +143,10 @@ bool traverse__run
         free(zeros_dist);
     }
 
+    if (i_moves_count == 0){
+        // free all; no initial moves possible
+        return false;
+    }
     free(move_mask);
     free(initial_moves);
     free(init_compares);

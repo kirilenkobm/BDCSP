@@ -16,3 +16,4 @@ old_src/
 CSP
 tests/answers/*
 tests/input_files/*
+CSP.dSYM/

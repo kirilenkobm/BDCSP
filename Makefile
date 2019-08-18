@@ -8,7 +8,7 @@ RM = rm -f
 TARGET = CSP
 
 # SRCS = src/CSP.c src/grid.c src/patterns.c
-SRCS = src/CSP.c src/read_input.c src/patterns.c src/render.c
+SRCS = src/CSP.c src/read_input.c src/patterns.c src/render.c src/traverse.c
 OBJS = $(SRCS:.c=.o)
 
 .PHONY: all

@@ -282,7 +282,6 @@ int main(int argc, char ** argv)
     }
 
     // not so obvious case, get intersection data first
-    // add not intersect data to Pattern struct
     get_intersection_data(patterns, input_data.pat_num, input_data.str_num);
     // and create the grid
     Size_index *size_index = index_sizes(patterns, input_data.pat_num, input_data.str_num);
@@ -302,7 +301,7 @@ int main(int argc, char ** argv)
         render__show_arr(init_render_data, input_data.str_num, input_data.act_col_num);
     }
 
-    uint32_t *zeros_nums = render__get_zeros(init_render_data, input_data.str_num, input_data.dir_pat_num);
+    uint32_t *zeros_nums = render__get_zeros(init_render_data, input_data.str_num, input_data.act_col_num);
     uint32_t max_zeros = arr_max(zeros_nums, input_data.str_num);
     uint32_t min_zeros_amount = render__get_min_zeros_amount(init_render_data, input_data.str_num, input_data.act_col_num);
     uint32_t baseline = input_data.act_col_num - max_zeros;
@@ -327,12 +326,12 @@ int main(int argc, char ** argv)
     }
 
     uint32_t cover_left = input_data.to_cover - (input_data.act_col_num - max_zeros);
-    if (v){
-        verbose("# Initial zeros nums:\n# ");
-        for (uint32_t i = 0; i < input_data.str_num; ++i){verbose("%u ", zeros_nums[i]);}
-        verbose("\n");
-        verbose("# Max zeros: %u; Left to cover: %u\n", max_zeros, cover_left);
-    }
+
+    verbose("# Initial zeros nums:\n# ");
+    for (uint32_t i = 0; i < input_data.str_num; ++i){verbose("%u ", zeros_nums[i]);}
+    verbose("\n");
+    verbose("# Max zeros: %u; Left to cover: %u\n", max_zeros, cover_left);
+
     allocated.init_render_data = init_render_data;
     allocated.init_r_data_depth = input_data.str_num;
     allocated.zeros_nums = zeros_nums;

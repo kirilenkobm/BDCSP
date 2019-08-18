@@ -56,6 +56,11 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
     res.min_zeros_delta = 0;
     res.minus_ = 0;
     res.plus_ = 0;
+    printf("Before: \n");
+    for (uint32_t i = 0; i < len; ++i){printf("%u ", before[i]);}
+    printf("\nAfter:\n");
+    for (uint32_t i = 0; i < len; ++i){printf("%u ", after[i]);}
+    printf("\n\n");
     return res;
 }
 
@@ -66,18 +71,20 @@ bool traverse__run
 {
     bool res = false;  // default answer
     uint32_t states_num = input_data->act_col_num * 4;
-    State *states = (State*)malloc(states_num * sizeof(State*));
+    verbose("# Search depth %u\n", states_num);
+    State *states = (State*)malloc(states_num * sizeof(State));
     uint32_t mask_size = (input_data->dir_pat_num + 1);
 
     // initiate states with default values
     for (uint32_t i = 0; i < states_num; ++i){
         states[i].pat_mask = (uint32_t*)calloc(mask_size, sizeof(uint32_t));
-        states[i].moves = NULL;
+        states[i].moves = (Move*)malloc(MOVES_STEP * sizeof(Move));
         states[i].moves_num = 0;
         states[i].cur_move = 0;
     }
 
     states[0].pat_mask = traverse__mask_copy(zero_mask, mask_size);
+    states[0].moves = NULL;
 
     // initiate moves, only + moves available
     Move *initial_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num);
@@ -85,16 +92,17 @@ bool traverse__run
 
     uint32_t *move_mask = traverse__mask_copy(zero_mask, mask_size);
 
-    for (uint32_t p_num = 1; p_num < input_data->dir_pat_num; ++p_num){
+    for (uint32_t p_num = 1; p_num < mask_size; ++p_num){
         uint32_t *move_mask = traverse__mask_copy(zero_mask, mask_size);
         move_mask[p_num] = 1;
         uint8_t **move_render = render__draw(patterns, move_mask, input_data);
+        render__show_arr(move_render, input_data->str_num, input_data->act_col_num);
         uint32_t *zeros_dist = render__get_zeros(move_render,
                                                  input_data->str_num, 
                                                  input_data->act_col_num);
         // don't check for "possible" because shift=1 possible everywhere
         // orherwise, there is a bug
-        Z_compare compare = compare_Z_dist(init_z_dist, zero_mask, input_data->str_num);
+        Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
         // free allocated stuff, return mask to status-quo
         render__free_render(move_render, input_data->str_num);
         move_mask[p_num] = 0;
@@ -103,6 +111,7 @@ bool traverse__run
 
     free(move_mask);
     free(initial_moves);
+
     for (uint32_t i = 0; i < states_num; ++i){
         free(states[i].pat_mask);
         free(states[i].moves);

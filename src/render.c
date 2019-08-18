@@ -71,6 +71,7 @@ void render__show_arr(uint8_t **arr, uint32_t rows, uint32_t cols)
 
 // get zeros number from all rows
 uint32_t *render__get_zeros(uint8_t **init_render_data, uint32_t rows, uint32_t cols)
+// rows -> input_data->str_num and cols -> input_data->act_col_num;
 {
     uint32_t *ans = (uint32_t*)calloc(rows, sizeof(uint32_t));
     uint32_t this_row = 0;

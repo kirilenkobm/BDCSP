@@ -90,14 +90,14 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
     uint32_t before_max =  arr_max(before, len);
     uint32_t after_max = arr_max(after, len);
     res.min_zeros_delta = after_max - before_max;
-    printf("Min delta: %d\n", res.min_zeros_delta);
+    // printf("Min delta: %d\n", res.min_zeros_delta);
     for (uint32_t i = 0; i < len; ++i){
         if (before[i] == after[i]){continue;}
         else if (before[i] > after[i]){res.minus_ += (before[i] - after[i]);}
         else {res.plus_ += (after[i] - before[i]);}
     }
-    printf("Minuses: %u pluses: %u\n", res.minus_, res.plus_);
-    N
+    // printf("Minuses: %u pluses: %u\n", res.minus_, res.plus_);
+    // N
     return res;
 }
 
@@ -161,11 +161,22 @@ bool traverse__run
     // we have initial moves
     qsort(init_compares, input_data->dir_pat_num, sizeof(Z_compare), compare_Z_compares);
     uint32_t cutoff = 0;
+    int dir;
+    bool found = false;
 
-    if (init_compares[0].min_zeros_delta != -1)
+    if (init_compares[0].min_zeros_delta != 1)
     {
         // this is ok, out best move is -1
-        
+        for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
+            dir = compare_Z_compares(&init_compares[i - 1], &init_compares[i]);
+            if (dir == -1){
+                cutoff = i - 1;
+                found = true;
+                break;
+            }
+        }
+        // didn't break --> all are the same (hell)
+        if (!found){cutoff = (input_data->dir_pat_num - 1);}
     }
     else
     {
@@ -181,12 +192,15 @@ bool traverse__run
         verbose("# Cannot make the first move\n");
         return false;
     }
+    // so now we have a cutoff and can write the initial array
+    ++cutoff;  // for different loops
+    verbose("# Initial cutoff is: %u\n", cutoff);
 
-    for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
-        __print_Z_compare(&init_compares[i]);
-        int dir = compare_Z_compares(&init_compares[i - 1], &init_compares[i]);
-        printf("%d \n", dir);
-    }
+    // for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
+    //     __print_Z_compare(&init_compares[i]);
+    //     int dir = compare_Z_compares(&init_compares[i - 1], &init_compares[i]);
+    //     printf("%d \n", dir);
+    // }
 
     free(move_mask);
     free(initial_moves);

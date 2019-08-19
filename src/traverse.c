@@ -33,9 +33,10 @@
 
 // typedef struct{
 //     uint32_t min_zeros;
-//     uint32_t min_zeros_delta;
+//     int8_t min_zeros_delta;
 //     uint32_t minus_;
 //     uint32_t plus_;
+//     uint32_t assign_to;
 // } Z_compare;
 
 
@@ -44,7 +45,13 @@ int compare_Z_compares(const void *a, const void *b)
 { 
     Z_compare *ia = (Z_compare *)a;
     Z_compare *ib = (Z_compare *)b;
-    // TODO: compare
+    // different deltas on min value?
+    if (ia->min_zeros_delta < ib->min_zeros_delta){return -1;}
+    else if (ia->min_zeros_delta > ib->min_zeros_delta){return 1;}
+    // maybe something else is different
+    if (ia->minus_ > ib->minus_){return -1;}
+    else if (ia->minus_ < ib->minus_){return 1;}
+    return 0;  // the same for nom
 }
 
 
@@ -54,6 +61,16 @@ uint32_t *traverse__mask_copy(uint32_t *mask, uint32_t len)
     uint32_t *ans = (uint32_t*)calloc(len, sizeof(uint32_t));
     for (uint32_t i = 0; i < len; ++i){ans[i] = mask[i];}
     return ans;
+}
+
+
+// just print Z compare data
+void __print_Z_compare(Z_compare *z_comp)
+{
+    printf("#Z Min zeros: %u; Mz delta: %d\n", z_comp->min_zeros, z_comp->min_zeros_delta);
+    printf("#Z Minus: %u Plus: %u\n", z_comp->minus_, z_comp->plus_);
+    printf("Assigned to: %u\n", z_comp->assign_to);
+    printf("\n");
 }
 
 
@@ -128,11 +145,8 @@ bool traverse__run
         Move this_move;
         this_move.pat_id = p_num;
         this_move.size = 1;
-        compare.assign_to = p_num;
-        if (compare.min_zeros_delta == 1){
-            // we don't need this move
-            continue;
-        }
+        compare.assign_to_move = i_moves_count;
+        compare.assign_to_pat = p_num;
 
         init_compares[i_moves_count] = compare;
         initial_moves[i_moves_count] = this_move;
@@ -145,8 +159,22 @@ bool traverse__run
 
     if (i_moves_count == 0){
         // free all; no initial moves possible
+        verbose("# Cannot start, returning false\n");
+        free(move_mask);
+        free(initial_moves);
+        free(init_compares);
+        for (uint32_t i = 0; i < states_num; ++i){
+            free(states[i].pat_mask);
+            free(states[i].moves);
+        }
+        free(states);
         return false;
     }
+
+    // we have initial moves
+    qsort(init_compares, input_data->dir_pat_num, sizeof(Z_compare), compare_Z_compares);
+    for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){__print_Z_compare(&init_compares[i]);}
+
     free(move_mask);
     free(initial_moves);
     free(init_compares);

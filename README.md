@@ -55,6 +55,7 @@ pip install -r requirements.txt
   - answers/ - folder with answers for each dataset
 - Makefile and Win_make.bat - build instructions for Linux/MacOS and Windows
 - run_tests.sh - shell script to check that everything builds and returns correct results for sample data
+- shuffle_input.py - script to shuffle input making line N first
 - requirements.txt - libraries required for performance tests and input generation in python
 - Minor stuff:
   - LICENSE

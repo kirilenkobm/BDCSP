@@ -31,7 +31,6 @@ struct allocated_data{
     uint32_t patterns_num;
     Pattern *patterns;
     Dir_Rev *dir_rev_index;
-    uint32_t *ones_index;
     uint32_t init_r_data_depth;
     uint8_t **init_render_data;
     uint32_t *zeros_nums;
@@ -79,7 +78,6 @@ void free_all()
     free(allocated.input_arr);
     free(allocated.dir_rev_index);
 
-    free(allocated.ones_index);
     for (uint32_t i = 0; i < allocated.init_r_data_depth; ++i){free(allocated.init_render_data[i]);}
     free(allocated.init_render_data);
 
@@ -217,7 +215,6 @@ int main(int argc, char ** argv)
     allocated.patterns_num = 0;
     allocated.patterns = NULL;
     allocated.dir_rev_index = NULL;
-    allocated.ones_index = NULL;
     allocated.init_r_data_depth = 0;
     allocated.init_render_data = NULL;
     allocated.zeros_nums = NULL;
@@ -285,8 +282,6 @@ int main(int argc, char ** argv)
 
     // not so obvious case, get intersection data first
     get_intersection_data(patterns, input_data.pat_num, input_data.str_num);
-    uint32_t *ones_index = index_ones(patterns, input_data.pat_num, input_data.str_num);
-    allocated.ones_index = ones_index;
 
     uint32_t *zero_mask = (uint32_t*)calloc(input_data.dir_pat_num + 1, sizeof(uint32_t));
     uint32_t *full_mask = patterns__get_full_mask(patterns, input_data.dir_pat_num);

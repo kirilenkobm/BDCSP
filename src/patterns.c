@@ -208,38 +208,6 @@ bool _check_is_rev(uint8_t *dir, uint8_t *rev, uint32_t str_num)
 }
 
 
-// get direct - inverted pattern index
-Dir_Rev *get_dir_rev_data(Pattern *patterns, uint32_t pat_arr_size, uint32_t str_num)
-{
-    // actually not optimal decision
-    // just to make it work now, it must be a more optimal solution
-    // hopefully, it will be implemented at some point
-    Dir_Rev *dir_rev_index = (Dir_Rev*)malloc(pat_arr_size * sizeof(Dir_Rev));
-    dir_rev_index[0].dir = 0;
-    dir_rev_index[0].rev = 0;
-    uint32_t cur_size = 0;
-    uint32_t rev_size = 0;
-    bool is_rev = false;
-    for (uint32_t i = 1; i < pat_arr_size; ++i)
-    {
-        dir_rev_index[i].dir = i;
-        cur_size = patterns[i].size;
-        rev_size = str_num - cur_size;
-        if (patterns[i].pattern[0] == 1){dir_rev_index[i].is_dir = true;}
-        else {dir_rev_index[i].is_dir = false;}
-
-        for (uint32_t j = 1; j < pat_arr_size; ++j)
-        {
-            if (patterns[j].size != rev_size){continue;}
-            is_rev = _check_is_rev(patterns[i].pattern, patterns[j].pattern, str_num);
-            if (is_rev){
-                dir_rev_index[i].rev = j;
-            }
-        }
-    }
-    return dir_rev_index;
-}
-
 // check if patterns intersect
 bool patterns_intersect(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_len)
 {

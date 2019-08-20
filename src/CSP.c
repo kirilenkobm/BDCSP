@@ -28,7 +28,6 @@ struct allocated_data{
     uint32_t str_num;
     uint32_t patterns_num;
     Pattern *patterns;
-    Dir_Rev *dir_rev_index;
     uint32_t init_r_data_depth;
     uint8_t **init_render_data;
     uint32_t *zeros_nums;
@@ -73,7 +72,6 @@ void free_all()
 
     for (uint32_t i = 0; i < allocated.str_num; ++i){free(allocated.input_arr[i]);}
     free(allocated.input_arr);
-    free(allocated.dir_rev_index);
 
     render__free_render(allocated.init_render_data, allocated.init_r_data_depth);
 
@@ -105,8 +103,8 @@ uint32_t arr_max(uint32_t *arr, uint32_t size)
 
 
 // get initial densities
-void get_init_density_range(uint32_t *inf_cov, uint32_t *sup_cov, Input_data *input_data,
-                            Dir_Rev *dir_rev_index, Pattern *patterns)
+void get_init_density_range
+(uint32_t *inf_cov, uint32_t *sup_cov, Input_data *input_data, Pattern *patterns)
 {
     // *exp_dens = (double)input_data->to_cover / input_data->act_col_num;
 
@@ -142,9 +140,9 @@ void get_init_density_range(uint32_t *inf_cov, uint32_t *sup_cov, Input_data *in
 
     // then the highest potential density
     for (uint32_t pat_id = 0; pat_id < input_data->pat_num; ++pat_id){
-        if (!dir_rev_index[pat_id].is_dir){continue;}
+        if (patterns[pat_id].pattern[0] != 1){continue;}
         // consider only direct primers
-        rev_id = dir_rev_index[pat_id].rev;
+        rev_id = input_data->pat_num - pat_id;
         cur_pat_times = patterns[pat_id].times;
         max_pat_id = (patterns[pat_id].size > patterns[rev_id].size) ? pat_id : rev_id;
         max_size = patterns[max_pat_id].size;
@@ -195,7 +193,6 @@ int main(int argc, char ** argv)
     allocated.input_arr = NULL;
     allocated.patterns_num = 0;
     allocated.patterns = NULL;
-    allocated.dir_rev_index = NULL;
     allocated.init_r_data_depth = 0;
     allocated.init_render_data = NULL;
     allocated.zeros_nums = NULL;
@@ -224,8 +221,6 @@ int main(int argc, char ** argv)
             printf("\t# Appears: %u; size: %u\n\n", patterns[i].times, patterns[i].size);
         }
     }
-    Dir_Rev *dir_rev_index = get_dir_rev_data(patterns, input_data.pat_num, input_data.str_num);
-    allocated.dir_rev_index = dir_rev_index;
 
     // case if K is too high and no need to compute anything
     if (input_data.k >= input_data.act_col_num){
@@ -243,7 +238,7 @@ int main(int argc, char ** argv)
     // get initial values
     uint32_t inf_cov = 0;
     uint32_t sup_cov = 0;
-    get_init_density_range(&inf_cov, &sup_cov, &input_data, dir_rev_index, patterns);
+    get_init_density_range(&inf_cov, &sup_cov, &input_data, patterns);
     // verbose("# Inf: %f; Exp dens: %f; Sup: %f\n", inf, exp_dens, sup);
 
     // in case if expected density is not in [inf, sup)

@@ -321,7 +321,7 @@ Input_data *input_data, Pattern *patterns)
     bool res = false;  // default answer
     uint32_t states_num = input_data->act_col_num * 4;
     verbose("# Search depth %u\n", states_num);
-    State *states = (State*)malloc(states_num * sizeof(State));
+    State *states = (State*)malloc((states_num + 1) * sizeof(State));
     uint32_t mask_size = (input_data->dir_pat_num + 1);
 
     // initiate states with default values
@@ -454,7 +454,7 @@ Input_data *input_data, Pattern *patterns)
     masks.mask_size = mask_size;
 
     // main loop
-    for (uint32_t step = 0; step < (states_num - 1); ++step)
+    for (uint32_t step = 0; step < states_num; ++step)
     {
         verbose("# Step num %u\n", step);
         __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data, patterns);

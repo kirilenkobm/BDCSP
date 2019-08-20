@@ -13,8 +13,10 @@
 #include <limits.h>
 #ifdef _WIN32
 #include <io.h>
-#endif
-#ifdef linux
+#define F_OK 0
+#elif __unix__
+#include <unistd.h>
+#elif __APPLE__
 #include <unistd.h>
 #endif
 #include "CSP.h"

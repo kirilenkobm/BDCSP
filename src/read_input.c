@@ -14,8 +14,9 @@
 #ifdef _WIN32
 #include <io.h>
 #define F_OK 0
-#endif
-#ifdef __unix__
+#elif __unix__
+#include <unistd.h>
+#elif __APPLE__
 #include <unistd.h>
 #endif
 #include "CSP.h"

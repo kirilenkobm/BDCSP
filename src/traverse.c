@@ -55,6 +55,15 @@ int compare_Z_compares(const void *a, const void *b)
 }
 
 
+// just compare two z comps by id
+int Z_comp_order(const void *a, const void *b)
+{
+    Z_compare *ia = (Z_compare*)a;
+    Z_compare *ib = (Z_compare*)b;
+    return (ia->assign_to_pat - ib->assign_to_pat);
+}
+
+
 // create array copy
 uint32_t *traverse__mask_copy(uint32_t *mask, uint32_t len)
 {
@@ -69,7 +78,8 @@ void __print_Z_compare(Z_compare *z_comp)
 {
     printf("#Z Min zeros: %u; Mz delta: %d\n", z_comp->min_zeros, z_comp->min_zeros_delta);
     printf("#Z Minus: %u Plus: %u\n", z_comp->minus_, z_comp->plus_);
-    printf("Assigned to: %u\n", z_comp->assign_to_move);
+    printf("Assigned to pattern: %u\n", z_comp->assign_to_pat);
+    printf("Assigned to move: %u\n", z_comp->assign_to_move);
     printf("\n");
 }
 
@@ -82,14 +92,15 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
     res.min_zeros_delta = 0;
     res.minus_ = 0;
     res.plus_ = 0;
-    // printf("Before: \n");
-    // for (uint32_t i = 0; i < len; ++i){printf("%u ", before[i]);}
-    // printf("\nAfter:\n");
-    // for (uint32_t i = 0; i < len; ++i){printf("%u ", after[i]);}
-    // N
+    printf("Before: \n");
+    for (uint32_t i = 0; i < len; ++i){printf("%u ", before[i]);}
+    printf("\nAfter:\n");
+    for (uint32_t i = 0; i < len; ++i){printf("%u ", after[i]);}
+    N
     uint32_t before_max =  arr_max(before, len);
     uint32_t after_max = arr_max(after, len);
     res.min_zeros_delta = after_max - before_max;
+    res.min_zeros = after_max;
     // printf("Min delta: %d\n", res.min_zeros_delta);
     for (uint32_t i = 0; i < len; ++i){
         if (before[i] == after[i]){continue;}
@@ -130,12 +141,10 @@ Input_data *input_data, Pattern *patterns)
 
     uint32_t i_moves_count = 0;
 
-    uint32_t *move_mask = traverse__mask_copy(zero_mask, mask_size);
 
     for (uint32_t p_num = 1; p_num < mask_size; ++p_num){
-        uint32_t *move_mask = traverse__mask_copy(zero_mask, mask_size);
-        move_mask[p_num] = 1;
-        uint8_t **move_render = render__draw(patterns, move_mask, input_data);
+        zero_mask[p_num] = 1;
+        uint8_t **move_render = render__draw(patterns, zero_mask, input_data);
         // render__show_arr(move_render, input_data->str_num, input_data->act_col_num);
         uint32_t *zeros_dist = render__get_zeros(move_render,
                                                  input_data->str_num, 
@@ -154,10 +163,9 @@ Input_data *input_data, Pattern *patterns)
         ++i_moves_count;
         // free allocated stuff, return mask to status-quo
         render__free_render(move_render, input_data->str_num);
-        move_mask[p_num] = 0;
+        zero_mask[p_num] = 0;
         free(zeros_dist);
     }
-
 
     // we have initial moves
     qsort(init_compares, input_data->dir_pat_num, sizeof(Z_compare), compare_Z_compares);
@@ -165,7 +173,14 @@ Input_data *input_data, Pattern *patterns)
     int dir;
     bool found = false;
 
-    if (init_compares[0].min_zeros_delta != 1)
+    for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){
+        __print_Z_compare(&init_compares[i]);
+    }
+
+    bool already_ans_true = ((mask_size - init_compares[0].min_zeros) >= input_data->to_cover);
+    bool already_and_false = (init_compares[0].min_zeros_delta == 1);
+
+    if (!already_ans_true && !already_and_false)
     {
         // this is ok, out best move is -1
         for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
@@ -181,8 +196,7 @@ Input_data *input_data, Pattern *patterns)
     }
     else
     {
-        // no way
-        free(move_mask);
+        // we have an answer already
         free(initial_moves);
         free(init_compares);
         for (uint32_t i = 0; i < states_num; ++i){
@@ -190,23 +204,26 @@ Input_data *input_data, Pattern *patterns)
             free(states[i].moves);
         }
         free(states);
-        verbose("# Cannot make the first move\n");
-        return false;
+        verbose("# answer branch 4\n");
+        if (already_ans_true){
+            return true;
+        } else {
+            verbose("# Cannot make the first move\n");
+            return false;
+        }
     }
 
     // so now we have a cutoff and can write the initial array
     ++cutoff;  // for different loops
     verbose("# Initial cutoff is: %u\n", cutoff);
-
-    // for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
-    //     __print_Z_compare(&init_compares[i]);
-    //     int dir = compare_Z_compares(&init_compares[i - 1], &init_compares[i]);
-    //     printf("%d \n", dir);
-    // }
-
-    free(move_mask);
-    free(initial_moves);
     free(init_compares);
+
+    initial_moves = (Move*)realloc(initial_moves, cutoff * sizeof(Move));
+    qsort(init_compares, cutoff, sizeof(Z_compare), Z_comp_order);
+    states[0].moves = initial_moves;
+    states[0].moves_num = cutoff;
+    states[0].cur_move = 0;
+
 
     for (uint32_t i = 0; i < states_num; ++i){
         free(states[i].pat_mask);

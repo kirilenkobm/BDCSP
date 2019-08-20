@@ -159,6 +159,10 @@ bool *res, Input_data *input_data, Pattern *patterns)
         return;  // nothing to do in this function anymore
     }
     // ok, we have a chance to do something
+    // get the current move and try to evolve
+    Move cur_move = states[*cur_state].moves[states[*cur_state].cur_move];
+    ++states[*cur_state].cur_move;
+
     Move *next_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num);
     Z_compare* next_compares = (Z_compare*)malloc(sizeof(Z_compare) * input_data->dir_pat_num);
     free(next_moves);
@@ -230,9 +234,13 @@ Input_data *input_data, Pattern *patterns)
 
     // print sorted compares
     // for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){__print_Z_compare(&init_compares[i]);}
-
-    bool already_ans_true = ((mask_size - init_compares[0].min_zeros) >= input_data->to_cover);
+    // TODO: fix overflow
+    uint32_t ones_cov = input_data->act_col_num - init_compares[0].min_zeros;
+    bool already_ans_true = (ones_cov >= input_data->to_cover);
     bool already_ans_false = (init_compares[0].min_zeros_delta == 1);
+
+
+
     assert(!(already_ans_false && already_ans_true));  // should never happen that both are true
 
     if (!already_ans_true && !already_ans_false)

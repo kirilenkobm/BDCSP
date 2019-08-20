@@ -17,6 +17,7 @@
 #include "patterns.h"
 #include "render.h"
 #include "traverse.h"
+#include "arrstuff.h"
 
 
 bool v = false;
@@ -80,27 +81,6 @@ void free_all()
     free(allocated.full_mask);
     verbose("# Memory freed\n");
 }
-
-
-// just array sum
-uint32_t arr_sum(uint32_t *arr, uint32_t size)
-{
-    uint32_t ans = 0;
-    for (uint32_t i = 0; i < size; ++i){ans += arr[i];}
-    return ans;
-}
-
-
-// max of array
-uint32_t arr_max(uint32_t *arr, uint32_t size)
-{
-    uint32_t ans = 0;
-    for (uint32_t i = 0; i < size; ++i){
-        if (arr[i] > ans){ans = arr[i];}
-    }
-    return ans;
-}
-
 
 // get initial densities
 void get_init_density_range

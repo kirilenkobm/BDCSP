@@ -15,6 +15,7 @@
 #include "patterns.h"
 #include "CSP.h"
 #include "read_input.h"
+#include "arrstuff.h"
 
 
 // just invert the pattern
@@ -26,32 +27,12 @@ void invert_pattern(uint8_t *pattern, uint32_t size)
 }
 
 
-// check if all numbers are the same
-bool all_eq(uint8_t *col, uint32_t size)
-{
-    for (uint32_t i = 1; i < size; ++i){
-        if (col[i] != col[i - 1]){return false;}
-    }
-    return true;
-}
-
-
 // count ones in the patterns
 uint32_t get_col_size(uint8_t *col, uint32_t size)
 {
     uint32_t ans = 0;
     for (uint32_t i = 0; i < size; ++i){ans += col[i];}
     return ans;
-}
-
-
-// compare two patterns
-bool are_the_same(uint8_t *pat_1, uint8_t *pat_2, uint32_t pat_size)
-{
-    for (uint32_t i = 0; i < pat_size; ++i){
-        if (pat_1[i] != pat_2[i]){return false;}
-    }
-    return true;
 }
 
 
@@ -72,7 +53,7 @@ uint32_t *ind_if_in, uint32_t extracted_num, uint32_t pat_size)
     {
         if (patterns[i].size != col_size){continue;}
         // ok, size matching
-        the_same = are_the_same(patterns[i].pattern, column, pat_size);
+        the_same = arr_uint8_are_the_same(patterns[i].pattern, column, pat_size);
         if (the_same){
             // it is inside
             *is_in = true;
@@ -130,7 +111,7 @@ Pattern *get_patterns(Input_data *input_data)
         for (uint32_t row_num = 0; row_num < input_data->str_num; ++row_num){
             column[row_num] = input_data->in_arr[row_num][col_num];
         }
-        drop_col = all_eq(column, input_data->str_num);
+        drop_col = arr_uint8_all_eq(column, input_data->str_num);
         if (drop_col){
             free(column);
             continue;
@@ -194,17 +175,6 @@ Pattern *get_patterns(Input_data *input_data)
         invert_pattern(patterns[minus_i].pattern, input_data->str_num);
     }
     return patterns;
-}
-
-
-// check if rev pattern is rev
-bool _check_is_rev(uint8_t *dir, uint8_t *rev, uint32_t str_num)
-{
-    // if patterns are inverted, xor must be 1 all the time
-    for (uint32_t i = 0; i < str_num; ++i){
-        if (!(dir[i] ^ rev[i])){return false;}
-    }
-    return true;
 }
 
 

@@ -16,28 +16,8 @@
 #include "patterns.h"
 #include "render.h"
 #include "traverse.h"
+#include "arrstuff.h"
 #define MOVES_STEP 10
-#define N printf("\n");  // temp shit
-
-// typedef struct{
-//     uint32_t pat_id;
-//     int8_t size;
-// } Move;
-
-// typedef struct{
-//     uint32_t *pat_mask;
-//     Move *moves;
-//     uint32_t moves_num;
-//     uint32_t cur_move;
-// } State;
-
-// typedef struct{
-//     uint32_t min_zeros;
-//     int8_t min_zeros_delta;
-//     uint32_t minus_;
-//     uint32_t plus_;
-//     uint32_t assign_to;
-// } Z_compare;
 
 
 typedef struct{
@@ -93,19 +73,7 @@ void __print_Z_compare(Z_compare *z_comp)
 
 
 // just print a move
-void __print_move(Move *move)
-{
-    if (!v) {return;}
-    printf("# Move: PAT_ID %u SIZE %d\n", move->pat_id, move->size);
-}
-
-
-// just print a mask
-void __print_mask(uint32_t *mask, uint32_t mask_size){
-    if (!v){return;}
-    for (uint32_t i = 0; i < mask_size; ++i){printf("%u ", mask[i]);}
-    printf("\n");
-}
+void __print_move(Move *move){printf("# Move: PAT_ID %u SIZE %d\n", move->pat_id, move->size);}
 
 
 // compare two zero-distr outputs
@@ -194,7 +162,7 @@ bool *res, Input_data *input_data, Pattern *patterns)
                                               input_data->str_num, 
                                               input_data->act_col_num);
     render__free_render(init_render, input_data->str_num);
-    __print_mask(cur_mask, mask->mask_size);
+    if (v) {arr_1D_uint32_print(cur_mask, mask->mask_size);}
     // render__show_arr(init_render, input_data->str_num, input_data->act_col_num);
 
     // need to find next good moves
@@ -378,14 +346,9 @@ Input_data *input_data, Pattern *patterns)
     int dir;
     bool found = false;
 
-    // print sorted compares
-    // for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){__print_Z_compare(&init_compares[i]);}
     uint32_t ones_cov = input_data->act_col_num - init_compares[0].min_zeros;
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     bool already_ans_false = (init_compares[0].min_zeros_delta == 1);
-
-
-
     assert(!(already_ans_false && already_ans_true));  // should never happen that both are true
 
     if (!already_ans_true && !already_ans_false)
@@ -439,7 +402,7 @@ Input_data *input_data, Pattern *patterns)
 
     // finally create initial state
     states[0].moves = __copy_moves(filt_moves, cutoff);
-    for (uint32_t i = 0; i < cutoff; ++i){__print_move(&filt_moves[i]);}
+    if (v) {for (uint32_t i = 0; i < cutoff; ++i){__print_move(&filt_moves[i]);}}
     free(filt_moves);
     states[0].moves_num = cutoff;
     states[0].cur_move = 0;

@@ -135,13 +135,16 @@ void get_init_density_range
 // entry point
 int main(int argc, char ** argv)
 {
-    // some default parameters
+    // read arguments
+    if (argc < 3){_show_usage_and_quit(argv[0]);}
     Input_data input_data;
     read_input__opt_args(argc, argv, &input_data);
     v = input_data.v;
+    read_input__main_args(argv, &input_data);
 
     // set defaults to (potentially) allocated stuff
-    allocated.input_arr = NULL;
+    allocated.input_arr = input_data.in_arr;
+    allocated.str_num = input_data.str_num;
     allocated.patterns_num = 0;
     allocated.patterns = NULL;
     allocated.init_r_data_depth = 0;
@@ -149,11 +152,6 @@ int main(int argc, char ** argv)
     allocated.zeros_nums = NULL;
     allocated.zero_mask = NULL;
     allocated.full_mask = NULL;
-
-    // read and check input
-    read_input(argv, &input_data);
-    allocated.input_arr = input_data.in_arr;
-    allocated.str_num = input_data.str_num;
 
     Pattern *patterns = get_patterns(&input_data);
     if (patterns == NULL){
@@ -216,9 +214,13 @@ int main(int argc, char ** argv)
         arr_2D_uint8_print(init_render_data, input_data.str_num, input_data.act_col_num);
     }
 
-    uint32_t *zeros_nums = render__get_zeros(init_render_data, input_data.str_num, input_data.act_col_num);
+    uint32_t *zeros_nums = render__get_zeros(init_render_data,
+                                             input_data.str_num,
+                                             input_data.act_col_num);
     uint32_t max_zeros = arr_max(zeros_nums, input_data.str_num);
-    uint32_t min_zeros_amount = render__get_min_zeros_amount(init_render_data, input_data.str_num, input_data.act_col_num);
+    uint32_t min_zeros_amount = render__get_min_zeros_amount(init_render_data,
+                                                             input_data.str_num,
+                                                             input_data.act_col_num);
     uint32_t baseline = input_data.act_col_num - max_zeros;
     uint32_t allowed_zeros = input_data.act_col_num - input_data.to_cover;
     uint32_t total_allowed_zeros = allowed_zeros * input_data.str_num;
@@ -252,8 +254,8 @@ int main(int argc, char ** argv)
     allocated.zeros_nums = zeros_nums;
 
     // "just" extract result and output it
-    bool result = traverse__run(zero_mask, full_mask, zeros_nums, &input_data, patterns);
-    char *answer = (result) ? "True" : "False";
+    bool ans_ = traverse__run(zero_mask, full_mask, zeros_nums, &input_data, patterns);
+    char *answer = (ans_) ? "True" : "False";
     printf("The answer is:\n%s\n", answer);
     free_all();
     return 0;

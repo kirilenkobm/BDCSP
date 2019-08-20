@@ -46,7 +46,7 @@ bool __check_is_in(uint8_t **in_arr, uint32_t str_len, uint32_t line_num, bool n
 
 
 // read and check input array and K
-void read_input(char **argv, Input_data *input_data)
+void read_input__main_args(char **argv, Input_data *input_data)
 {
     // ok, read K
     char *c;
@@ -63,7 +63,7 @@ void read_input(char **argv, Input_data *input_data)
     if (input_data->k == 4294967295){
         fprintf(stderr, "Warning: k value read as 4294967295, probably an overflow\n");
     } else if (input_data->k == 0){
-        fprintf(stderr, "Error! K expected to be > 0!");
+        fprintf(stderr, "Error! K expected to be > 0!\n");
         _show_usage_and_quit(argv[0]);
     }
     verbose("# k = %u \n", input_data->k);
@@ -76,7 +76,7 @@ void read_input(char **argv, Input_data *input_data)
         // not stdin; check that file exists
         fp = fopen(argv[1], "r");
     } else {
-        fprintf(stderr, "Sorry, but %s doesn't exist or unavailable\n", argv[1]);
+        fprintf(stderr, "Sorry, but %s doesn't exist or is unavailable\n", argv[1]);
         _show_usage_and_quit(argv[0]);
     }
 
@@ -182,7 +182,7 @@ void read_input(char **argv, Input_data *input_data)
 
     // post-processing
     if (char_num == 0){
-        // \n - terminated file
+        // \n - terminated file, we allocated one unnecessary array
         free(input_data->in_arr[line_num]);
     } else if (char_num != act_str_len){
         // happens if the last line had a different length

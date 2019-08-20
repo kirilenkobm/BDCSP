@@ -84,21 +84,6 @@ void free_all()
 }
 
 
-// just return min of three numbers
-uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c)
-{
-    if (*a < *b && *a < *c){
-        return *a;
-    // ok, not a, min of b and c
-    } else if (*b < *c){
-        return *b;
-    // not b and not a -> clearly c
-    } else {
-        return *c;
-    }
-}
-
-
 // just array sum
 uint32_t arr_sum(uint32_t *arr, uint32_t size)
 {
@@ -256,12 +241,10 @@ int main(int argc, char ** argv)
     verbose("# Need to cover %u columns\n", input_data.to_cover);
 
     // get initial values
-    uint32_t max_comb_len = min_of_three(&input_data.str_num, &input_data.str_len, &input_data.pat_num);
     uint32_t inf_cov = 0;
     uint32_t sup_cov = 0;
     get_init_density_range(&inf_cov, &sup_cov, &input_data, dir_rev_index, patterns);
     // verbose("# Inf: %f; Exp dens: %f; Sup: %f\n", inf, exp_dens, sup);
-    verbose("# Max comb length: %u\n", max_comb_len);
 
     // in case if expected density is not in [inf, sup)
     if (input_data.to_cover <= inf_cov){

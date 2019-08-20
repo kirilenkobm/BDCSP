@@ -9,8 +9,8 @@ def parse_args():
     app.add_argument("input_file", help="Input file to shuffle.")
     app.add_argument("line", type=int, help="Number of line to make it initial one (0 - based)")
     app.add_argument("--output", "-o", default="stdout", help="Output, default stdout.")
-    app.add_argument("--dont_trim", "-t", action="store_true", dest="dont_trim",
-                     help="Do not trim the dataset (dont remove dupl strings or 0/1 - only columns.")
+    app.add_argument("--trim", "-t", action="store_true", dest="trim",
+                     help="Trim the dataset (remove dupl strings or 0/1 - only columns.")
 
     if len(sys.argv) == 1:
         app.print_help()

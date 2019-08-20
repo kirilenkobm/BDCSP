@@ -16,15 +16,18 @@ UINT32_MAX = 4294967295
 
 def parse_args():
     """Parse args and check."""
-    app = argparse.ArgumentParser()
+    app = argparse.ArgumentParser(description="Script to generate input files "
+                                  "and answers for BDCSP. Call with 'clean' "
+                                  "parameter to remove all generated datasets.")
     app.add_argument("H", type=int, help="String lenght")
     app.add_argument("W", type=int, help="Strings number")
+    app.add_argument("k", type=int, help="Expected K (might slightly vary")
     app.add_argument("r", type=int, help="Replicates number, "
                                          "from 1 to 10000")
     app.add_argument("dataset_name", help="Dataset name")
     app.add_argument("--ones_fraction", "-o", type=float, default=0.5,
-                     help="Float [0.0..1.0] - fraction of ones "
-                          "in the initial string")
+                     help="Float [0.0..1.0] - fraction of ones in the initial "
+                          "string; default 0.5")
     if len(sys.argv) == 1:
         app.print_help()
         sys.exit()
@@ -38,6 +41,20 @@ def parse_args():
     elif args.ones_fraction < 0.0 or args.ones_fraction > 1.0:
         sys.exit("Error, ones_fraction must be in [0.0, 1.0]")
     return args
+
+
+def swap(num):
+    """Just swap 1 and 0."""
+    return 1 - num
+
+
+def hum_dist(str_1, str_2):
+    """Return humming distance."""
+    assert len(str_1) == len(str_2)
+    res = 0
+    for i in range(len(str_1)):
+        res = res + 1 if str_1[i] != str_2[i] else res
+    return res
 
 
 def main():
@@ -55,9 +72,25 @@ def main():
     ans_buff.write("# Dataset={}\n".format(args.dataset_name))
     ans_buff.write("# str_len={} str_num={}\n".format(args.W, args.H))
     ans_buff.write("# Replicates_num={}\n".format(args.r))
+    ind_set = list(range(args.H))
+
     for samlpe_num in range(args.r):
+        # generate a sample file
         sample_in_file = os.path.join(dataset_in_dir, "{}.in.txt".format(samlpe_num))
         ans_buff.write("# Sample_num={}\n".format(samlpe_num))
+        h_dists = []
+        sample_strings = []
+        for i_num in range(args.W):
+            rand_ind = np.random.choice(ind_set, size=args.k, replace=False)
+            alt = origin_str[:]
+            for ind in rand_ind:
+                alt[ind] = swap(alt[ind])
+            h_dists.append(hum_dist(alt, origin_str))
+            sample_strings.append("".join(str(x) for x in alt))
+        with open(sample_in_file, "w") as f:
+            f.write("\n".join(sample_strings) + "\n")
+        k = max(h_dists)
+        ans_buff.write("K = {}".format(k))
     ans_buff.close()
 
 

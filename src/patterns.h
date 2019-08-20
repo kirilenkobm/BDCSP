@@ -58,14 +58,6 @@ int compare_patterns(const void *a, const void *b);
 
 Pattern *get_patterns(Input_data *input_data);
 
-bool *inter_and(bool *a, bool *b, uint32_t size);
-
-void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pat_len);
-
-Size_index *index_sizes(Pattern *patterns, uint32_t pat_arr_size, uint32_t sizes_num);
-
-uint32_t *index_ones(Pattern *patterns, uint32_t arr_size, uint32_t str_num);
-
 Dir_Rev *get_dir_rev_data(Pattern *patterns, uint32_t pat_arr_size, uint32_t str_num);
 
 uint32_t *patterns__get_full_mask(Pattern *patterns, uint32_t dir_pat_num);

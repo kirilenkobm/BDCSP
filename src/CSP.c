@@ -106,8 +106,6 @@ uint32_t arr_max(uint32_t *arr, uint32_t size)
 void get_init_density_range
 (uint32_t *inf_cov, uint32_t *sup_cov, Input_data *input_data, Pattern *patterns)
 {
-    // *exp_dens = (double)input_data->to_cover / input_data->act_col_num;
-
     uint32_t cur_pat_size = 0;
     uint32_t cur_pat_times = 0;
     uint32_t unit = 0;
@@ -131,8 +129,7 @@ void get_init_density_range
     }
 
     stop = false;
-    verbose("# Min covered levels: %u\n", *inf_cov);
-    // *inf = (double)min_lvl_cov / input_data->act_col_num;
+    verbose("# Min covered levels (Inf): %u\n", *inf_cov);
     uint32_t max_size = 0;
     uint64_t max_pat_sum = 0;
     uint32_t max_pat_id = 0;
@@ -149,9 +146,7 @@ void get_init_density_range
         max_pat_sum += ((uint64_t)max_size * cur_pat_times);
     }
     *sup_cov = max_pat_sum / input_data->level_size;
-    verbose("# Max covered levels: %llu\n", *sup_cov);
-    // *sup = (double)max_covered_levels / input_data->act_col_num;
-
+    verbose("# Max covered levels (Sup): %llu\n", *sup_cov);
     // if fails here -> I did a mistake
     assert(*inf_cov <= *sup_cov);
 }
@@ -239,7 +234,6 @@ int main(int argc, char ** argv)
     uint32_t inf_cov = 0;
     uint32_t sup_cov = 0;
     get_init_density_range(&inf_cov, &sup_cov, &input_data, patterns);
-    // verbose("# Inf: %f; Exp dens: %f; Sup: %f\n", inf, exp_dens, sup);
 
     // in case if expected density is not in [inf, sup)
     if (input_data.to_cover <= inf_cov){
@@ -255,8 +249,6 @@ int main(int argc, char ** argv)
     }
 
     // not so obvious case, get intersection data first
-    // get_intersection_data(patterns, input_data.pat_num, input_data.str_num);
-
     uint32_t *zero_mask = (uint32_t*)calloc(input_data.dir_pat_num + 1, sizeof(uint32_t));
     uint32_t *full_mask = patterns__get_full_mask(patterns, input_data.dir_pat_num);
     allocated.zero_mask = zero_mask;

@@ -90,7 +90,7 @@ def main():
         with open(sample_in_file, "w") as f:
             f.write("\n".join(sample_strings) + "\n")
         k = max(h_dists)
-        ans_buff.write("K = {}".format(k))
+        ans_buff.write("K = {}\n".format(k))
     ans_buff.close()
 
 

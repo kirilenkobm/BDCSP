@@ -15,8 +15,6 @@
 #include "CSP.h"
 #include "read_input.h"
 #include "patterns.h"
-// #include "grid.h"
-// #include "combinations.h"
 #include "render.h"
 #include "traverse.h"
 
@@ -70,7 +68,6 @@ void free_all()
 {
     for (uint32_t i = 0; i < allocated.patterns_num; ++i){
         free(allocated.patterns[i].pattern);
-        free(allocated.patterns[i].no_intersect);
     }
     free(allocated.patterns);
 
@@ -78,8 +75,7 @@ void free_all()
     free(allocated.input_arr);
     free(allocated.dir_rev_index);
 
-    for (uint32_t i = 0; i < allocated.init_r_data_depth; ++i){free(allocated.init_render_data[i]);}
-    free(allocated.init_render_data);
+    render__free_render(allocated.init_render_data, allocated.init_r_data_depth);
 
     free(allocated.zeros_nums);
     free(allocated.zero_mask);
@@ -281,7 +277,7 @@ int main(int argc, char ** argv)
     }
 
     // not so obvious case, get intersection data first
-    get_intersection_data(patterns, input_data.pat_num, input_data.str_num);
+    // get_intersection_data(patterns, input_data.pat_num, input_data.str_num);
 
     uint32_t *zero_mask = (uint32_t*)calloc(input_data.dir_pat_num + 1, sizeof(uint32_t));
     uint32_t *full_mask = patterns__get_full_mask(patterns, input_data.dir_pat_num);

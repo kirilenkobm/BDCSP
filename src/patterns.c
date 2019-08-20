@@ -193,10 +193,6 @@ Pattern *get_patterns(Input_data *input_data)
         }
         invert_pattern(patterns[minus_i].pattern, input_data->str_num);
     }
-    // qsort(patterns, full_len, sizeof(Pattern), compare_patterns);
-    for (uint32_t i = 0; i < full_len; ++i){
-        patterns[i].no_intersect = NULL;
-    }
     return patterns;
 }
 
@@ -266,36 +262,36 @@ bool *inter_and(bool *a, bool *b, uint32_t size)
 
 
 // fill intersections data
-void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pat_len)
-{
-    uint32_t f_pat_size = 0;
-    uint32_t f_minus = 0;
-    bool p_and_s_intersect;
-    // allocate a ton of memory first and then shrink it down
-    for (uint32_t p_id = 1; p_id < patterns_num; ++p_id){
-        patterns[p_id].no_intersect = (bool*)malloc(patterns_num * sizeof(bool));
-    }
+// void get_intersection_data(Pattern *patterns, uint32_t patterns_num, uint32_t pat_len)
+// {
+//     uint32_t f_pat_size = 0;
+//     uint32_t f_minus = 0;
+//     bool p_and_s_intersect;
+//     // allocate a ton of memory first and then shrink it down
+//     for (uint32_t p_id = 1; p_id < patterns_num; ++p_id){
+//         patterns[p_id].no_intersect = (bool*)malloc(patterns_num * sizeof(bool));
+//     }
 
-    for (uint32_t p_id = 1; p_id < patterns_num; ++p_id){
-        f_pat_size = patterns[p_id].size;
-        f_minus = patterns_num - p_id;
-        // Sadly O^2
-        for (uint32_t s_id = 1; s_id < patterns_num; ++s_id)
-        {
-            // if ((p_id == s_id) || (s_id == f_minus)){continue;}
-            p_and_s_intersect = patterns_intersect(patterns[p_id].pattern,
-                                                   patterns[s_id].pattern,
-                                                   pat_len);
-            if (p_and_s_intersect){
-                patterns[p_id].no_intersect[s_id] = false;
-                patterns[s_id].no_intersect[p_id] = false;
-            } else {
-                patterns[p_id].no_intersect[s_id] = true;
-                patterns[s_id].no_intersect[p_id] = true;
-            }
-        }
-    }
-}
+//     for (uint32_t p_id = 1; p_id < patterns_num; ++p_id){
+//         f_pat_size = patterns[p_id].size;
+//         f_minus = patterns_num - p_id;
+//         // Sadly O^2
+//         for (uint32_t s_id = 1; s_id < patterns_num; ++s_id)
+//         {
+//             // if ((p_id == s_id) || (s_id == f_minus)){continue;}
+//             p_and_s_intersect = patterns_intersect(patterns[p_id].pattern,
+//                                                    patterns[s_id].pattern,
+//                                                    pat_len);
+//             if (p_and_s_intersect){
+//                 patterns[p_id].no_intersect[s_id] = false;
+//                 patterns[s_id].no_intersect[p_id] = false;
+//             } else {
+//                 patterns[p_id].no_intersect[s_id] = true;
+//                 patterns[s_id].no_intersect[p_id] = true;
+//             }
+//         }
+//     }
+// }
 
 
 // create size index: to find patterns by size

@@ -17,3 +17,4 @@ CSP
 tests/answers/*
 tests/input_files/*
 CSP.dSYM/
+__backup/*

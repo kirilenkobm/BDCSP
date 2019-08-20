@@ -92,6 +92,7 @@ def main():
         k = max(h_dists)
         ans_buff.write("K = {}\n".format(k))
     ans_buff.close()
+    print("Dataset {} generated!".format(args.dataset_name))
 
 
 if __name__ == "__main__":

@@ -40,6 +40,13 @@
 // } Z_compare;
 
 
+typedef struct{
+    uint32_t *zero_mask;
+    uint32_t *full_mask;
+    uint32_t mask_size;
+} Masks_data;
+
+
 // comparator for Z results
 int compare_Z_compares(const void *a, const void *b)
 { 
@@ -120,6 +127,19 @@ Move *__copy_moves(Move *arr, uint32_t len)
         res[i].size = arr[i].size;
     }
     return res;
+}
+
+
+// get the next state and moves
+void __upd_prog_state
+(State *states, Masks_data *mask, uint32_t *cur_state, bool *end, 
+Input_data *input_data, Pattern *patterns)
+{
+    Move *next_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num);
+    Z_compare* next_compares = (Z_compare*)malloc(sizeof(Z_compare) * input_data->dir_pat_num);
+
+    free(next_moves);
+    free(next_compares);
 }
 
 
@@ -226,13 +246,37 @@ Input_data *input_data, Pattern *patterns)
     // so now we have a cutoff and can write the initial array
     ++cutoff;  // for different loops
     verbose("# Initial cutoff is: %u\n", cutoff);
-
-    initial_moves = (Move*)realloc(initial_moves, cutoff * sizeof(Move));
     init_compares = (Z_compare*)realloc(init_compares, cutoff * sizeof(Z_compare));
     qsort(init_compares, cutoff, sizeof(Z_compare), Z_comp_order);
-    states[0].moves = __copy_moves(initial_moves, cutoff);
+
+    // filt moves now
+    Move *filt_moves = (Move*)malloc(cutoff * sizeof(Move));
+    uint32_t move_id = 0;
+
+    for (uint32_t i = 0; i < cutoff; ++i){
+        move_id = init_compares[i].assign_to_move;
+        filt_moves[i].pat_id = initial_moves[move_id].pat_id;
+        filt_moves[i].size = initial_moves[move_id].size;
+    }
+
+    // finally create initial state
+    states[0].moves = __copy_moves(filt_moves, cutoff);
     states[0].moves_num = cutoff;
     states[0].cur_move = 0;
+
+    // main loop
+    uint32_t cur_state = 0;
+    bool end = false;
+    Masks_data masks;
+    masks.zero_mask = zero_mask;
+    masks.full_mask = full_mask;
+    masks.mask_size = mask_size;
+
+    for (uint32_t step = 0; step < states_num; ++step)
+    {
+        __upd_prog_state(states, &masks, &cur_state, &end, input_data, patterns);
+        if (end){break;}  // interrupt if something is bad
+    }
 
     free(init_compares);
     free(initial_moves);

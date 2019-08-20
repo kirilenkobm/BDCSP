@@ -237,7 +237,7 @@ int main(int argc, char ** argv)
     uint8_t **init_render_data = render__draw(patterns, zero_mask, &input_data);
     if (init_render_show){
         printf("Initial state render:\n");
-        render__show_arr(init_render_data, input_data.str_num, input_data.act_col_num);
+        arr_2D_uint8_print(init_render_data, input_data.str_num, input_data.act_col_num);
     }
 
     uint32_t *zeros_nums = render__get_zeros(init_render_data, input_data.str_num, input_data.act_col_num);

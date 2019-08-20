@@ -52,3 +52,16 @@ void arr_1D_uint32_print(uint32_t *arr, uint32_t arr_size){
     for (uint32_t i = 0; i < arr_size; ++i){printf("%u ", arr[i]);}
     printf("\n");
 }
+
+
+// print 2D render
+void arr_2D_uint8_print(uint8_t **arr, uint32_t rows, uint32_t cols)
+{
+    for (uint32_t row = 0; row < rows; ++row){
+        printf("# ");
+        for (uint32_t col = 0; col < cols; ++col){
+            printf("%d ", arr[row][col]);
+        }
+        printf("\n");
+    }
+}

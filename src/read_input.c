@@ -14,6 +14,7 @@
 #include <limits.h>
 #include "CSP.h"
 #include "read_input.h"
+#include "arrstuff.h"
 
 #define MAXCHAR 255
 #define W 100
@@ -29,16 +30,6 @@ void free_in_data(Input_data input_data, uint32_t line_num)
 }
 
 
-// check if two lines are the same
-bool __are_same(uint8_t *l_1, uint8_t *l_2, uint32_t len)
-{
-    for (uint32_t i = 0; i < len; ++i){
-        if (l_1[i] != l_2[i]){return false;}
-    }
-    return true;
-}
-
-
 // check if new line is in array
 bool __check_is_in(uint8_t **in_arr, uint32_t str_len, uint32_t line_num, bool n_r)
 {
@@ -47,7 +38,7 @@ bool __check_is_in(uint8_t **in_arr, uint32_t str_len, uint32_t line_num, bool n
     uint8_t *cur = in_arr[line_num];
     bool same = false;
     for (uint32_t i = 0; i < line_num; ++i){
-        same = __are_same(in_arr[i], cur, str_len);
+        same = arr_uint8_are_the_same(in_arr[i], cur, str_len);
         if (same){return true;}
     }
     return false;

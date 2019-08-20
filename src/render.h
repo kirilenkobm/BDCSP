@@ -20,8 +20,6 @@
 
 uint8_t **render__draw(Pattern *patterns, uint32_t *mask, Input_data *input_data);
 
-void render__show_arr(uint8_t **arr, uint32_t rows, uint32_t cols);
-
 uint32_t *render__get_zeros(uint8_t **init_render_data, uint32_t rows, uint32_t cols);
 
 uint32_t render__get_min_zeros_amount(uint8_t **init_render_data, uint32_t rows, uint32_t cols);

@@ -56,19 +56,6 @@ uint8_t **render__draw(Pattern *patterns, uint32_t *mask, Input_data *input_data
 }
 
 
-// print 2D render
-void render__show_arr(uint8_t **arr, uint32_t rows, uint32_t cols)
-{
-    for (uint32_t row = 0; row < rows; ++row){
-        printf("# ");
-        for (uint32_t col = 0; col < cols; ++col){
-            printf("%d ", arr[row][col]);
-        }
-        printf("\n");
-    }
-}
-
-
 // get zeros number from all rows
 uint32_t *render__get_zeros(uint8_t **init_render_data, uint32_t rows, uint32_t cols)
 // rows -> input_data->str_num and cols -> input_data->act_col_num;

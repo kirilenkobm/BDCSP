@@ -163,7 +163,6 @@ bool *res, Input_data *input_data, Pattern *patterns)
                                               input_data->act_col_num);
     render__free_render(init_render, input_data->str_num);
     if (v) {arr_1D_uint32_print(cur_mask, mask->mask_size);}
-    // render__show_arr(init_render, input_data->str_num, input_data->act_col_num);
 
     // need to find next good moves
     // partly copy-paste of the init function
@@ -318,7 +317,6 @@ Input_data *input_data, Pattern *patterns)
     {
         zero_mask[p_num] = 1;
         uint8_t **move_render = render__draw(patterns, zero_mask, input_data);
-        // render__show_arr(move_render, input_data->str_num, input_data->act_col_num);
         uint32_t *zeros_dist = render__get_zeros(move_render,
                                                  input_data->str_num, 
                                                  input_data->act_col_num);

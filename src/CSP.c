@@ -18,6 +18,7 @@
 // #include "grid.h"
 // #include "combinations.h"
 #include "render.h"
+#include "traverse.h"
 
 
 bool v = false;

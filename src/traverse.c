@@ -93,6 +93,13 @@ void __print_Z_compare(Z_compare *z_comp)
 void __print_move(Move *move) {printf("# Move: PAT_ID %u SIZE %d\n", move->pat_id, move->size);}
 
 
+// just print a mask
+void __print_mask(uint32_t *mask, uint32_t mask_size){
+    for (uint32_t i = 0; i < mask_size; ++i){printf("%u ", mask[i]);}
+    printf("\n");
+}
+
+
 // compare two zero-distr outputs
 Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
 {
@@ -137,12 +144,19 @@ Move *__copy_moves(Move *arr, uint32_t len)
 // wipe state, return 0 - state
 void __wipe_state(State *state)
 {   
+    verbose("I am here\n");
+    free(state->pat_mask);
+    free(state->moves);
     state->pat_mask = NULL;
     state->moves = NULL;
     state->prev_pat = 0;
     state->moves_num = 0;
     state->cur_move = 0;
 }
+
+
+// apply move to mask
+void __apply_move(uint32_t *mask, Move *move) {mask[move->pat_id] = move->size;}
 
 
 // get the next state and moves
@@ -163,11 +177,13 @@ bool *res, Input_data *input_data, Pattern *patterns)
     Move cur_move = states[*cur_state].moves[states[*cur_state].cur_move];
     ++states[*cur_state].cur_move;
 
-    Move *next_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num);
-    Z_compare* next_compares = (Z_compare*)malloc(sizeof(Z_compare) * input_data->dir_pat_num);
+    uint32_t *cur_mask = traverse__mask_copy(states[*cur_state].pat_mask, mask->mask_size);
+    __apply_move(cur_mask, &cur_move);
+    __print_mask(cur_mask, mask->mask_size);
+    Move *next_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num * 2);
+    Z_compare* next_compares = (Z_compare*)malloc(sizeof(Z_compare) * input_data->dir_pat_num * 2);
     free(next_moves);
     free(next_compares);
-    *end = true;  // just for development step
 }
 
 
@@ -234,7 +250,6 @@ Input_data *input_data, Pattern *patterns)
 
     // print sorted compares
     // for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){__print_Z_compare(&init_compares[i]);}
-    // TODO: fix overflow
     uint32_t ones_cov = input_data->act_col_num - init_compares[0].min_zeros;
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     bool already_ans_false = (init_compares[0].min_zeros_delta == 1);

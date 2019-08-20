@@ -47,6 +47,9 @@ typedef struct{
 } Masks_data;
 
 
+extern bool v;
+
+
 // comparator for Z results
 int compare_Z_compares(const void *a, const void *b)
 { 
@@ -90,11 +93,16 @@ void __print_Z_compare(Z_compare *z_comp)
 
 
 // just print a move
-void __print_move(Move *move) {printf("# Move: PAT_ID %u SIZE %d\n", move->pat_id, move->size);}
+void __print_move(Move *move)
+{
+    if (!v) {return;}
+    printf("# Move: PAT_ID %u SIZE %d\n", move->pat_id, move->size);
+}
 
 
 // just print a mask
 void __print_mask(uint32_t *mask, uint32_t mask_size){
+    if (!v){return;}
     for (uint32_t i = 0; i < mask_size; ++i){printf("%u ", mask[i]);}
     printf("\n");
 }
@@ -179,6 +187,7 @@ bool *res, Input_data *input_data, Pattern *patterns)
     uint32_t *cur_mask = traverse__mask_copy(states[*cur_state].pat_mask, mask->mask_size);
     __apply_move(cur_mask, &cur_move);
     *cur_state += 1;  // goto next step then
+
     // actually we need current render data
     uint8_t **init_render = render__draw(patterns, cur_mask, input_data);
     uint32_t *init_z_dist = render__get_zeros(init_render,
@@ -295,6 +304,7 @@ bool *res, Input_data *input_data, Pattern *patterns)
     states[*cur_state].prev_pat = cur_move.pat_id;
     states[*cur_state].cur_move = 0;
 
+    free(filt_moves);
     free(next_moves);
     free(init_z_dist);
     free(next_compares);
@@ -302,6 +312,8 @@ bool *res, Input_data *input_data, Pattern *patterns)
 
 
 // call in-depth search for answer
+// initiate the first program state
+// and then run state updater to get the answer
 bool traverse__run
 (uint32_t *zero_mask, uint32_t *full_mask, uint32_t *init_z_dist,
 Input_data *input_data, Pattern *patterns)
@@ -313,17 +325,19 @@ Input_data *input_data, Pattern *patterns)
     uint32_t mask_size = (input_data->dir_pat_num + 1);
 
     // initiate states with default values
-    for (uint32_t i = 0; i < states_num; ++i)
+    for (uint32_t i = 1; i < states_num; ++i)
     {
-        states[i].pat_mask = (uint32_t*)calloc(mask_size, sizeof(uint32_t));
-        states[i].moves = (Move*)malloc(MOVES_STEP * sizeof(Move));
+        // states[i].pat_mask = (uint32_t*)calloc(mask_size, sizeof(uint32_t));
+        // states[i].moves = (Move*)malloc(MOVES_STEP * sizeof(Move));
+        states[i].pat_mask = NULL;
+        states[i].moves = NULL;
         states[i].moves_num = 0;
         states[i].cur_move = 0;
         states[i].prev_pat = 0;
     }
 
     states[0].pat_mask = traverse__mask_copy(zero_mask, mask_size);
-    states[0].moves = NULL;
+    // states[0].moves = NULL;
 
     // initiate moves, only + moves available
     Move *initial_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num);
@@ -425,6 +439,7 @@ Input_data *input_data, Pattern *patterns)
 
     // finally create initial state
     states[0].moves = __copy_moves(filt_moves, cutoff);
+    for (uint32_t i = 0; i < cutoff; ++i){__print_move(&filt_moves[i]);}
     free(filt_moves);
     states[0].moves_num = cutoff;
     states[0].cur_move = 0;
@@ -439,7 +454,7 @@ Input_data *input_data, Pattern *patterns)
     masks.mask_size = mask_size;
 
     // main loop
-    for (uint32_t step = 0; step < states_num; ++step)
+    for (uint32_t step = 0; step < (states_num - 1); ++step)
     {
         verbose("# Step num %u\n", step);
         __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data, patterns);
@@ -452,6 +467,7 @@ Input_data *input_data, Pattern *patterns)
         free(states[i].pat_mask);
         free(states[i].moves);
     }
+
     free(states);
     verbose("# Freed traverse data\n");
     return res;

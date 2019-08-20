@@ -19,6 +19,11 @@
 #include "render.h"
 
 
+typedef int8_t sign;
+#define plus 1
+#define zero 0
+#define minus -1
+
 typedef struct{
     uint32_t pat_id;
     int8_t size;
@@ -28,6 +33,7 @@ typedef struct{
     uint32_t *pat_mask;
     Move *moves;
     uint32_t prev_pat;
+    sign prev_p_sign;
     uint32_t moves_num;
     uint32_t cur_move;
 } State;
@@ -40,6 +46,12 @@ typedef struct{
     uint32_t assign_to_move;
     uint32_t assign_to_pat;
 } Z_compare;
+
+typedef struct{
+    uint32_t *zero_mask;
+    uint32_t *full_mask;
+    uint32_t mask_size;
+} Masks_data;
 
 bool traverse__run
 (uint32_t *zero_mask, uint32_t *full_mask, uint32_t *init_z_dist, Input_data *input_data, Pattern *patterns);

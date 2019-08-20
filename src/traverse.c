@@ -19,14 +19,6 @@
 #include "arrstuff.h"
 #define MOVES_STEP 10
 
-
-typedef struct{
-    uint32_t *zero_mask;
-    uint32_t *full_mask;
-    uint32_t mask_size;
-} Masks_data;
-
-
 extern bool v;
 
 
@@ -138,7 +130,7 @@ void __apply_move(uint32_t *mask, Move *move) {mask[move->pat_id] += move->size;
 void __upd_prog_state
 (State *states, Masks_data *mask, uint32_t *cur_state, bool *end, 
 bool *res, Input_data *input_data, Pattern *patterns)
-{   
+{
     if (states[*cur_state].moves_num == states[*cur_state].cur_move)
     // in this case we tried all possible paths for this state
     {
@@ -149,8 +141,9 @@ bool *res, Input_data *input_data, Pattern *patterns)
     }
     // ok, we have a chance to do something
     // get the current move and try to evolve
-    Move cur_move = states[*cur_state].moves[states[*cur_state].cur_move];
-    ++states[*cur_state].cur_move;
+    uint32_t cur_move_num = states[*cur_state].cur_move;
+    Move cur_move = states[*cur_state].moves[cur_move_num];
+    states[*cur_state].cur_move += 1;
 
     uint32_t *cur_mask = traverse__mask_copy(states[*cur_state].pat_mask, mask->mask_size);
     __apply_move(cur_mask, &cur_move);
@@ -270,6 +263,7 @@ bool *res, Input_data *input_data, Pattern *patterns)
     states[*cur_state].moves_num = cutoff;
     states[*cur_state].prev_pat = cur_move.pat_id;
     states[*cur_state].cur_move = 0;
+    states[*cur_state].prev_p_sign = cur_move.size;
 
     free(filt_moves);
     free(next_moves);
@@ -301,6 +295,7 @@ Input_data *input_data, Pattern *patterns)
         states[i].moves_num = 0;
         states[i].cur_move = 0;
         states[i].prev_pat = 0;
+        states[i].prev_p_sign = zero;
     }
 
     states[0].pat_mask = traverse__mask_copy(zero_mask, mask_size);

@@ -1,7 +1,10 @@
-#!usr/bin/env python3
+#!/usr/bin/env python3
 """Shuffle input file defining line N as initial one."""
 import argparse
 import sys
+
+ALLOWED = {"1", "0", "\n", " "}
+
 
 def parse_args():
     """Parse and check args."""
@@ -19,10 +22,26 @@ def parse_args():
     return args
 
 
+def read_input(in_file):
+    """Read and check input."""
+    with open(in_file, "r") as f:
+        content = f.read()
+    if set(content).difference(ALLOWED):
+        sys.exit("Error! Only these characters are allowed in input "
+                 ": {}".format(ALLOWED))
+    lines = [x.replace(" ", "") for x in content.split("\n") if x != ""]
+    if len(set(len(x) for x in lines)) > 1:
+        sys.exit("Error! Input lines should have the same length!")
+    result = [[int(x) for x in line] for line in lines]
+    return result
+
 def main():
     """Entry point."""
     args = parse_args()
-
+    input_arr = read_input(args.input_file)
+    if args.line >= len(input_arr):
+        sys.exit("Error! Line {} (0-based) doesn't exist!".format(args.line))
+    # TODO: finish this
 
 if __name__ == "__main__":
     main()

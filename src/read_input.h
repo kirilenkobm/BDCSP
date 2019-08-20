@@ -26,10 +26,16 @@ typedef struct
     uint32_t dir_pat_num;
     uint32_t act_col_num;
     uint32_t level_size;
+    bool v;
+    bool show_patterns;
+    bool no_repeats;
+    bool init_render_show;
 } Input_data;
 
-void free_in_data(Input_data input_data, uint32_t line_num);
+void free_in_data(Input_data *input_data, uint32_t line_num);
 
-Input_data read_input(char **argv, bool n_r);
+void read_input(char **argv, Input_data *Input_data);
+
+void read_input__opt_args(int argc, char**argv, Input_data *input_data);
 
 #endif  // !READ_INPUT_H

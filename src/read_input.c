@@ -23,10 +23,10 @@
 
 
 // free in data array
-void free_in_data(Input_data input_data, uint32_t line_num)
+void free_in_data(Input_data *input_data, uint32_t line_num)
 {
-    for (uint32_t i = 0; i < (line_num + 1); ++i){free(input_data.in_arr[i]);}
-    free(input_data.in_arr);
+    for (uint32_t i = 0; i < (line_num + 1); ++i){free(input_data->in_arr[i]);}
+    free(input_data->in_arr);
 }
 
 
@@ -45,10 +45,9 @@ bool __check_is_in(uint8_t **in_arr, uint32_t str_len, uint32_t line_num, bool n
 }
 
 
-// read and check input stuff
-Input_data read_input(char **argv, bool n_r)
+// read and check input array and K
+void read_input(char **argv, Input_data *input_data)
 {
-    Input_data input_data;
     // ok, read K
     char *c;
     for (c = argv[2]; *c; ++c)
@@ -60,14 +59,14 @@ Input_data read_input(char **argv, bool n_r)
             _show_usage_and_quit(argv[0]);
         }
     }
-    input_data.k = strtoul(argv[2], 0L, 10);
-    if (input_data.k == 4294967295){
+    input_data->k = strtoul(argv[2], 0L, 10);
+    if (input_data->k == 4294967295){
         fprintf(stderr, "Warning: k value read as 4294967295, probably an overflow\n");
-    } else if (input_data.k == 0){
+    } else if (input_data->k == 0){
         fprintf(stderr, "Error! K expected to be > 0!");
         _show_usage_and_quit(argv[0]);
     }
-    verbose("# k = %u \n", input_data.k);
+    verbose("# k = %u \n", input_data->k);
 
     // and the input array
     FILE *fp = NULL;
@@ -91,14 +90,14 @@ Input_data read_input(char **argv, bool n_r)
     uint32_t repeats = 0;
     bool is_in = false;
     bool prev_newline = false;
-    input_data.in_arr = (uint8_t**)malloc(lines_allocated * sizeof(uint8_t*));
-    input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
+    input_data->in_arr = (uint8_t**)malloc(lines_allocated * sizeof(uint8_t*));
+    input_data->in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
 
     while ((ch = fgetc(fp)) != EOF){
         if (first_line && (char_num >= line_len - 1)){
             line_len += REALLOC_STEP;
-            input_data.in_arr[line_num] = (uint8_t*)realloc(input_data.in_arr[line_num],
-                                                            line_len * sizeof(uint8_t));
+            input_data->in_arr[line_num] = (uint8_t*)realloc(input_data->in_arr[line_num],
+                                                             line_len * sizeof(uint8_t));
         } else if (first_line && (char_num >= UINT32_MAX - REALLOC_STEP)){
             fprintf(stderr, "Overflow error! Matrix size should not exceed UINT32_MAX x UINT32_MAX\n");
             free_in_data(input_data, line_num);
@@ -114,12 +113,12 @@ Input_data read_input(char **argv, bool n_r)
         {
             case 49:  // -- "1" -> add to current line
                 prev_newline = false;
-                input_data.in_arr[line_num][char_num] = 1;
+                input_data->in_arr[line_num][char_num] = 1;
                 ++char_num;
                 break;
             case 48:  // == "0"
                 prev_newline = false;
-                input_data.in_arr[line_num][char_num] = 0;
+                input_data->in_arr[line_num][char_num] = 0;
                 ++char_num;
                 break;
             case 10:  // newline, switch to the next line then
@@ -145,7 +144,8 @@ Input_data read_input(char **argv, bool n_r)
 
                 // check if there is a repeat
                 // not the most efficien solution, yes
-                is_in = __check_is_in(input_data.in_arr, act_str_len, line_num, n_r);
+                is_in = __check_is_in(input_data->in_arr, act_str_len,
+                                      line_num, input_data->no_repeats);
                 if (is_in){
                     ++repeats;
                     char_num = 0;
@@ -157,15 +157,17 @@ Input_data read_input(char **argv, bool n_r)
                 if (line_num > lines_allocated - 1){
                     // too much lines, need to add some extra lines
                     lines_allocated += REALLOC_STEP;
-                    input_data.in_arr = (uint8_t**)realloc(input_data.in_arr, lines_allocated * sizeof(uint8_t*));
+                    input_data->in_arr = (uint8_t**)realloc(input_data->in_arr,
+                                                            lines_allocated * sizeof(uint8_t*));
                 }
                 if (lines_allocated >= UINT32_MAX){
-                    fprintf(stderr, "Overflow error! Matrix size should not exceed UINT32_MAX x UINT32_MAX\n");
+                    fprintf(stderr, "Overflow error! Matrix size should not \
+                                     exceed UINT32_MAX x UINT32_MAX\n");
                     free_in_data(input_data, line_num);
                     exit(1);
                 }
                 char_num = 0;
-                input_data.in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
+                input_data->in_arr[line_num] = (uint8_t*)malloc(line_len * sizeof(uint8_t));
                 prev_newline = true;
                 break;
             case 32:  // space, do nothing
@@ -181,7 +183,7 @@ Input_data read_input(char **argv, bool n_r)
     // post-processing
     if (char_num == 0){
         // \n - terminated file
-        free(input_data.in_arr[line_num]);
+        free(input_data->in_arr[line_num]);
     } else if (char_num != act_str_len){
         // happens if the last line had a different length
         fprintf(stderr, "Error: the last line of the file has different lenght!\n");
@@ -189,16 +191,16 @@ Input_data read_input(char **argv, bool n_r)
         exit(1);
     } else {
         // not \n - terminated file; need to check if the last line is not a repeat
-        is_in = __check_is_in(input_data.in_arr, act_str_len, line_num, n_r);
+        is_in = __check_is_in(input_data->in_arr, act_str_len, line_num, input_data->no_repeats);
         if (!is_in){++line_num;}
         else {++repeats;}
     }
 
     // realloc memory; it is likely a bit too much now
-    input_data.in_arr = (uint8_t**)realloc(input_data.in_arr, line_num * sizeof(uint8_t*));
+    input_data->in_arr = (uint8_t**)realloc(input_data->in_arr, line_num * sizeof(uint8_t*));
     for (uint32_t i = 0; i < line_num; i++){
-        input_data.in_arr[i] = (uint8_t*)realloc(input_data.in_arr[i],
-                                                 act_str_len * sizeof(uint8_t));
+        input_data->in_arr[i] = (uint8_t*)realloc(input_data->in_arr[i],
+                                                  act_str_len * sizeof(uint8_t));
     }
 
     verbose("# Lines lenght: %u\n", act_str_len);
@@ -209,10 +211,41 @@ Input_data read_input(char **argv, bool n_r)
         free_in_data(input_data, line_num);
         exit(1);
     }
-    input_data.str_len = act_str_len;
-    input_data.str_num = line_num;
-    input_data.act_col_num = 0;
+    input_data->str_len = act_str_len;
+    input_data->str_num = line_num;
+    input_data->act_col_num = 0;
     // for explicity:
-    input_data.level_size = line_num;
-    return input_data;
+    input_data->level_size = line_num;
+}
+
+
+// read optional arguments
+void read_input__opt_args(int argc, char**argv, Input_data *input_data)
+{
+    // default values
+    input_data->v = false;
+    input_data->show_patterns = false;
+    input_data->no_repeats = false;
+    input_data->init_render_show = false;
+
+    for (int op = 3; op < argc; ++op)
+    {
+        if (strcmp(argv[op], "-v") == 0){
+            // enable verbose
+            input_data->v = true;
+            verbose("# Verbose mode activated\n");
+        } else if (strcmp(argv[op], "-p") == 0){
+            // show patterns
+            input_data->show_patterns = true;
+        } else if (strcmp(argv[op], "-nr") == 0){
+            // user promises there are no repeats
+            input_data->no_repeats = true;
+        } else if (strcmp(argv[op], "-r") == 0){
+            // we need initial render of program state
+            input_data->init_render_show = true;
+        } else {
+            fprintf(stderr, "Error: unknown parameter %s\n", argv[op]);
+            _show_usage_and_quit(argv[0]);
+        }
+    }
 }

@@ -136,33 +136,9 @@ void get_init_density_range
 int main(int argc, char ** argv)
 {
     // some default parameters
-    bool no_repeats = false;
-    bool show_patterns = false;
-    bool init_render_show = false;
-
-    // check args number, read extra args
-    if (argc < 3){_show_usage_and_quit(argv[0]);}
-    // TODO: move to another function?
-    for (int op = 3; op < argc; ++op)
-    {
-        if (strcmp(argv[op], "-v") == 0){
-            // enable verbose
-            v = true;
-            verbose("# Verbose mode activated\n");
-        } else if (strcmp(argv[op], "-p") == 0){
-            // show patterns
-            show_patterns = true;
-        } else if (strcmp(argv[op], "-nr") == 0){
-            // user promises there are no repeats
-            no_repeats = true;
-        } else if (strcmp(argv[op], "-r") == 0){
-            // we need initial render of program state
-            init_render_show = true;
-        } else {
-            fprintf(stderr, "Error: unknown parameter %s\n", argv[op]);
-            _show_usage_and_quit(argv[0]);
-        }
-    }
+    Input_data input_data;
+    read_input__opt_args(argc, argv, &input_data);
+    v = input_data.v;
 
     // set defaults to (potentially) allocated stuff
     allocated.input_arr = NULL;
@@ -175,7 +151,7 @@ int main(int argc, char ** argv)
     allocated.full_mask = NULL;
 
     // read and check input
-    Input_data input_data = read_input(argv, no_repeats);
+    read_input(argv, &input_data);
     allocated.input_arr = input_data.in_arr;
     allocated.str_num = input_data.str_num;
 
@@ -187,7 +163,7 @@ int main(int argc, char ** argv)
     allocated.patterns = patterns;
     allocated.patterns_num = input_data.pat_num;
 
-    if (show_patterns)  // show patterns if required
+    if (input_data.show_patterns)  // show patterns if required
     {
         printf("# Extracted patterns are:\n");
         for (uint32_t i = 0; i < input_data.pat_num; ++i){
@@ -235,7 +211,7 @@ int main(int argc, char ** argv)
     allocated.full_mask = full_mask;
 
     uint8_t **init_render_data = render__draw(patterns, zero_mask, &input_data);
-    if (init_render_show){
+    if (input_data.init_render_show){
         printf("Initial state render:\n");
         arr_2D_uint8_print(init_render_data, input_data.str_num, input_data.act_col_num);
     }

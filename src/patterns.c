@@ -22,7 +22,7 @@
 void invert_pattern(uint8_t *pattern, uint32_t size)
 {
     for (uint32_t i = 0; i < size; ++i){
-        pattern[i] = (pattern[i] == 0) ? 1 : 0;
+        pattern[i] = 1 - pattern[i];
     }
 }
 
@@ -95,12 +95,12 @@ int compare_patterns(const void *a, const void *b)
 Pattern *get_patterns(Input_data *input_data)
 {   
     uint32_t act_col_num = 0;
-    Pattern *patterns = (Pattern*)malloc(input_data->str_len * sizeof(Pattern));
+    Pattern *patterns = (Pattern*)malloc((input_data->str_len + 2) * sizeof(Pattern));
     uint32_t extracted_patterns = 0;
     bool drop_col = false;
     uint32_t col_size = 0;
 
-    for (uint32_t i = 0; i < input_data->str_len; ++i){
+    for (uint32_t i = 0; i < (input_data->str_len + 2); ++i){
         patterns[i].pattern = (uint8_t*)calloc(input_data->str_num + 1, sizeof(uint8_t));
         patterns[i].times = 0;
         patterns[i].size = 0;
@@ -139,18 +139,17 @@ Pattern *get_patterns(Input_data *input_data)
         ++act_col_num;
         free(column);
     }
+
     input_data->act_col_num = act_col_num;
     // add fake 0-pattern
     for (uint32_t i = 0; i < input_data->str_num; ++i){patterns[extracted_patterns].pattern[i] = 1;}
     patterns[extracted_patterns].size = input_data->str_num;
     patterns[extracted_patterns].times = 0;
     ++extracted_patterns;
-
     if (extracted_patterns > (UINT32_MAX / 2)) {
         fprintf(stderr, "Overflow error. Number of patterns > UINT32_MAX\n");
         return NULL;
     }
-
     patterns = (Pattern*)realloc(patterns, extracted_patterns * sizeof(Pattern));
     // now sort this stuff
     qsort(patterns, extracted_patterns, sizeof(Pattern), compare_patterns);

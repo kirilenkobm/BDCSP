@@ -280,7 +280,7 @@ bool traverse__run
 Input_data *input_data, Pattern *patterns)
 {
     bool res = false;  // default answer
-    uint32_t states_num = input_data->act_col_num * 4;
+    uint32_t states_num = input_data->act_col_num;
     verbose("# Search depth %u\n", states_num);
     State *states = (State*)malloc((states_num + 1) * sizeof(State));
     uint32_t mask_size = (input_data->dir_pat_num + 1);

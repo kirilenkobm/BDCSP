@@ -216,6 +216,7 @@ void read_input__main_args(char **argv, Input_data *input_data)
     input_data->act_col_num = 0;
     // for explicity:
     input_data->level_size = line_num;
+    verbose("# Finished reading\n");
 }
 
 

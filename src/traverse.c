@@ -104,7 +104,8 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
 
 // call in-depth search for answer
 bool traverse__run
-(uint32_t *zero_mask, uint32_t *full_mask, uint32_t *init_z_dist, Input_data *input_data, Pattern *patterns)
+(uint32_t *zero_mask, uint32_t *full_mask, uint32_t *init_z_dist,
+Input_data *input_data, Pattern *patterns)
 {
     bool res = false;  // default answer
     uint32_t states_num = input_data->act_col_num * 4;
@@ -192,6 +193,7 @@ bool traverse__run
         verbose("# Cannot make the first move\n");
         return false;
     }
+
     // so now we have a cutoff and can write the initial array
     ++cutoff;  // for different loops
     verbose("# Initial cutoff is: %u\n", cutoff);

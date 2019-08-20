@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-echo "Testing build"
+printf "Started BDCSP tests\n"
 
 declare -a arr=("make clean"
                 "make"
@@ -22,7 +22,7 @@ for (( i = 0; i < ${#arr[@]} ; i++ )); do
         printf "${arr[$i]} FAILED\n"
         exit 1
     else
-        echo "${arr[$i]} successful!"
+        printf "${arr[$i]} successful!\n"
     fi
 
     if [[ ( "$i" -eq 2 && $out == *False ) || \

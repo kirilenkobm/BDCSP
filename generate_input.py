@@ -99,7 +99,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "clean":
         # clean, but don't touch _readme.txt
         shutil.rmtree(INPUT_FILES_DIR) if os.path.isdir(INPUT_FILES_DIR) else None
-        shutil.rmtree(ANSWER_FILES_DIR) if os.path.isdir(INPUT_FILES_DIR) else None
+        shutil.rmtree(ANSWER_FILES_DIR) if os.path.isdir(ANSWER_FILES_DIR) else None
         sys.exit("Cleaned")
     os.mkdir(INPUT_FILES_DIR) if not os.path.isdir(INPUT_FILES_DIR) else None
     os.mkdir(ANSWER_FILES_DIR) if not os.path.isdir(ANSWER_FILES_DIR) else None

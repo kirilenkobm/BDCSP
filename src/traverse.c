@@ -179,10 +179,49 @@ bool *res, Input_data *input_data, Pattern *patterns)
 
     uint32_t *cur_mask = traverse__mask_copy(states[*cur_state].pat_mask, mask->mask_size);
     __apply_move(cur_mask, &cur_move);
-    __print_mask(cur_mask, mask->mask_size);
+    *cur_state += 1;  // goto next step then
+    // actually we need current render data
+    uint8_t **init_render = render__draw(patterns, cur_mask, input_data);
+    uint32_t *init_z_dist = render__get_zeros(init_render,
+                                              input_data->str_num, 
+                                              input_data->act_col_num);
+    render__free_render(init_render, input_data->str_num);
+    // __print_mask(cur_mask, mask->mask_size);
+    // render__show_arr(init_render, input_data->str_num, input_data->act_col_num);
+
+    // need to find next good moves
+    // partly copy-paste of the init function
     Move *next_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num * 2);
     Z_compare* next_compares = (Z_compare*)malloc(sizeof(Z_compare) * input_data->dir_pat_num * 2);
+    uint32_t moves_count = 0;
+    uint32_t inter_m_val_p = 0;  // to check whether we can ot not to incre-or-decrement
+    uint32_t inter_m_val_m = 0;
+    for (uint32_t p_num = 1; p_num < mask->mask_size; ++p_num)
+    {
+        inter_m_val_p = cur_mask[p_num] + 1;
+        if (inter_m_val_p <= mask->full_mask[p_num])
+        // we can add +1 move then
+        {
+            cur_mask[p_num] += 1;
+            uint8_t **move_render = render__draw(patterns, cur_mask, input_data);
+            uint32_t *zeros_dist = render__get_zeros(move_render,
+                                                     input_data->str_num, 
+                                                     input_data->act_col_num);
+            Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
+            // return status-quo
+            cur_mask[p_num] -= 1;
+            render__free_render(move_render, input_data->str_num);
+            free(zeros_dist);
+
+        }
+        if (cur_mask[p_num] > 0)
+        // if we are here -> we can add -1 move
+        {
+            inter_m_val_m = cur_mask[p_num] - 1;
+        }
+    }
     free(next_moves);
+    free(init_z_dist);
     free(next_compares);
 }
 
@@ -199,7 +238,8 @@ Input_data *input_data, Pattern *patterns)
     uint32_t mask_size = (input_data->dir_pat_num + 1);
 
     // initiate states with default values
-    for (uint32_t i = 0; i < states_num; ++i){
+    for (uint32_t i = 0; i < states_num; ++i)
+    {
         states[i].pat_mask = (uint32_t*)calloc(mask_size, sizeof(uint32_t));
         states[i].moves = (Move*)malloc(MOVES_STEP * sizeof(Move));
         states[i].moves_num = 0;
@@ -217,7 +257,8 @@ Input_data *input_data, Pattern *patterns)
     uint32_t i_moves_count = 0;
 
 
-    for (uint32_t p_num = 1; p_num < mask_size; ++p_num){
+    for (uint32_t p_num = 1; p_num < mask_size; ++p_num)
+    {
         zero_mask[p_num] = 1;
         uint8_t **move_render = render__draw(patterns, zero_mask, input_data);
         // render__show_arr(move_render, input_data->str_num, input_data->act_col_num);

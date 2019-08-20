@@ -89,6 +89,10 @@ void __print_Z_compare(Z_compare *z_comp)
 }
 
 
+// just print a move
+void __print_move(Move *move) {printf("# Move: PAT_ID %u SIZE %d\n", move->pat_id, move->size);}
+
+
 // compare two zero-distr outputs
 Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
 {
@@ -130,16 +134,36 @@ Move *__copy_moves(Move *arr, uint32_t len)
 }
 
 
+// wipe state, return 0 - state
+void __wipe_state(State *state)
+{   
+    state->pat_mask = NULL;
+    state->moves = NULL;
+    state->prev_pat = 0;
+    state->moves_num = 0;
+    state->cur_move = 0;
+}
+
+
 // get the next state and moves
 void __upd_prog_state
 (State *states, Masks_data *mask, uint32_t *cur_state, bool *end, 
-Input_data *input_data, Pattern *patterns)
+bool *res, Input_data *input_data, Pattern *patterns)
 {
+    if (states[*cur_state].moves_num == states[*cur_state].cur_move)
+    // in this case we tried all possible paths for this state
+    {
+        __wipe_state(&states[*cur_state]);
+        if (*cur_state == 0){*end = true;}  // no states < 0, break the loop
+        else {*cur_state = *cur_state - 1;}  // goto previous one
+        return;  // nothing to do in this function anymore
+    }
+    // ok, we have a chance to do something
     Move *next_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num);
     Z_compare* next_compares = (Z_compare*)malloc(sizeof(Z_compare) * input_data->dir_pat_num);
-
     free(next_moves);
     free(next_compares);
+    *end = true;  // just for development step
 }
 
 
@@ -160,6 +184,7 @@ Input_data *input_data, Pattern *patterns)
         states[i].moves = (Move*)malloc(MOVES_STEP * sizeof(Move));
         states[i].moves_num = 0;
         states[i].cur_move = 0;
+        states[i].prev_pat = 0;
     }
 
     states[0].pat_mask = traverse__mask_copy(zero_mask, mask_size);
@@ -264,7 +289,8 @@ Input_data *input_data, Pattern *patterns)
     states[0].moves_num = cutoff;
     states[0].cur_move = 0;
 
-    // main loop
+    for (uint32_t i = 0; i < cutoff; ++i){__print_move(&filt_moves[i]);}
+    
     uint32_t cur_state = 0;
     bool end = false;
     Masks_data masks;
@@ -272,9 +298,10 @@ Input_data *input_data, Pattern *patterns)
     masks.full_mask = full_mask;
     masks.mask_size = mask_size;
 
+    // main loop
     for (uint32_t step = 0; step < states_num; ++step)
     {
-        __upd_prog_state(states, &masks, &cur_state, &end, input_data, patterns);
+        __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data, patterns);
         if (end){break;}  // interrupt if something is bad
     }
 

@@ -3,7 +3,6 @@ stages:
 
 build:
   stage: build
-  allow_failure: true
   script:
   - ./run_tests.sh
   only:

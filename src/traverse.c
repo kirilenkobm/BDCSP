@@ -155,7 +155,7 @@ void __wipe_state(State *state)
 
 
 // apply move to mask
-void __apply_move(uint32_t *mask, Move *move) {mask[move->pat_id] = move->size;}
+void __apply_move(uint32_t *mask, Move *move) {mask[move->pat_id] += move->size;}
 
 
 // get the next state and moves

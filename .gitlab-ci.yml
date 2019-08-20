@@ -1,15 +1,6 @@
 stages:
-  - pages
   - build
   - py_test
-
-pages:
-  stage: deploy
-  artifacts:
-    paths:
-    - public
-  only:
-  - master
 
 build:
   stage: build

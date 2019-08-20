@@ -443,8 +443,6 @@ Input_data *input_data, Pattern *patterns)
     free(filt_moves);
     states[0].moves_num = cutoff;
     states[0].cur_move = 0;
-
-    for (uint32_t i = 0; i < cutoff; ++i){__print_move(&filt_moves[i]);}
     
     uint32_t cur_state = 0;
     bool end = false;

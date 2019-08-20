@@ -58,9 +58,7 @@ int compare_Z_compares(const void *a, const void *b)
 // just compare two z comps by id
 int Z_comp_order(const void *a, const void *b)
 {
-    Z_compare *ia = (Z_compare*)a;
-    Z_compare *ib = (Z_compare*)b;
-    return (ia->assign_to_pat - ib->assign_to_pat);
+    return (((Z_compare*)a)->assign_to_pat - ((Z_compare*)b)->assign_to_pat);
 }
 
 
@@ -92,11 +90,11 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
     res.min_zeros_delta = 0;
     res.minus_ = 0;
     res.plus_ = 0;
-    printf("Before: \n");
-    for (uint32_t i = 0; i < len; ++i){printf("%u ", before[i]);}
-    printf("\nAfter:\n");
-    for (uint32_t i = 0; i < len; ++i){printf("%u ", after[i]);}
-    N
+    // printf("Before: \n");
+    // for (uint32_t i = 0; i < len; ++i){printf("%u ", before[i]);}
+    // printf("\nAfter:\n");
+    // for (uint32_t i = 0; i < len; ++i){printf("%u ", after[i]);}
+    // N
     uint32_t before_max =  arr_max(before, len);
     uint32_t after_max = arr_max(after, len);
     res.min_zeros_delta = after_max - before_max;
@@ -109,6 +107,18 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
     }
     // printf("Minuses: %u pluses: %u\n", res.minus_, res.plus_);
     // N
+    return res;
+}
+
+
+// copy moves array
+Move *__copy_moves(Move *arr, uint32_t len)
+{
+    Move *res = (Move*)malloc(len * sizeof(Move));
+    for (uint32_t i = 0; i < len; ++i){
+        res[i].pat_id = arr[i].pat_id;
+        res[i].size = arr[i].size;
+    }
     return res;
 }
 
@@ -173,14 +183,14 @@ Input_data *input_data, Pattern *patterns)
     int dir;
     bool found = false;
 
-    for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){
-        __print_Z_compare(&init_compares[i]);
-    }
+    // print sorted compares
+    // for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){__print_Z_compare(&init_compares[i]);}
 
     bool already_ans_true = ((mask_size - init_compares[0].min_zeros) >= input_data->to_cover);
-    bool already_and_false = (init_compares[0].min_zeros_delta == 1);
+    bool already_ans_false = (init_compares[0].min_zeros_delta == 1);
+    assert(!(already_ans_false && already_ans_true));  // should never happen that both are true
 
-    if (!already_ans_true && !already_and_false)
+    if (!already_ans_true && !already_ans_false)
     {
         // this is ok, out best move is -1
         for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
@@ -216,15 +226,16 @@ Input_data *input_data, Pattern *patterns)
     // so now we have a cutoff and can write the initial array
     ++cutoff;  // for different loops
     verbose("# Initial cutoff is: %u\n", cutoff);
-    free(init_compares);
 
     initial_moves = (Move*)realloc(initial_moves, cutoff * sizeof(Move));
+    init_compares = (Z_compare*)realloc(init_compares, cutoff * sizeof(Z_compare));
     qsort(init_compares, cutoff, sizeof(Z_compare), Z_comp_order);
-    states[0].moves = initial_moves;
+    states[0].moves = __copy_moves(initial_moves, cutoff);
     states[0].moves_num = cutoff;
     states[0].cur_move = 0;
 
-
+    free(init_compares);
+    free(initial_moves);
     for (uint32_t i = 0; i < states_num; ++i){
         free(states[i].pat_mask);
         free(states[i].moves);

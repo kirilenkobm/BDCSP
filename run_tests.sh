@@ -6,9 +6,6 @@ declare -a arr=("make clean"
                 "./CSP _sample_input/test_0.txt 2"
                 "./CSP _sample_input/test_0.txt 4"
                 "./CSP _sample_input/test_2.txt 12"
-                "pip3 install -r requirements.txt"
-                "./generate_input.py 50 20 20 10 test"
-                "./generate_input.py clean"
                 )
 
 for (( i = 0; i < ${#arr[@]} ; i++ )); do
@@ -40,7 +37,7 @@ for (( i = 0; i < ${#arr[@]} ; i++ )); do
         exit 1
     fi
 
-    printf "Test $((i + 1)) out of 7\n"
+    printf "Test $((i + 1)) out of ${#arr[@]}\n"
 done
 
 exit 0

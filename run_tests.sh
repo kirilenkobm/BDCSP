@@ -27,7 +27,7 @@ else
     exit 1
 fi
 
-echo "Running test 1, should return True"
+echo "Running test 2, should return True"
 test2=$(./CSP _sample_input/test_0.txt 2> /dev/null 5)
 
 if [[ $? -ne 0 ]]
@@ -40,4 +40,35 @@ then
 else
     echo "Test 2 - wrong answer"
     exit 1
+fi
+
+echo "Testing python part"
+echo "Install requirements.txt"
+pip3 install -r requirements.txt
+if [[ $? -ne 0 ]]
+then
+    echo "Pip3 install failed"
+    exit 1
+else
+    echo "pip install successful!"
+fi
+
+echo "Generate input"
+./generate_input.py 50 20 20 10 test
+if [[ $? -ne 0 ]]
+then
+    echo "Input generator failed!"
+    exit 1
+else
+    echo "Generate successful!"
+fi
+
+echo "Testing cleanup"
+./generate_input.py clean
+if [[ $? -ne 0 ]]
+then
+    echo "Input clean failed!"
+    exit 1
+else
+    echo "Clean successful!"
 fi

@@ -144,7 +144,6 @@ Move *__copy_moves(Move *arr, uint32_t len)
 // wipe state, return 0 - state
 void __wipe_state(State *state)
 {   
-    verbose("I am here\n");
     free(state->pat_mask);
     free(state->moves);
     state->pat_mask = NULL;
@@ -163,7 +162,7 @@ void __apply_move(uint32_t *mask, Move *move) {mask[move->pat_id] = move->size;}
 void __upd_prog_state
 (State *states, Masks_data *mask, uint32_t *cur_state, bool *end, 
 bool *res, Input_data *input_data, Pattern *patterns)
-{
+{   
     if (states[*cur_state].moves_num == states[*cur_state].cur_move)
     // in this case we tried all possible paths for this state
     {
@@ -252,7 +251,7 @@ bool *res, Input_data *input_data, Pattern *patterns)
     uint32_t cutoff = 0;
     // check whether we reached answer already
     uint32_t ones_cov = input_data->act_col_num - next_compares[0].min_zeros;
-    verbose("# Ones coverage: %u\n", ones_cov);
+    verbose("# Ones coverage: %u; Zeros: %u\n", ones_cov, next_compares[0].min_zeros);
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     if (already_ans_true){
         // we have an answer -> so break execution

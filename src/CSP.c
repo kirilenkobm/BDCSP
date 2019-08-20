@@ -32,8 +32,6 @@ struct allocated_data{
     Pattern *patterns;
     Dir_Rev *dir_rev_index;
     uint32_t *ones_index;
-    bool size_index_alloc;
-    Size_index *size_index;
     uint32_t init_r_data_depth;
     uint8_t **init_render_data;
     uint32_t *zeros_nums;
@@ -81,10 +79,6 @@ void free_all()
     free(allocated.input_arr);
     free(allocated.dir_rev_index);
 
-    if (allocated.size_index_alloc){
-        for (uint32_t i = 1; i < allocated.str_num; ++i){free(allocated.size_index[i].ids);}
-        free(allocated.size_index);
-    }
     free(allocated.ones_index);
     for (uint32_t i = 0; i < allocated.init_r_data_depth; ++i){free(allocated.init_render_data[i]);}
     free(allocated.init_render_data);
@@ -224,8 +218,6 @@ int main(int argc, char ** argv)
     allocated.patterns = NULL;
     allocated.dir_rev_index = NULL;
     allocated.ones_index = NULL;
-    allocated.size_index_alloc = false;
-    allocated.size_index = NULL;
     allocated.init_r_data_depth = 0;
     allocated.init_render_data = NULL;
     allocated.zeros_nums = NULL;
@@ -293,10 +285,6 @@ int main(int argc, char ** argv)
 
     // not so obvious case, get intersection data first
     get_intersection_data(patterns, input_data.pat_num, input_data.str_num);
-    // and create the grid
-    Size_index *size_index = index_sizes(patterns, input_data.pat_num, input_data.str_num);
-    allocated.size_index_alloc = true;
-    allocated.size_index = size_index;
     uint32_t *ones_index = index_ones(patterns, input_data.pat_num, input_data.str_num);
     allocated.ones_index = ones_index;
 

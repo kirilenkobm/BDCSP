@@ -10,8 +10,14 @@
 #include <stdlib.h>
 #include <ctype.h> 
 #include <stdarg.h>
-#include <unistd.h>
 #include <limits.h>
+#ifdef _WIN32
+#include <io.h>
+#define F_OK 0
+#endif
+#ifdef __unix__
+#include <unistd.h>
+#endif
 #include "CSP.h"
 #include "read_input.h"
 #include "arrstuff.h"

@@ -9,14 +9,19 @@
 #include <stdlib.h>
 #include <ctype.h> 
 #include <stdarg.h>
-#include <unistd.h>
 #include <limits.h>
+#ifdef _WIN32
+#include <io.h>
+#endif
+#ifdef __unix__
+#include <unistd.h>
+#endif
 #include "patterns.h"
 
 
 void _show_usage_and_quit(char * executable);
 
-void verbose(const char * restrict format, ...);
+void verbose(const char * format, ...);
 
 void free_all();
 

@@ -10,8 +10,13 @@
 #include <stdlib.h>
 #include <ctype.h> 
 #include <stdarg.h>
-#include <unistd.h>
 #include <limits.h>
+#ifdef _WIN32
+#include <io.h>
+#endif
+#ifdef linux
+#include <unistd.h>
+#endif
 #include "CSP.h"
 #include "read_input.h"
 #include "patterns.h"
@@ -52,7 +57,7 @@ void _show_usage_and_quit(char * executable)
 
 
 // show verbose messages
-void verbose(const char * restrict format, ...)
+void verbose(const char * format, ...)
 {
     if(!v) {return;}
     va_list args;

@@ -12,8 +12,13 @@
 #include <stdlib.h>
 #include <ctype.h> 
 #include <stdarg.h>
-#include <unistd.h>
 #include <limits.h>
+#ifdef _WIN32
+#include <io.h>
+#endif
+#ifdef __unix__
+#include <unistd.h>
+#endif
 #include "read_input.h"
 
 

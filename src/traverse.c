@@ -26,6 +26,7 @@
 #include "arrstuff.h"
 #define MOVES_STEP 10
 
+#define _MOVES_MULT 16
 extern bool v;
 
 
@@ -121,6 +122,22 @@ void __wipe_state(State *state)
 void __apply_move(uint32_t *mask, Move *move) {mask[move->pat_id] += move->size;}
 
 
+// check that masks are the same or not
+
+
+// check whether we've already been there
+bool __is_in_mask(uint32_t *mask, uint32_t mask_size, State *states, uint32_t states_num)
+{
+    bool are_same = false;
+    for (uint32_t i = 0; i < states_num; ++i)
+    {
+        are_same = arr_uint32_are_the_same(states[i].pat_mask, mask, mask_size);
+        if (are_same){return true;}
+    }
+    return false;
+}
+
+
 // update program state
 void __upd_prog_state
 (State *states, Masks_data *mask, uint32_t *cur_state, bool *end, 
@@ -143,7 +160,6 @@ bool *res, Input_data *input_data, Pattern *patterns)
     states[*cur_state].cur_move += 1;  // keep in memory + move
     uint32_t *cur_mask = traverse__mask_copy(states[*cur_state].pat_mask, mask->mask_size);
     __apply_move(cur_mask, &cur_move);
-    *cur_state += 1;  // dealing with next move now
 
     // get initial render and zeros distribution
     uint8_t **init_render = render__draw(patterns, cur_mask, input_data);
@@ -162,6 +178,7 @@ bool *res, Input_data *input_data, Pattern *patterns)
     uint32_t moves_count = 0;
     uint32_t p_num = 0;
     int8_t change = 0;
+    bool is_in = false;
 
     for (uint32_t iter = 2; iter < (mask->mask_size * 2); ++iter)
     {   
@@ -173,6 +190,14 @@ bool *res, Input_data *input_data, Pattern *patterns)
         if ((cur_mask[p_num] == mask->full_mask[p_num] && (change == 1))){continue;}
         cur_mask[p_num] += change;
         // TODO: check if mask is_in!
+        is_in = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
+
+        if (is_in){
+            // repeats are not allowed
+            verbose("***skip repeating step\n");
+            cur_mask[p_num] -= change;
+            continue;
+        }
 
         // prepare render and zero distrubutions for this
         uint8_t **move_render = render__draw(patterns, cur_mask, input_data);
@@ -208,6 +233,7 @@ bool *res, Input_data *input_data, Pattern *patterns)
     }
     verbose("# Possible %u moves out of %u allocated\n", moves_count, allocated_);
     free(init_z_dist);  // we don't need this array anymore
+    *cur_state += 1;
 
     if (moves_count == 0){
         // no moves possible -> go back
@@ -262,7 +288,7 @@ bool traverse__run
 Input_data *input_data, Pattern *patterns)
 {
     bool res = false;  // default answer
-    uint32_t states_num = input_data->act_col_num * 4;
+    uint32_t states_num = input_data->act_col_num * _MOVES_MULT;
     verbose("# Search depth %u\n", states_num);
     State *states = (State*)malloc((states_num + 1) * sizeof(State));
     uint32_t mask_size = (input_data->dir_pat_num + 1);
@@ -326,17 +352,6 @@ Input_data *input_data, Pattern *patterns)
     uint32_t cutoff = input_data->dir_pat_num;
     if (!already_ans_true && !already_ans_false)
     {
-        // this is ok, out best move is -1
-        // for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
-        //     __print_Z_compare(&init_compares[i - 1]);
-        //     dir = compare_Z_compares(&init_compares[i - 1], &init_compares[i]);
-        //     if (dir == -1){
-        //         cutoff = i - 1;
-        //         found = true;
-        //     }
-        // }
-        // didn't break --> all are the same (hell)
-        // if (!found){cutoff = (input_data->dir_pat_num - 1);}
         for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){
             if (init_compares[i].min_zeros_delta == 1){
                 cutoff = i;

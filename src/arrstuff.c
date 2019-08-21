@@ -37,6 +37,16 @@ bool arr_uint8_are_the_same(uint8_t *arr_1, uint8_t *arr_2, uint32_t arr_size)
 }
 
 
+// compare two patterns
+bool arr_uint32_are_the_same(uint32_t *arr_1, uint32_t *arr_2, uint32_t arr_size)
+{
+    for (uint32_t i = 0; i < arr_size; ++i){
+        if (arr_1[i] != arr_2[i]){return false;}
+    }
+    return true;
+}
+
+
 // check if all numbers are the same
 bool arr_uint8_all_eq(uint8_t *arr, uint32_t arr_size)
 {

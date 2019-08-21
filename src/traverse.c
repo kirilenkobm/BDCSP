@@ -107,7 +107,6 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
 // copy moves array
 Move *__copy_moves(Move *arr, uint32_t len)
 {
-    if (arr == NULL) {return NULL;}
     Move *res = (Move*)malloc(len * sizeof(Move));
     for (uint32_t i = 0; i < len; ++i){
         res[i].pat_id = arr[i].pat_id;
@@ -141,8 +140,7 @@ bool *res, Input_data *input_data, Pattern *patterns)
 {
     if (states[*cur_state].moves_num == states[*cur_state].cur_move)
     // in this case we tried all possible paths for this state
-    {   
-        verbose("***PUSH BACK\n");
+    {
         __wipe_state(&states[*cur_state]);
         if (*cur_state == 0){*end = true;}  // no states < 0, break the loop
         else {*cur_state = *cur_state - 1;}  // goto previous one
@@ -183,7 +181,6 @@ bool *res, Input_data *input_data, Pattern *patterns)
             uint32_t *zeros_dist = render__get_zeros(move_render,
                                                      input_data->str_num, 
                                                      input_data->act_col_num);
-            // TODO: is_in zeros dist -> previous states or not
             Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
             // write data
             Move this_move;
@@ -208,7 +205,6 @@ bool *res, Input_data *input_data, Pattern *patterns)
             uint32_t *zeros_dist = render__get_zeros(move_render,
                                                      input_data->str_num, 
                                                      input_data->act_col_num);
-            // TODO: is_in zeros dist -> previous states or not
             Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
             // write data again
             // TODO: make it a single function, not two repeats of the same block of code!
@@ -227,60 +223,12 @@ bool *res, Input_data *input_data, Pattern *patterns)
         }
     }
     // ok, added new moves
+    qsort(next_compares, input_data->dir_pat_num, sizeof(Z_compare), compare_Z_compares);
     uint32_t cutoff = 0;
-    if (moves_count > 0)
-    {
-        next_compares = (Z_compare*)realloc(next_compares, moves_count * sizeof(Z_compare));
-        qsort(next_compares, moves_count, sizeof(Z_compare), compare_Z_compares);
-        // get and apply cutoff
-        bool found = false;
-        for (uint32_t i = 1; i < moves_count; ++i){
-            if (compare_Z_compares(&next_compares[i - 1], &next_compares[i]) == -1){
-                cutoff = i - 1;
-                found = true;
-                break;
-            }
-        }
-        if (!found){cutoff = (moves_count - 1);}
-        ++cutoff;
-    }
-    else {cutoff = 0;}
-
-    Move *filt_moves = NULL;
-    if (cutoff > 0)
-    {
-        next_compares = (Z_compare*)realloc(next_compares, cutoff * sizeof(Z_compare));
-        qsort(next_compares, cutoff, sizeof(Z_compare), Z_comp_order);
-
-        uint32_t move_id;
-        // TODO: re-do filter, pat < prev_pat
-        filt_moves = (Move*)malloc(cutoff * sizeof(Move));
-        for (uint32_t i = 0; i < cutoff; ++i){
-            move_id = next_compares[i].assign_to_move;
-            filt_moves[i].pat_id = next_moves[move_id].pat_id;
-            filt_moves[i].size = next_moves[move_id].size;
-        }
-    } else {
-        filt_moves = NULL;
-        next_compares = NULL;
-        filt_moves = NULL;
-    }
-
-    // finally create initial state
-    states[*cur_state].pat_mask = cur_mask;
-    states[*cur_state].moves = __copy_moves(filt_moves, cutoff);
-    states[*cur_state].moves_num = cutoff;
-    states[*cur_state].prev_pat = cur_move.pat_id;
-    states[*cur_state].cur_move = 0;
-    states[*cur_state].prev_p_sign = cur_move.size;
-
-        // check whether we reached answer already
+    // check whether we reached answer already
     uint32_t ones_cov = input_data->act_col_num - next_compares[0].min_zeros;
-    if (cutoff != 0){
     verbose("# Ones coverage: %u; Zeros: %u\n", ones_cov, next_compares[0].min_zeros);
-    } else {verbose("# Cutoff == 0, no data\n");}
-    verbose("# Cutoff is: %u\n", cutoff);
-    bool already_ans_true = ((ones_cov >= input_data->to_cover) && cutoff != 0);
+    bool already_ans_true = (ones_cov >= input_data->to_cover);
     if (already_ans_true){
         // we have an answer -> so break execution
         verbose("# Answer branch 5\n");
@@ -291,6 +239,38 @@ bool *res, Input_data *input_data, Pattern *patterns)
         *res = true;
         return;
     }
+    
+    // get and apply cutoff
+    bool found = false;
+    for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
+        if (compare_Z_compares(&next_compares[i - 1], &next_compares[i]) == -1){
+            cutoff = i - 1;
+            found = true;
+            break;
+        }
+    }
+    if (!found){cutoff = (input_data->dir_pat_num - 1);}
+    ++cutoff;
+
+    next_compares = (Z_compare*)realloc(next_compares, cutoff * sizeof(Z_compare));
+    qsort(next_compares, cutoff, sizeof(Z_compare), Z_comp_order);
+
+    uint32_t move_id;
+    // TODO: re-do filter, pat < prev_pat
+    Move *filt_moves = (Move*)malloc(cutoff * sizeof(Move));
+    for (uint32_t i = 0; i < cutoff; ++i){
+        move_id = next_compares[i].assign_to_move;
+        filt_moves[i].pat_id = next_moves[move_id].pat_id;
+        filt_moves[i].size = next_moves[move_id].size;
+    }
+
+    // finally create initial state
+    states[*cur_state].pat_mask = cur_mask;
+    states[*cur_state].moves = __copy_moves(filt_moves, cutoff);
+    states[*cur_state].moves_num = cutoff;
+    states[*cur_state].prev_pat = cur_move.pat_id;
+    states[*cur_state].cur_move = 0;
+    states[*cur_state].prev_p_sign = cur_move.size;
 
     free(filt_moves);
     free(next_moves);
@@ -307,7 +287,7 @@ bool traverse__run
 Input_data *input_data, Pattern *patterns)
 {
     bool res = false;  // default answer
-    uint32_t states_num = input_data->act_col_num * 2;
+    uint32_t states_num = input_data->act_col_num;
     verbose("# Search depth %u\n", states_num);
     State *states = (State*)malloc((states_num + 1) * sizeof(State));
     uint32_t mask_size = (input_data->dir_pat_num + 1);

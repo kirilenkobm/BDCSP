@@ -1,27 +1,23 @@
 stages:
   - build
-  - py_test
+#   - py_test
 
 build:
   stage: build
   script:
   - ./run_tests.sh
-  - <generate public/build.svg>
   only:
   - master
-  artifacts:
-    paths:
-      - public/build.svg
 
-py_test:
-  stage: py_test
-  script:
-  - pip install -r requirements.txt
-  - ./generate_input.py 50 20 20 10 test
-  - ./generate_input.py clean
-  - <generate public/py_test.svg>
-  only:
-  - master
-  artifacts:
-    paths:
-      - public/py_test.svg
+# py_test:
+#   stage: py_test
+#   script:
+#   - pip install -r requirements.txt
+#   - ./generate_input.py 50 20 20 10 test
+#   - ./generate_input.py clean
+#   - <generate public/py_test.svg>
+#   only:
+#   - master
+#   artifacts:
+#     paths:
+#       - public/py_test.svg

@@ -133,149 +133,136 @@ void __wipe_state(State *state)
 void __apply_move(uint32_t *mask, Move *move) {mask[move->pat_id] += move->size;}
 
 
-// get the next state and moves
+// update program state
 void __upd_prog_state
 (State *states, Masks_data *mask, uint32_t *cur_state, bool *end, 
 bool *res, Input_data *input_data, Pattern *patterns)
 {
-    if (states[*cur_state].moves_num == states[*cur_state].cur_move)
     // in this case we tried all possible paths for this state
+    if (states[*cur_state].moves_num == states[*cur_state].cur_move)
     {
+        verbose("****GO BACK! Were %u moves\n",
+                states[*cur_state].moves_num);
         __wipe_state(&states[*cur_state]);
         if (*cur_state == 0){*end = true;}  // no states < 0, break the loop
         else {*cur_state = *cur_state - 1;}  // goto previous one
         return;  // nothing to do in this function anymore
     }
-    // ok, we have a chance to do something
-    // get the current move and try to evolve
+
+    // ok, try next moves
     uint32_t cur_move_num = states[*cur_state].cur_move;
     Move cur_move = states[*cur_state].moves[cur_move_num];
-    states[*cur_state].cur_move += 1;
-
+    states[*cur_state].cur_move += 1;  // keep in memory + move
     uint32_t *cur_mask = traverse__mask_copy(states[*cur_state].pat_mask, mask->mask_size);
     __apply_move(cur_mask, &cur_move);
-    *cur_state += 1;  // goto next step then
+    *cur_state += 1;  // dealing with next move now
 
-    // actually we need current render data
+    // get initial render and zeros distribution
     uint8_t **init_render = render__draw(patterns, cur_mask, input_data);
     uint32_t *init_z_dist = render__get_zeros(init_render,
                                               input_data->str_num, 
                                               input_data->act_col_num);
-    render__free_render(init_render, input_data->str_num);
     if (v) {arr_1D_uint32_print(cur_mask, mask->mask_size);}
+    // free render here -> we don't need it anymore
+    render__free_render(init_render, input_data->str_num);
+    
+    // initiate next compares and initiate actual number
+    uint32_t allocated_ =  input_data->dir_pat_num * 2;
+    Z_compare* next_compares = (Z_compare*)malloc(sizeof(Z_compare) * allocated_);
+    Move *next_moves = (Move*)malloc(sizeof(Move) * allocated_);
 
-    // need to find next good moves
-    // partly copy-paste of the init function
-    Move *next_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num * 2);
-    Z_compare* next_compares = (Z_compare*)malloc(sizeof(Z_compare) * input_data->dir_pat_num * 2);
     uint32_t moves_count = 0;
+    uint32_t p_num = 0;
+    int8_t change = 0;
 
-    for (uint32_t p_num = 1; p_num < mask->mask_size; ++p_num)
-    {
-        // FOR PLUS ONE
-        if (cur_mask[p_num] + 1 <= mask->full_mask[p_num])
-        // we can add +1 move then
-        {
-            cur_mask[p_num] += 1;
-            uint8_t **move_render = render__draw(patterns, cur_mask, input_data);
-            uint32_t *zeros_dist = render__get_zeros(move_render,
-                                                     input_data->str_num, 
-                                                     input_data->act_col_num);
-            Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
-            // write data
-            Move this_move;
-            this_move.pat_id = p_num;
-            this_move.size = 1;
-            compare.assign_to_move = moves_count;
-            compare.assign_to_pat = p_num;
-            next_compares[moves_count] = compare;
-            next_moves[moves_count] = this_move;
-            ++moves_count;
-            // return status-quo
-            cur_mask[p_num] -= 1;
-            render__free_render(move_render, input_data->str_num);
+    for (uint32_t iter = 2; iter < (mask->mask_size * 2); ++iter)
+    {   
+        // need to try both +1 and -1 for each pattern
+        p_num = iter / 2;
+        change = (iter - (p_num * 2)) ? -1 : 1;
+        // cannot have value < 0 or > MAX
+        if ((cur_mask[p_num] == 0) && (change == -1)){continue;}
+        if ((cur_mask[p_num] == mask->full_mask[p_num] && (change == 1))){continue;}
+        cur_mask[p_num] += change;
+        // TODO: check if mask is_in!
+
+        // prepare render and zero distrubutions for this
+        uint8_t **move_render = render__draw(patterns, cur_mask, input_data);
+        uint32_t *zeros_dist = render__get_zeros(move_render,
+                                                    input_data->str_num, 
+                                                    input_data->act_col_num);
+        // compare distributions; free render we don't need anymore
+        Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
+        render__free_render(move_render, input_data->str_num);
+
+        // if move makes everything worse -> skip it
+        if (compare.min_zeros_delta > 0){
             free(zeros_dist);
+            cur_mask[p_num] -= change;
+            continue;
         }
-        // FOR MINUS ONE
-        if (cur_mask[p_num] > 0)
-        // if we are here -> we can add -1 move
-        {
-            cur_mask[p_num] -= 1;
-            uint8_t **move_render = render__draw(patterns, cur_mask, input_data);
-            uint32_t *zeros_dist = render__get_zeros(move_render,
-                                                     input_data->str_num, 
-                                                     input_data->act_col_num);
-            Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
-            // write data again
-            // TODO: make it a single function, not two repeats of the same block of code!
-            Move this_move;
-            this_move.pat_id = p_num;
-            this_move.size = -1;
-            compare.assign_to_move = moves_count;
-            compare.assign_to_pat = p_num;
-            next_compares[moves_count] = compare;
-            next_moves[moves_count] = this_move;
-            ++moves_count;
-            // return status quo again
-            cur_mask[p_num] += 1;
-            render__free_render(move_render, input_data->str_num);
-            free(zeros_dist);
-        }
+
+        // define and fill this mmove
+        Move this_move;
+        this_move.pat_id = p_num;
+        this_move.size = change;
+
+        compare.assign_to_move = moves_count;
+        compare.assign_to_pat = p_num;
+
+        next_compares[moves_count] = compare;
+        next_moves[moves_count] = this_move;
+
+        ++moves_count;
+        free(zeros_dist);
+        // return mask back
+        cur_mask[p_num] -= change;
     }
-    // ok, added new moves
-    qsort(next_compares, input_data->dir_pat_num, sizeof(Z_compare), compare_Z_compares);
-    uint32_t cutoff = 0;
-    // check whether we reached answer already
+    verbose("# Possible %u moves out of %u allocated\n", moves_count, allocated_);
+    free(init_z_dist);  // we don't need this array anymore
+
+    if (moves_count == 0){
+        // no moves possible -> go back
+        verbose("***Nothing found, go back\n");
+        if (*cur_state == 0){*end = true;}
+        else {*cur_state = *cur_state - 1;}  // goto previous one
+        return;  // nothing to do in this function anymore
+    } else if (moves_count < allocated_){
+        allocated_ = moves_count;  // realloc arrays
+        next_compares = (Z_compare*)realloc(next_compares, sizeof(Z_compare) * allocated_);
+        next_moves = (Move*)realloc(next_moves, sizeof(Move) * allocated_);
+    }
+    // sort to get best ones, sort moves correspondingly
+    qsort(next_compares, allocated_, sizeof(Z_compare), compare_Z_compares);
+    Move *sort_moves = (Move*)malloc(allocated_ * sizeof(Move*));
+    uint32_t move_id = 0;
+    for (uint32_t i = 0; i < allocated_; ++i){
+        move_id = next_compares[i].assign_to_move;
+        sort_moves[i].pat_id = next_moves[move_id].pat_id;
+        sort_moves[i].size = next_moves[move_id].size;
+    }
+    free(next_moves);
+
+    // find out whether we have the answer already
     uint32_t ones_cov = input_data->act_col_num - next_compares[0].min_zeros;
     verbose("# Ones coverage: %u; Zeros: %u\n", ones_cov, next_compares[0].min_zeros);
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     if (already_ans_true){
         // we have an answer -> so break execution
         verbose("# Answer branch 5\n");
-        free(next_moves);
-        free(init_z_dist);
-        free(next_compares);
         *end = true;
         *res = true;
         return;
     }
-    
-    // get and apply cutoff
-    bool found = false;
-    for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
-        if (compare_Z_compares(&next_compares[i - 1], &next_compares[i]) == -1){
-            cutoff = i - 1;
-            found = true;
-            break;
-        }
-    }
-    if (!found){cutoff = (input_data->dir_pat_num - 1);}
-    ++cutoff;
 
-    next_compares = (Z_compare*)realloc(next_compares, cutoff * sizeof(Z_compare));
-    qsort(next_compares, cutoff, sizeof(Z_compare), Z_comp_order);
-
-    uint32_t move_id;
-    // TODO: re-do filter, pat < prev_pat
-    Move *filt_moves = (Move*)malloc(cutoff * sizeof(Move));
-    for (uint32_t i = 0; i < cutoff; ++i){
-        move_id = next_compares[i].assign_to_move;
-        filt_moves[i].pat_id = next_moves[move_id].pat_id;
-        filt_moves[i].size = next_moves[move_id].size;
-    }
-
-    // finally create initial state
+    // fill the next state
     states[*cur_state].pat_mask = cur_mask;
-    states[*cur_state].moves = __copy_moves(filt_moves, cutoff);
-    states[*cur_state].moves_num = cutoff;
+    states[*cur_state].moves = sort_moves;
+    states[*cur_state].moves_num = allocated_;
     states[*cur_state].prev_pat = cur_move.pat_id;
     states[*cur_state].cur_move = 0;
     states[*cur_state].prev_p_sign = cur_move.size;
-
-    free(filt_moves);
-    free(next_moves);
-    free(init_z_dist);
-    free(next_compares);
+    // free allocated stuff
 }
 
 

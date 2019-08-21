@@ -104,18 +104,6 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
 }
 
 
-// copy moves array
-Move *__copy_moves(Move *arr, uint32_t len)
-{
-    Move *res = (Move*)malloc(len * sizeof(Move));
-    for (uint32_t i = 0; i < len; ++i){
-        res[i].pat_id = arr[i].pat_id;
-        res[i].size = arr[i].size;
-    }
-    return res;
-}
-
-
 // wipe state, return 0 - state
 void __wipe_state(State *state)
 {   
@@ -388,9 +376,8 @@ Input_data *input_data, Pattern *patterns)
     }
 
     // finally create initial state
-    states[0].moves = __copy_moves(filt_moves, cutoff);
+    states[0].moves = filt_moves;
     if (v) {for (uint32_t i = 0; i < cutoff; ++i){__print_move(&filt_moves[i]);}}
-    free(filt_moves);
     states[0].moves_num = cutoff;
     states[0].cur_move = 0;
     

@@ -262,7 +262,7 @@ bool traverse__run
 Input_data *input_data, Pattern *patterns)
 {
     bool res = false;  // default answer
-    uint32_t states_num = input_data->act_col_num;
+    uint32_t states_num = input_data->act_col_num * 4;
     verbose("# Search depth %u\n", states_num);
     State *states = (State*)malloc((states_num + 1) * sizeof(State));
     uint32_t mask_size = (input_data->dir_pat_num + 1);
@@ -270,8 +270,6 @@ Input_data *input_data, Pattern *patterns)
     // initiate states with default values
     for (uint32_t i = 1; i < states_num; ++i)
     {
-        // states[i].pat_mask = (uint32_t*)calloc(mask_size, sizeof(uint32_t));
-        // states[i].moves = (Move*)malloc(MOVES_STEP * sizeof(Move));
         states[i].pat_mask = NULL;
         states[i].moves = NULL;
         states[i].moves_num = 0;
@@ -317,28 +315,34 @@ Input_data *input_data, Pattern *patterns)
 
     // we have initial moves
     qsort(init_compares, input_data->dir_pat_num, sizeof(Z_compare), compare_Z_compares);
-    uint32_t cutoff = 0;
-    int dir;
-    bool found = false;
+    // uint32_t cutoff = 0;
+    // int dir;
+    // bool found = false;
 
     uint32_t ones_cov = input_data->act_col_num - init_compares[0].min_zeros;
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     bool already_ans_false = (init_compares[0].min_zeros_delta == 1);
     assert(!(already_ans_false && already_ans_true));  // should never happen that both are true
-
+    uint32_t cutoff = input_data->dir_pat_num;
     if (!already_ans_true && !already_ans_false)
     {
         // this is ok, out best move is -1
-        for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
-            dir = compare_Z_compares(&init_compares[i - 1], &init_compares[i]);
-            if (dir == -1){
-                cutoff = i - 1;
-                found = true;
+        // for (uint32_t i = 1; i < input_data->dir_pat_num; ++i){
+        //     __print_Z_compare(&init_compares[i - 1]);
+        //     dir = compare_Z_compares(&init_compares[i - 1], &init_compares[i]);
+        //     if (dir == -1){
+        //         cutoff = i - 1;
+        //         found = true;
+        //     }
+        // }
+        // didn't break --> all are the same (hell)
+        // if (!found){cutoff = (input_data->dir_pat_num - 1);}
+        for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){
+            if (init_compares[i].min_zeros_delta == 1){
+                cutoff = i;
                 break;
             }
         }
-        // didn't break --> all are the same (hell)
-        if (!found){cutoff = (input_data->dir_pat_num - 1);}
     }
     else
     {
@@ -358,9 +362,7 @@ Input_data *input_data, Pattern *patterns)
             return false;
         }
     }
-
     // so now we have a cutoff and can write the initial array
-    ++cutoff;  // for different loops
     verbose("# Initial cutoff is: %u\n", cutoff);
     init_compares = (Z_compare*)realloc(init_compares, cutoff * sizeof(Z_compare));
     qsort(init_compares, cutoff, sizeof(Z_compare), Z_comp_order);
@@ -377,7 +379,7 @@ Input_data *input_data, Pattern *patterns)
 
     // finally create initial state
     states[0].moves = filt_moves;
-    if (v) {for (uint32_t i = 0; i < cutoff; ++i){__print_move(&filt_moves[i]);}}
+    // if (v) {for (uint32_t i = 0; i < cutoff; ++i){__print_move(&filt_moves[i]);}}
     states[0].moves_num = cutoff;
     states[0].cur_move = 0;
     

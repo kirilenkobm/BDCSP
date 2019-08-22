@@ -12,8 +12,6 @@ def parse_args():
     app.add_argument("input_file", help="Input file to shuffle.")
     app.add_argument("line", type=int, help="Number of line to make it initial one (0 - based)")
     app.add_argument("--output", "-o", default="stdout", help="Output, default stdout.")
-    app.add_argument("--trim", "-t", action="store_true", dest="trim",
-                     help="Trim the dataset (remove dupl strings or 0/1 - only columns.")
 
     if len(sys.argv) == 1:
         app.print_help()
@@ -41,7 +39,14 @@ def main():
     input_arr = read_input(args.input_file)
     if args.line >= len(input_arr):
         sys.exit("Error! Line {} (0-based) doesn't exist!".format(args.line))
-    # TODO: finish this
+    temp = input_arr[0].copy()
+    input_arr[0] = input_arr[args.line].copy()
+    input_arr[args.line] = temp.copy()
+    f = open(args.output, "w") if args.output != "stdout" else sys.stdout
+    for line in input_arr:
+        out_line = "".join(str(x) for x in line)
+        f.write(out_line + "\n")
+    f.close() if  args.output != "stdout" else None
 
 if __name__ == "__main__":
     main()

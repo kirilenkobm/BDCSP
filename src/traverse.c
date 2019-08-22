@@ -26,7 +26,7 @@
 #include "arrstuff.h"
 #define MOVES_STEP 10
 
-#define _MOVES_MULT 16
+#define _MOVES_MULT 8
 extern bool v;
 
 
@@ -161,6 +161,16 @@ bool *res, Input_data *input_data, Pattern *patterns)
     uint32_t *cur_mask = traverse__mask_copy(states[*cur_state].pat_mask, mask->mask_size);
     __apply_move(cur_mask, &cur_move);
 
+    bool already_is_in = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
+    if (already_is_in)
+    {
+        free(cur_mask);
+        verbose("*****been there, go back\n");
+        if (*cur_state == 0){*end = true;}  // no states < 0, break the loop
+        else {*cur_state = *cur_state - 1;}  // goto previous one
+        return;  // nothing to do in this function anymore
+    }
+
     // get initial render and zeros distribution
     uint8_t **init_render = render__draw(patterns, cur_mask, input_data);
     uint32_t *init_z_dist = render__get_zeros(init_render,
@@ -189,9 +199,8 @@ bool *res, Input_data *input_data, Pattern *patterns)
         if ((cur_mask[p_num] == 0) && (change == -1)){continue;}
         if ((cur_mask[p_num] == mask->full_mask[p_num] && (change == 1))){continue;}
         cur_mask[p_num] += change;
-        // TODO: check if mask is_in!
-        is_in = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
 
+        is_in = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
         if (is_in){
             // repeats are not allowed
             verbose("***skip repeating step\n");

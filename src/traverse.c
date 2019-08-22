@@ -26,7 +26,7 @@
 #include "arrstuff.h"
 #define MOVES_STEP 10
 
-#define _MOVES_MULT 2
+#define _MOVES_MULT 1
 extern bool v;
 
 
@@ -138,10 +138,38 @@ bool __is_in_mask(uint32_t *mask, uint32_t mask_size, State *states, uint32_t st
 }
 
 
+// count zeros if the mask given applied
+uint32_t *traverse_get_z_dist
+(Pattern *patterns, uint32_t dist_size, uint32_t *cur_mask, uint32_t mask_size, uint32_t pat_num)
+{
+    uint32_t *res = (uint32_t*)calloc(dist_size, sizeof(uint32_t));
+    uint32_t rev_pat_id = 0;
+    uint32_t rev_time = 0;
+    uint32_t dir_time = 0;
+
+    // mask item -> one pattern X times
+    for (uint32_t pat_id = 1; pat_id < mask_size; ++pat_id)
+    {
+        rev_pat_id = pat_num - pat_id;
+        rev_time = cur_mask[pat_id];
+        dir_time = patterns[pat_id].times - rev_time;
+        // iter over pattern; str_num
+        for (uint32_t i = 0; i < dist_size; ++i){
+            // use a trick, if I need to + number of zeros, number of zeros
+            // is pat with 1 (direct_pattern) * rev_time, which is zero
+            // I * dir_time and get 0
+            res[i] += ((patterns[pat_id].pattern[i] * rev_time)
+                     + (patterns[rev_pat_id].pattern[i] * dir_time));
+        }
+    }
+    return res;
+}
+
+
 // update program state
 void __upd_prog_state
 (State *states, Masks_data *mask, uint32_t *cur_state, bool *end, 
-bool *res, Input_data *input_data, Pattern *patterns)
+bool *res, Input_data *input_data, Pattern *patterns, uint32_t *m_c_f)
 {
     // in this case we tried all possible paths for this state
     if (states[*cur_state].moves_num == states[*cur_state].cur_move)
@@ -171,14 +199,12 @@ bool *res, Input_data *input_data, Pattern *patterns)
         return;  // nothing to do in this function anymore
     }
 
-    // get initial render and zeros distribution
-    uint8_t **init_render = render__draw(patterns, cur_mask, input_data);
-    uint32_t *init_z_dist = render__get_zeros(init_render,
-                                              input_data->str_num, 
-                                              input_data->act_col_num);
+    uint32_t *init_z_dist = traverse_get_z_dist(patterns,
+                                                input_data->str_num,
+                                                cur_mask,
+                                                mask->mask_size,
+                                                input_data->pat_num);
     if (v) {arr_1D_uint32_print(cur_mask, mask->mask_size);}
-    // free render here -> we don't need it anymore
-    render__free_render(init_render, input_data->str_num);
     
     // initiate next compares and initiate actual number
     uint32_t allocated_ =  input_data->dir_pat_num * 2;
@@ -207,15 +233,13 @@ bool *res, Input_data *input_data, Pattern *patterns)
             cur_mask[p_num] -= change;
             continue;
         }
-
-        // prepare render and zero distrubutions for this
-        uint8_t **move_render = render__draw(patterns, cur_mask, input_data);
-        uint32_t *zeros_dist = render__get_zeros(move_render,
-                                                    input_data->str_num, 
-                                                    input_data->act_col_num);
+        uint32_t *zeros_dist = traverse_get_z_dist(patterns,
+                                                   input_data->str_num,
+                                                   cur_mask,
+                                                   mask->mask_size,
+                                                   input_data->pat_num);
         // compare distributions; free render we don't need anymore
         Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
-        render__free_render(move_render, input_data->str_num);
 
         // if move makes everything worse -> skip it
         if (compare.min_zeros_delta > 0){
@@ -268,6 +292,7 @@ bool *res, Input_data *input_data, Pattern *patterns)
 
     // find out whether we have the answer already
     uint32_t ones_cov = input_data->act_col_num - next_compares[0].min_zeros;
+    if (ones_cov > *m_c_f) {*m_c_f = ones_cov;}  // update max reached val
     verbose("# Ones coverage: %u; Zeros: %u\n", ones_cov, next_compares[0].min_zeros);
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     if (already_ans_true){
@@ -413,15 +438,19 @@ Input_data *input_data, Pattern *patterns)
     masks.zero_mask = zero_mask;
     masks.full_mask = full_mask;
     masks.mask_size = mask_size;
+    uint32_t max_cov_found = 0;
 
     // main loop
     for (uint32_t step = 0; step < states_num; ++step)
     {
-        verbose("# Step num %u\n", step);
-        __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data, patterns);
+        verbose("# Step num %u / %u\n", step, states_num - 1);
+        __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data, patterns, &max_cov_found);
         if (end){break;}  // interrupt if something is bad
     }
 
+    if (!res){
+        printf("Maximal coverage found is %u / %u\n", max_cov_found, input_data->to_cover);
+    }
     free(init_compares);
     free(initial_moves);
     for (uint32_t i = 0; i < states_num; ++i){

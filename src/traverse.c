@@ -26,7 +26,7 @@
 #include "arrstuff.h"
 #define MOVES_STEP 10
 
-#define _MOVES_MULT 8
+#define _MOVES_MULT 2
 extern bool v;
 
 

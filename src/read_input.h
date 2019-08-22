@@ -34,6 +34,7 @@ typedef struct
     uint32_t act_col_num;
     uint32_t level_size;
     bool v;
+    bool vv;
     bool show_patterns;
     bool no_repeats;
     bool init_render_show;

@@ -235,6 +235,7 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
     input_data->show_patterns = false;
     input_data->no_repeats = false;
     input_data->init_render_show = false;
+    input_data->vv = false;
 
     for (int op = 3; op < argc; ++op)
     {
@@ -251,6 +252,9 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
         } else if (strcmp(argv[op], "-r") == 0){
             // we need initial render of program state
             input_data->init_render_show = true;
+        } else if (strcmp(argv[op], "-vv") == 0) {
+            // exxtra verbosity
+            input_data->vv = true;
         } else {
             fprintf(stderr, "Error: unknown parameter %s\n", argv[op]);
             _show_usage_and_quit(argv[0]);

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "arrstuff.h"
 
 
@@ -24,6 +25,15 @@ uint32_t arr_max(uint32_t *arr, uint32_t size)
         if (arr[i] > ans){ans = arr[i];}
     }
     return ans;
+}
+
+
+// copy 1D array of uint32_t
+uint32_t *arr_1D_uint32_copy(uint32_t *array, uint32_t size)
+{
+    uint32_t *res = (uint32_t*)malloc(size * sizeof(uint32_t));
+    for (uint32_t i = 0; i < size; ++i) {res[i] = array[i];}
+    return res;
 }
 
 

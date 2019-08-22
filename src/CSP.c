@@ -28,6 +28,7 @@
 
 
 bool v = false;
+bool vv = false;
 
 
 // in support for free_all func
@@ -54,6 +55,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-p]: show patterns\n");
     fprintf(stderr, "[-nr]: you promise there are no repetative strings (not recommended) =)\n");
     fprintf(stderr, "[-r]: render initial state (not recommended on big datasets)\n");
+    fprintf(stderr, "[-vv]: extended verbose messages)\n");
     exit(1);
 }
 
@@ -62,6 +64,18 @@ void _show_usage_and_quit(char * executable)
 void verbose(const char * format, ...)
 {
     if(!v) {return;}
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    return;
+}
+
+
+// show v_verbose messages
+void v_verbose(const char * format, ...)
+{
+    if(!vv) {return;}
     va_list args;
     va_start(args, format);
     vprintf(format, args);

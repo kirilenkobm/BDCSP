@@ -26,9 +26,15 @@
 #include "arrstuff.h"
 #define MOVES_STEP 10
 
-#define _MOVES_MULT 1
+#define _MOVES_MULT 32
 extern bool v;
+extern bool vv;
 
+
+typedef struct{
+    uint32_t **arrays;
+    uint32_t arrs_num;
+} Mask_memory;
 
 // comparator for Z results
 int compare_Z_compares(const void *a, const void *b)
@@ -138,6 +144,28 @@ bool __is_in_mask(uint32_t *mask, uint32_t mask_size, State *states, uint32_t st
 }
 
 
+// check if array is in memory
+bool __is_in_memory(Mask_memory *mask_memory, uint32_t *mask, uint32_t mask_size)
+{
+    if (mask_memory->arrs_num == 0) {return false;}
+    bool are_same = false;
+    for (uint32_t i = 0; i < mask_memory->arrs_num; ++i){
+        are_same = arr_uint32_are_the_same(mask_memory->arrays[i], mask, mask_size);
+        if (are_same) {return true;}
+    }
+    return false;
+}
+
+
+// add mask to memory
+void __add_to_memory(Mask_memory *mask_memory, uint32_t *mask, uint32_t mask_size)
+{
+    uint32_t current_num = mask_memory->arrs_num;
+    mask_memory->arrays[current_num] = arr_1D_uint32_copy(mask, mask_size);
+    mask_memory->arrs_num += 1;
+}
+
+
 // count zeros if the mask given applied
 uint32_t *traverse_get_z_dist
 (Pattern *patterns, uint32_t dist_size, uint32_t *cur_mask, uint32_t mask_size, uint32_t pat_num)
@@ -168,14 +196,14 @@ uint32_t *traverse_get_z_dist
 
 // update program state
 void __upd_prog_state
-(State *states, Masks_data *mask, uint32_t *cur_state, bool *end, 
-bool *res, Input_data *input_data, Pattern *patterns, uint32_t *m_c_f)
+(State *states, Masks_data *mask, uint32_t *cur_state, bool *end, bool *res,
+Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_memory)
 {
     // in this case we tried all possible paths for this state
     if (states[*cur_state].moves_num == states[*cur_state].cur_move)
     {
-        verbose("****GO BACK! Were %u moves\n",
-                states[*cur_state].moves_num);
+        v_verbose("****GO BACK! Were %u moves depth %u\n",
+                states[*cur_state].moves_num, *cur_state);
         __wipe_state(&states[*cur_state]);
         if (*cur_state == 0){*end = true;}  // no states < 0, break the loop
         else {*cur_state = *cur_state - 1;}  // goto previous one
@@ -189,14 +217,17 @@ bool *res, Input_data *input_data, Pattern *patterns, uint32_t *m_c_f)
     uint32_t *cur_mask = traverse__mask_copy(states[*cur_state].pat_mask, mask->mask_size);
     __apply_move(cur_mask, &cur_move);
 
-    bool already_is_in = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
+    // bool already_is_in = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
+    bool already_is_in = __is_in_memory(mask_memory, cur_mask, mask->mask_size);
     if (already_is_in)
     {
         free(cur_mask);
-        verbose("*****been there, go back\n");
+        v_verbose("*****been there, go back\n");
         if (*cur_state == 0){*end = true;}  // no states < 0, break the loop
         else {*cur_state = *cur_state - 1;}  // goto previous one
         return;  // nothing to do in this function anymore
+    } else {
+        __add_to_memory(mask_memory, cur_mask, mask->mask_size);
     }
 
     uint32_t *init_z_dist = traverse_get_z_dist(patterns,
@@ -204,7 +235,7 @@ bool *res, Input_data *input_data, Pattern *patterns, uint32_t *m_c_f)
                                                 cur_mask,
                                                 mask->mask_size,
                                                 input_data->pat_num);
-    if (v) {arr_1D_uint32_print(cur_mask, mask->mask_size);}
+    if (vv) {arr_1D_uint32_print(cur_mask, mask->mask_size);}
     
     // initiate next compares and initiate actual number
     uint32_t allocated_ =  input_data->dir_pat_num * 2;
@@ -214,25 +245,31 @@ bool *res, Input_data *input_data, Pattern *patterns, uint32_t *m_c_f)
     uint32_t moves_count = 0;
     uint32_t p_num = 0;
     int8_t change = 0;
-    bool is_in = false;
+    bool is_in_states = false;
+    bool is_in_memory = false;
 
     for (uint32_t iter = 2; iter < (mask->mask_size * 2); ++iter)
     {   
         // need to try both +1 and -1 for each pattern
         p_num = iter / 2;
         change = (iter - (p_num * 2)) ? -1 : 1;
-        // cannot have value < 0 or > MAX
-        if ((cur_mask[p_num] == 0) && (change == -1)){continue;}
-        if ((cur_mask[p_num] == mask->full_mask[p_num] && (change == 1))){continue;}
-        cur_mask[p_num] += change;
+        // ok, I think I need to block this feature
+        if (change == -1) {continue;}  // I don't know, do I need -1 moves or not
+        // this is why there are so many comments
 
-        is_in = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
-        if (is_in){
+        // cannot have value < 0 or > MAX
+        if ((change == -1) && (cur_mask[p_num] == 0)){continue;}
+        if (((change == 1) && cur_mask[p_num] == mask->full_mask[p_num])){continue;}
+        cur_mask[p_num] += change;
+        is_in_states = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
+        // is_in_memory = __is_in_memory(mask_memory, cur_mask, mask->mask_size);
+        if (is_in_states){
             // repeats are not allowed
-            verbose("***skip repeating step\n");
+            v_verbose("***skip repeating step\n");
             cur_mask[p_num] -= change;
             continue;
         }
+
         uint32_t *zeros_dist = traverse_get_z_dist(patterns,
                                                    input_data->str_num,
                                                    cur_mask,
@@ -242,7 +279,7 @@ bool *res, Input_data *input_data, Pattern *patterns, uint32_t *m_c_f)
         Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
 
         // if move makes everything worse -> skip it
-        if (compare.min_zeros_delta > 0){
+        if (compare.min_zeros_delta >= 0){
             free(zeros_dist);
             cur_mask[p_num] -= change;
             continue;
@@ -264,13 +301,13 @@ bool *res, Input_data *input_data, Pattern *patterns, uint32_t *m_c_f)
         // return mask back
         cur_mask[p_num] -= change;
     }
-    verbose("# Possible %u moves out of %u allocated\n", moves_count, allocated_);
+    v_verbose("# Possible %u moves out of %u allocated\n", moves_count, allocated_);
     free(init_z_dist);  // we don't need this array anymore
     *cur_state += 1;
 
     if (moves_count == 0){
         // no moves possible -> go back
-        verbose("***Nothing found, go back\n");
+        v_verbose("***Nothing found, go back\n");
         if (*cur_state == 0){*end = true;}
         else {*cur_state = *cur_state - 1;}  // goto previous one
         return;  // nothing to do in this function anymore
@@ -293,7 +330,7 @@ bool *res, Input_data *input_data, Pattern *patterns, uint32_t *m_c_f)
     // find out whether we have the answer already
     uint32_t ones_cov = input_data->act_col_num - next_compares[0].min_zeros;
     if (ones_cov > *m_c_f) {*m_c_f = ones_cov;}  // update max reached val
-    verbose("# Ones coverage: %u; Zeros: %u\n", ones_cov, next_compares[0].min_zeros);
+    v_verbose("# Ones coverage: %u; Zeros: %u\n", ones_cov, next_compares[0].min_zeros);
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     if (already_ans_true){
         // we have an answer -> so break execution
@@ -324,6 +361,9 @@ Input_data *input_data, Pattern *patterns)
     bool res = false;  // default answer
     uint32_t states_num = input_data->act_col_num * _MOVES_MULT;
     verbose("# Search depth %u\n", states_num);
+    Mask_memory mask_memory;
+    mask_memory.arrays = (uint32_t**)malloc((states_num + 1) * sizeof(uint32_t*));
+    mask_memory.arrs_num = 0;
     State *states = (State*)malloc((states_num + 1) * sizeof(State));
     uint32_t mask_size = (input_data->dir_pat_num + 1);
 
@@ -387,7 +427,7 @@ Input_data *input_data, Pattern *patterns)
     if (!already_ans_true && !already_ans_false)
     {
         for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){
-            if (init_compares[i].min_zeros_delta == 1){
+            if (init_compares[i].min_zeros_delta >= 0){
                 cutoff = i;
                 break;
             }
@@ -441,10 +481,12 @@ Input_data *input_data, Pattern *patterns)
     uint32_t max_cov_found = 0;
 
     // main loop
+    verbose("# Started search loop.\n");
     for (uint32_t step = 0; step < states_num; ++step)
     {
-        verbose("# Step num %u / %u\n", step, states_num - 1);
-        __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data, patterns, &max_cov_found);
+        v_verbose("# Step num %u / %u\n", step, states_num - 1);
+        __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data,
+                         patterns, &max_cov_found, &mask_memory);
         if (end){break;}  // interrupt if something is bad
     }
 

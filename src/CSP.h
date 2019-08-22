@@ -25,6 +25,8 @@ void _show_usage_and_quit(char * executable);
 
 void verbose(const char * format, ...);
 
+void v_verbose(const char * format, ...);
+
 void free_all();
 
 uint32_t min_of_three(uint32_t *a, uint32_t *b, uint32_t *c);

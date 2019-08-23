@@ -504,7 +504,7 @@ Input_data *input_data, Pattern *patterns)
     }
 
     if (!res){
-        printf("Maximal coverage found is %u / %u\n", max_cov_found, input_data->to_cover);
+        verbose("Maximal coverage found is %u / %u\n", max_cov_found, input_data->to_cover);
     }
     free(init_compares);
     free(initial_moves);

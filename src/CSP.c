@@ -72,18 +72,6 @@ void verbose(const char * format, ...)
 }
 
 
-// show v_verbose messages
-void v_verbose(const char * format, ...)
-{
-    if(!vv) {return;}
-    va_list args;
-    va_start(args, format);
-    vprintf(format, args);
-    va_end(args);
-    return;
-}
-
-
 // free all memory
 void free_all()
 {

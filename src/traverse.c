@@ -26,7 +26,7 @@
 #include "arrstuff.h"
 #define MOVES_STEP 10
 
-#define _MOVES_MULT 32
+#define _MOVES_MULT 1
 extern bool v;
 extern bool vv;
 
@@ -90,11 +90,6 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
     res.min_zeros_delta = 0;
     res.minus_ = 0;
     res.plus_ = 0;
-    // printf("Before: \n");
-    // for (uint32_t i = 0; i < len; ++i){printf("%u ", before[i]);}
-    // printf("\nAfter:\n");
-    // for (uint32_t i = 0; i < len; ++i){printf("%u ", after[i]);}
-    // N
     uint32_t before_max =  arr_max(before, len);
     uint32_t after_max = arr_max(after, len);
     res.min_zeros_delta = after_max - before_max;
@@ -105,8 +100,6 @@ Z_compare compare_Z_dist(uint32_t *before, uint32_t *after, uint32_t len)
         else if (before[i] > after[i]){res.minus_ += (before[i] - after[i]);}
         else {res.plus_ += (after[i] - before[i]);}
     }
-    // printf("Minuses: %u pluses: %u\n", res.minus_, res.plus_);
-    // N
     return res;
 }
 
@@ -202,7 +195,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
     // in this case we tried all possible paths for this state
     if (states[*cur_state].moves_num == states[*cur_state].cur_move)
     {
-        v_verbose("****GO BACK! Were %u moves depth %u\n",
+        verbose("****GO BACK! Were %u moves depth %u\n",
                 states[*cur_state].moves_num, *cur_state);
         __wipe_state(&states[*cur_state]);
         if (*cur_state == 0){*end = true;}  // no states < 0, break the loop
@@ -222,7 +215,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
     if (already_is_in)
     {
         free(cur_mask);
-        v_verbose("*****been there, go back\n");
+        verbose("*****been there, go back\n");
         if (*cur_state == 0){*end = true;}  // no states < 0, break the loop
         else {*cur_state = *cur_state - 1;}  // goto previous one
         return;  // nothing to do in this function anymore
@@ -235,7 +228,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
                                                 cur_mask,
                                                 mask->mask_size,
                                                 input_data->pat_num);
-    if (vv) {arr_1D_uint32_print(cur_mask, mask->mask_size);}
+    if (v) {arr_1D_uint32_print(cur_mask, mask->mask_size);}
     
     // initiate next compares and initiate actual number
     uint32_t allocated_ =  input_data->dir_pat_num * 2;
@@ -262,10 +255,10 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
         if (((change == 1) && cur_mask[p_num] == mask->full_mask[p_num])){continue;}
         cur_mask[p_num] += change;
         is_in_states = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
-        // is_in_memory = __is_in_memory(mask_memory, cur_mask, mask->mask_size);
-        if (is_in_states){
+        is_in_memory = __is_in_memory(mask_memory, cur_mask, mask->mask_size);
+        if (is_in_states || is_in_memory){
             // repeats are not allowed
-            v_verbose("***skip repeating step\n");
+            verbose("***skip repeating step\n");
             cur_mask[p_num] -= change;
             continue;
         }
@@ -301,13 +294,13 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
         // return mask back
         cur_mask[p_num] -= change;
     }
-    v_verbose("# Possible %u moves out of %u allocated\n", moves_count, allocated_);
+    verbose("# Possible %u moves out of %u allocated\n", moves_count, allocated_);
     free(init_z_dist);  // we don't need this array anymore
     *cur_state += 1;
 
     if (moves_count == 0){
         // no moves possible -> go back
-        v_verbose("***Nothing found, go back\n");
+        verbose("***Nothing found, go back\n");
         if (*cur_state == 0){*end = true;}
         else {*cur_state = *cur_state - 1;}  // goto previous one
         return;  // nothing to do in this function anymore
@@ -330,7 +323,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
     // find out whether we have the answer already
     uint32_t ones_cov = input_data->act_col_num - next_compares[0].min_zeros;
     if (ones_cov > *m_c_f) {*m_c_f = ones_cov;}  // update max reached val
-    v_verbose("# Ones coverage: %u; Zeros: %u\n", ones_cov, next_compares[0].min_zeros);
+    verbose("# Ones coverage: %u; Zeros: %u\n", ones_cov, next_compares[0].min_zeros);
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     if (already_ans_true){
         // we have an answer -> so break execution
@@ -384,20 +377,26 @@ Input_data *input_data, Pattern *patterns)
     // initiate moves, only + moves available
     Move *initial_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num);
     Z_compare* init_compares = (Z_compare*)malloc(sizeof(Z_compare) * input_data->dir_pat_num);
-
     uint32_t i_moves_count = 0;
 
 
     for (uint32_t p_num = 1; p_num < mask_size; ++p_num)
     {
         zero_mask[p_num] = 1;
-        uint8_t **move_render = render__draw(patterns, zero_mask, input_data);
-        uint32_t *zeros_dist = render__get_zeros(move_render,
-                                                 input_data->str_num, 
-                                                 input_data->act_col_num);
+        uint32_t *zeros_dist = traverse_get_z_dist(patterns,
+                                            input_data->str_num,
+                                            zero_mask,
+                                            mask_size,
+                                            input_data->pat_num);
         // don't check for "possible" because shift=1 possible everywhere
         // orherwise, there is a bug
         Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
+        if (compare.min_zeros_delta >= 0){
+            free(zeros_dist);
+            zero_mask[p_num] = 0;
+            continue;
+        }
+
         Move this_move;
         this_move.pat_id = p_num;
         this_move.size = 1;
@@ -408,13 +407,27 @@ Input_data *input_data, Pattern *patterns)
         initial_moves[i_moves_count] = this_move;
         ++i_moves_count;
         // free allocated stuff, return mask to status-quo
-        render__free_render(move_render, input_data->str_num);
         zero_mask[p_num] = 0;
         free(zeros_dist);
     }
+    verbose("# Found %u initial moves\n", i_moves_count);
+    if (i_moves_count == 0){
+        free(initial_moves);
+        free(init_compares);
+        for (uint32_t i = 0; i < states_num; ++i){
+            free(states[i].pat_mask);
+            free(states[i].moves);
+        }
+        free(states);
+        verbose("# Answer branch 4\n");
+        verbose("# Cannot find initial move\n");
+        return false;
+    }
 
     // we have initial moves
-    qsort(init_compares, input_data->dir_pat_num, sizeof(Z_compare), compare_Z_compares);
+    init_compares = (Z_compare*)realloc(init_compares, i_moves_count * sizeof(Z_compare));
+    initial_moves = (Move*)realloc(initial_moves, i_moves_count * sizeof(Move));
+    qsort(init_compares, i_moves_count, sizeof(Z_compare), compare_Z_compares);
     // uint32_t cutoff = 0;
     // int dir;
     // bool found = false;
@@ -423,10 +436,10 @@ Input_data *input_data, Pattern *patterns)
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     bool already_ans_false = (init_compares[0].min_zeros_delta == 1);
     assert(!(already_ans_false && already_ans_true));  // should never happen that both are true
-    uint32_t cutoff = input_data->dir_pat_num;
+    uint32_t cutoff = i_moves_count;
     if (!already_ans_true && !already_ans_false)
     {
-        for (uint32_t i = 0; i < input_data->dir_pat_num; ++i){
+        for (uint32_t i = 0; i < i_moves_count; ++i){
             if (init_compares[i].min_zeros_delta >= 0){
                 cutoff = i;
                 break;
@@ -484,7 +497,7 @@ Input_data *input_data, Pattern *patterns)
     verbose("# Started search loop.\n");
     for (uint32_t step = 0; step < states_num; ++step)
     {
-        v_verbose("# Step num %u / %u\n", step, states_num - 1);
+        verbose("# Step num %u / %u\n", step, states_num - 1);
         __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data,
                          patterns, &max_cov_found, &mask_memory);
         if (end){break;}  // interrupt if something is bad

@@ -215,6 +215,7 @@ void read_input__main_args(char **argv, Input_data *input_data)
     verbose("# Found %u repeats\n", repeats);
     if ((act_str_len < 2) || (line_num < 2)){
         fprintf(stderr, "Error! Minimal input size is 2x2!\n");
+        fprintf(stderr, "Please note that duplicated strings are considered as only one string.\n");
         free_in_data(input_data, line_num);
         exit(1);
     }

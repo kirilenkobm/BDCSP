@@ -6,7 +6,7 @@ printf "Started BDCSP tests\n"
 declare -a arr=("make clean"
                 "make"
                 "./CSP _sample_input/test_0.txt 2"
-                "./CSP _sample_input/test_0.txt 4"
+                "./CSP _sample_input/test_0.txt 5"
                 "./CSP _sample_input/test_2.txt 12"
                 )
 

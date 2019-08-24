@@ -40,6 +40,7 @@ typedef struct
     bool init_render_show;
     bool show_help;
     bool show_version;
+    bool sanity_check;
 } Input_data;
 
 

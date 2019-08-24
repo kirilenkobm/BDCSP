@@ -66,6 +66,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-nr]: you promise there are no repetative strings (not recommended) =)\n");
     fprintf(stderr, "[-r]: render initial state (not recommended on big datasets)\n");
     fprintf(stderr, "[-f]: optimize first line)\n");
+    fprintf(stderr, "[-s]: sanity checks, just check the input correctness and quit\n");
     exit(1);
 }
 
@@ -195,6 +196,13 @@ int main(int argc, char ** argv)
             for (uint32_t j = 0; j < input_data.str_num; j++){printf("%u ", patterns[i].pattern[j]);}
             printf("\t# Appears: %u; size: %u\n\n", patterns[i].times, patterns[i].size);
         }
+    }
+
+    if (input_data.sanity_check){
+        // in this case all we need to know that out input data is OK
+        free_all();
+        printf("Sanity check - success\n");
+        exit(0);
     }
 
     // case if K is too high and no need to compute anything

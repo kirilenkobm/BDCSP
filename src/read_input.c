@@ -338,6 +338,7 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
     input_data->show_help = false;
     input_data->show_version = false;
     input_data->log_level = 0;
+    input_data->sanity_check = false;
 
     if (strcmp(argv[1], "-h") == 0) {
         input_data->show_help = true;
@@ -386,6 +387,8 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
             input_data->show_version = true;
         } else if (strcmp(argv[op], "-h") == 0) {
             input_data->show_help = true;
+        } else if (strcmp(argv[op], "-s") == 0) {
+            input_data->sanity_check = true;
         } else {
             fprintf(stderr, "Ignore unknown parameter %s\n", argv[op]);
             // _show_usage_and_quit(argv[0]);

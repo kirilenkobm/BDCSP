@@ -7,7 +7,7 @@
 
 What is the problem: [1]. Is also np complete in case of binary alphabet:[2]. Coming soon.
 
-Here, I suggest an efficient algorithm, that solves decisional version of the closest string problem over the binary alphabet in polynomial time. Likely, this is a good approximation. More details in the following article:
+Here, I suggest an polynomial approximation for this task with precision measurements.
 
 <https://example.com>
 

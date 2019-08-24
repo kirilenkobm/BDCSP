@@ -14,7 +14,7 @@ range=4  # number of subsets
 # maybe this
 raw_ks=(15 25 50 75)
 raw_ks_max_i=3
-repl=20  # number of replicates
+repl=50  # number of replicates
 
 for step in `seq 0 $((range - 1))`
 do

@@ -40,6 +40,18 @@ typedef struct
     bool init_render_show;
 } Input_data;
 
+
+typedef struct
+{
+    uint32_t max_zeros;
+    uint32_t min_zeros;
+    uint32_t delta;
+    uint32_t line_num;
+} F_string_compare;
+
+
+void read_input__prepare_data(Input_data *input_data);
+
 void free_in_data(Input_data *input_data, uint32_t line_num);
 
 void read_input__main_args(char **argv, Input_data *Input_data);

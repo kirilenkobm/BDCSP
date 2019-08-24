@@ -37,6 +37,27 @@ uint32_t *arr_1D_uint32_copy(uint32_t *array, uint32_t size)
 }
 
 
+// copy 2D uint8_t array
+uint8_t **arr_2D_uint8_copy(uint8_t **arr, uint32_t arrs_num, uint32_t elem_num)
+{
+    uint8_t **copy = (uint8_t**)malloc(arrs_num * sizeof(uint8_t*));
+    for (uint32_t i = 0; i < arrs_num; ++i) {copy[i] = (uint8_t*)calloc(elem_num, sizeof(uint8_t));}
+    for (uint32_t i = 0; i < arrs_num; ++i){
+        for (uint32_t j = 0; j < elem_num; ++j) {copy[i][j] = arr[i][j];}
+    }
+    return copy;
+}
+
+
+// swap rows in uint8_t array
+void arr_2D_uint8_swap_lines(uint8_t **arr, uint32_t one, uint32_t two)
+{
+    uint8_t *temp = arr[one];
+    arr[one] = arr[two];
+    arr[two] = temp;
+}
+
+
 // compare two patterns
 bool arr_uint8_are_the_same(uint8_t *arr_1, uint8_t *arr_2, uint32_t arr_size)
 {

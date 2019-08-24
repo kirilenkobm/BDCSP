@@ -150,6 +150,7 @@ int main(int argc, char ** argv)
     read_input__opt_args(argc, argv, &input_data);
     v = input_data.v;
     read_input__main_args(argv, &input_data);
+    read_input__prepare_data(&input_data);
 
     // set defaults to (potentially) allocated stuff
     allocated.input_arr = input_data.in_arr;

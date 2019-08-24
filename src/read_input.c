@@ -52,6 +52,85 @@ bool __check_is_in(uint8_t **in_arr, uint32_t str_len, uint32_t line_num, bool n
 }
 
 
+// swap 1 to 0 and back
+void swap_1_0(uint8_t *v){*v = 1 - *v;}
+
+
+// cast the first line to 111111111
+void cast_to_ones(uint8_t **arr, uint32_t str_num, uint32_t str_len)
+{
+    // iter over columns
+    for (uint32_t col_num = 0; col_num < str_len; ++col_num)
+    {
+        if (arr[0][col_num] == 1){continue;}
+        // need to swap the column
+        for (uint32_t row_num = 0; row_num < str_num; ++row_num){swap_1_0(&arr[row_num][col_num]);}
+    }
+}
+
+
+// get comparison info to choose first string
+F_string_compare get_arr_data(uint8_t **arr, uint32_t str_num, uint32_t str_len)
+{
+    F_string_compare ans;
+    ans.line_num = 0;
+    uint32_t *zero_nums = (uint32_t*)calloc(str_num, sizeof(uint32_t));
+    for (uint32_t i = 0; i < str_num; ++i){
+        for (uint32_t j = 0; j < str_len; ++j){if (arr[i][j] == 0){zero_nums[i] += 1;}}
+    }
+    ans.max_zeros = 0;
+    ans.min_zeros = UINT32_MAX;
+    for (uint32_t i = 0; i < str_num; ++i){
+        if (zero_nums[i] > ans.max_zeros) {ans.max_zeros = zero_nums[i];}
+        if ((zero_nums[i] < ans.min_zeros) && (zero_nums[i] != 0)) {ans.min_zeros = zero_nums[i];}
+    }
+    ans.delta = ans.max_zeros - ans.min_zeros;
+    return ans;
+}
+
+
+// compare line datas for best line search
+int line_comparator(const void *a, const void *b)
+{
+    F_string_compare *ia = (F_string_compare*)a;
+    F_string_compare *ib = (F_string_compare*)b;
+    if (ia->max_zeros == ib->max_zeros){return ib->delta - ia->delta;}
+    return ib->max_zeros - ia->max_zeros;
+}
+
+// prepare input data for algorithm
+void read_input__prepare_data(Input_data *input_data)
+{
+    verbose("Input preparation\n");
+    F_string_compare *comp_arr = (F_string_compare*)malloc(input_data->str_num *
+                                                           sizeof(F_string_compare));
+    for (uint32_t s_num = 0; s_num < input_data->str_num; ++s_num)
+    {
+        uint8_t **copy = arr_2D_uint8_copy(input_data->in_arr,
+                                           input_data->str_num,
+                                           input_data->str_len);
+        // swap arrays, no need if the first string
+        if (s_num != 0){arr_2D_uint8_swap_lines(copy, 0, s_num);}
+        // cast to ones and get necessary data
+        cast_to_ones(copy, input_data->str_num, input_data->str_len);
+        // extract comparison data
+        F_string_compare cur_comp = get_arr_data(copy,
+                                                 input_data->str_num,
+                                                 input_data->str_len);
+        
+        cur_comp.line_num = s_num;
+        comp_arr[s_num] = cur_comp;
+        // free data
+        for (uint32_t i = 0; i < input_data->str_num; ++i) {free(copy[i]);}
+        free(copy);
+    }
+    // now define the best
+    qsort(comp_arr, input_data->str_num, sizeof(F_string_compare), line_comparator);
+    uint32_t best_line_num = comp_arr[0].line_num;
+    if (best_line_num != 0) {arr_2D_uint8_swap_lines(input_data->in_arr, 0, best_line_num);}
+}
+
+
 // read and check input array and K
 void read_input__main_args(char **argv, Input_data *input_data)
 {

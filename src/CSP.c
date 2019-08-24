@@ -25,9 +25,10 @@
 #include "render.h"
 #include "traverse.h"
 #include "arrstuff.h"
+#define VERSION "0.01 Unreleased"
 
 
-bool v = false;
+uint8_t log_level = 0;
 
 
 // in support for free_all func
@@ -44,13 +45,23 @@ struct allocated_data{
 } allocated;
 
 
+// print version and quit
+void _show_version() 
+{
+    printf("BDCSP %s\nCopyright 2019 Bogdan Kirilenko, Dresden\n", VERSION);
+    exit(0);
+}
+
+
 // show help and exit
 void _show_usage_and_quit(char * executable)
 {
     fprintf(stderr, "Usage: %s [input file] [k] [-v] [-p]\n", executable);
     fprintf(stderr, "[input file]: text file containing input or stdin\n");
     fprintf(stderr, "[k]: minimal distance to check, positive integer number\n");
-    fprintf(stderr, "[-v]: enable verosity mode\n");
+    fprintf(stderr, "[-v 0..3]: enable verosity mode, set logging level from 1 to 3, 0 - nothing\n");
+    fprintf(stderr, "[-h]: show this message\n");
+    fprintf(stderr, "[-V]: show version\n");
     fprintf(stderr, "[-p]: show patterns\n");
     fprintf(stderr, "[-nr]: you promise there are no repetative strings (not recommended) =)\n");
     fprintf(stderr, "[-r]: render initial state (not recommended on big datasets)\n");
@@ -60,9 +71,10 @@ void _show_usage_and_quit(char * executable)
 
 
 // show verbose messages
-void verbose(const char * format, ...)
+void verbose(uint8_t lvl, const char * format, ...)
 {
-    if(!v) {return;}
+    // if(!v) {return;}
+    if (log_level < lvl) {return;}
     va_list args;
     va_start(args, format);
     vprintf(format, args);
@@ -87,7 +99,7 @@ void free_all()
     free(allocated.zeros_nums);
     free(allocated.zero_mask);
     free(allocated.full_mask);
-    verbose("# Memory freed\n");
+    verbose(1, "# Memory freed\n");
 }
 
 // get initial densities
@@ -117,7 +129,7 @@ void get_init_density_range
     }
 
     stop = false;
-    verbose("# Min covered levels (Inf): %u\n", *inf_cov);
+    verbose(1, "# Min covered levels (Inf): %u\n", *inf_cov);
     uint32_t max_size = 0;
     uint64_t max_pat_sum = 0;
     uint32_t max_pat_id = 0;
@@ -134,7 +146,7 @@ void get_init_density_range
         max_pat_sum += ((uint64_t)max_size * cur_pat_times);
     }
     *sup_cov = max_pat_sum / input_data->level_size;
-    verbose("# Max covered levels (Sup): %llu\n", *sup_cov);
+    verbose(1, "# Max covered levels (Sup): %llu\n", *sup_cov);
     // if fails here -> I did a mistake
     assert(*inf_cov <= *sup_cov);
 }
@@ -144,10 +156,13 @@ void get_init_density_range
 int main(int argc, char ** argv)
 {
     // read arguments
-    if (argc < 3){_show_usage_and_quit(argv[0]);}
     Input_data input_data;
     read_input__opt_args(argc, argv, &input_data);
-    v = input_data.v;
+    if (input_data.show_help) {_show_usage_and_quit(argv[0]);}
+    if (input_data.show_version) {_show_version();}
+    if (argc < 3){_show_usage_and_quit(argv[0]);}
+    log_level = input_data.log_level;
+    verbose(1, "# Set verbosity level %d\n", log_level);
     read_input__main_args(argv, &input_data);
 
     if (input_data.optimize_f_line){
@@ -184,7 +199,7 @@ int main(int argc, char ** argv)
 
     // case if K is too high and no need to compute anything
     if (input_data.k >= input_data.act_col_num){
-        verbose("# Answer branch 1\n");
+        verbose(1, "# Answer branch 1\n");
         printf("The answer is:\nTrue\n");
         free_all();
         return 0;
@@ -193,7 +208,7 @@ int main(int argc, char ** argv)
     assert(input_data.act_col_num > 0);
 
     input_data.to_cover = input_data.act_col_num - input_data.k;
-    verbose("# Need to cover %u columns\n", input_data.to_cover);
+    verbose(1, "# Need to cover %u columns\n", input_data.to_cover);
 
     // get initial values
     uint32_t inf_cov = 0;
@@ -202,12 +217,12 @@ int main(int argc, char ** argv)
 
     // in case if expected density is not in [inf, sup)
     if (input_data.to_cover <= inf_cov){
-        verbose("# Answer branch 2\n");
+        verbose(1, "# Answer branch 2\n");
         printf("The answer is:\nTrue\n");
         free_all();
         return 0;
     } else if (input_data.to_cover > sup_cov){
-        verbose("# Answer branch 2\n");
+        verbose(1, "# Answer branch 2\n");
         printf("The answer is:\nFalse\n");
         free_all();
         return 0;
@@ -235,19 +250,19 @@ int main(int argc, char ** argv)
     uint32_t baseline = input_data.act_col_num - max_zeros;
     uint32_t allowed_zeros = input_data.act_col_num - input_data.to_cover;
     uint32_t total_allowed_zeros = allowed_zeros * input_data.str_num;
-    verbose("# Max zeros num %u; min zeros sum %u\n", max_zeros, min_zeros_amount);
-    verbose("# Baseline: %u, max allowed zeros per line: %u\n", baseline, allowed_zeros);
-    verbose("# Total allowed zeros: %u\n", total_allowed_zeros);
+    verbose(2, "# Max zeros num %u; min zeros sum %u\n", max_zeros, min_zeros_amount);
+    verbose(2, "# Baseline: %u, max allowed zeros per line: %u\n", baseline, allowed_zeros);
+    verbose(2, "# Total allowed zeros: %u\n", total_allowed_zeros);
 
     if (baseline >= input_data.to_cover){
         // eventually got answer
-        verbose("# answer branch 3\n");
+        verbose(1, "# answer branch 3\n");
         printf("The answer is:\nTrue\n");
         free_all();
         return 0;
     } else if (total_allowed_zeros < min_zeros_amount){
         // also an answer; not sure if it is possible
-        verbose("# answer branch 3\n");
+        verbose(1, "# answer branch 3\n");
         printf("The answer is:\nFalse\n");
         free_all();
         return 0;
@@ -255,10 +270,10 @@ int main(int argc, char ** argv)
 
     uint32_t cover_left = input_data.to_cover - (input_data.act_col_num - max_zeros);
 
-    verbose("# Initial zeros nums:\n# ");
-    for (uint32_t i = 0; i < input_data.str_num; ++i){verbose("%u ", zeros_nums[i]);}
-    verbose("\n");
-    verbose("# Max zeros: %u; Left to cover: %u\n", max_zeros, cover_left);
+    verbose(1, "# Initial zeros nums:\n# ");
+    for (uint32_t i = 0; i < input_data.str_num; ++i){verbose(2, "%u ", zeros_nums[i]);}
+    verbose(2, "\n");
+    verbose(1, "# Max zeros: %u; Left to cover: %u\n", max_zeros, cover_left);
 
     allocated.init_render_data = init_render_data;
     allocated.init_r_data_depth = input_data.str_num;

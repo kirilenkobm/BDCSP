@@ -92,9 +92,9 @@ int compare_patterns(const void *a, const void *b)
 { 
     Pattern *ia = (Pattern *)a;
     Pattern *ib = (Pattern *)b;
-    if (ib->size > ia->size){return 1;}
-    else if (ia->size > ib->size){return -1;}
-    else {return diff_as_numbers(ib->pattern, ia->pattern);}
+    if (ib->size > ia->size){return -1;}
+    else if (ia->size > ib->size){return 1;}
+    else {return diff_as_numbers(ia->pattern, ib->pattern);}
 }
 
 
@@ -161,10 +161,10 @@ Pattern *get_patterns(Input_data *input_data)
     // now sort this stuff
     qsort(patterns, extracted_patterns, sizeof(Pattern), compare_patterns);
     uint32_t full_len = (2 * extracted_patterns - 1);
-    verbose("# Found %u variable columns\n", input_data->act_col_num);
-    verbose("# Extracted %u direct patterns\n", extracted_patterns - 1);
+    verbose(1, "# Found %u variable columns\n", input_data->act_col_num);
+    verbose(1, "# Extracted %u direct patterns\n", extracted_patterns - 1);
     input_data->dir_pat_num = extracted_patterns - 1;
-    verbose("# Full patterns array takes %u\n", full_len);
+    verbose(1, "# Full patterns array takes %u\n", full_len);
 
     input_data->pat_num = full_len;
     patterns = (Pattern*)realloc(patterns, full_len * sizeof(Pattern));

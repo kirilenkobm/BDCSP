@@ -33,12 +33,13 @@ typedef struct
     uint32_t dir_pat_num;
     uint32_t act_col_num;
     uint32_t level_size;
-    bool v;
-    bool vv;
+    uint8_t log_level;
     bool optimize_f_line;
     bool show_patterns;
     bool no_repeats;
     bool init_render_show;
+    bool show_help;
+    bool show_version;
 } Input_data;
 
 

@@ -23,7 +23,7 @@
 
 void _show_usage_and_quit(char * executable);
 
-void verbose(const char * format, ...);
+void verbose(uint8_t lvl, const char * format, ...);
 
 void free_all();
 

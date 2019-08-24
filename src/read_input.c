@@ -23,6 +23,7 @@
 #include "read_input.h"
 #include "arrstuff.h"
 
+#define V_MAX 3
 #define MAXCHAR 255
 #define W 100
 #define H 100
@@ -101,7 +102,7 @@ int line_comparator(const void *a, const void *b)
 // prepare input data for algorithm
 void read_input__prepare_data(Input_data *input_data)
 {
-    verbose("Input preparation\n");
+    verbose(1, "Input preparation\n");
     F_string_compare *comp_arr = (F_string_compare*)malloc(input_data->str_num *
                                                            sizeof(F_string_compare));
     for (uint32_t s_num = 0; s_num < input_data->str_num; ++s_num)
@@ -152,7 +153,7 @@ void read_input__main_args(char **argv, Input_data *input_data)
         fprintf(stderr, "Error! K expected to be > 0!\n");
         _show_usage_and_quit(argv[0]);
     }
-    verbose("# k = %u \n", input_data->k);
+    verbose(1, "# k = %u \n", input_data->k);
 
     // and the input array
     FILE *fp = NULL;
@@ -289,9 +290,9 @@ void read_input__main_args(char **argv, Input_data *input_data)
                                                   act_str_len * sizeof(uint8_t));
     }
 
-    verbose("# Lines lenght: %u\n", act_str_len);
-    verbose("# Lines num: %u\n", line_num);
-    verbose("# Found %u repeats\n", repeats);
+    verbose(1, "# Lines lenght: %u\n", act_str_len);
+    verbose(1, "# Lines num: %u\n", line_num);
+    verbose(1, "# Found %u repeats\n", repeats);
     if ((act_str_len < 2) || (line_num < 2)){
         fprintf(stderr, "Error! Minimal input size is 2x2!\n");
         fprintf(stderr, "Please note that duplicated strings are considered as only one string.\n");
@@ -303,7 +304,26 @@ void read_input__main_args(char **argv, Input_data *input_data)
     input_data->act_col_num = 0;
     // for explicity:
     input_data->level_size = line_num;
-    verbose("# Finished reading\n");
+    verbose(1, "# Finished reading\n");
+}
+
+
+bool __get_num_param(char *arg, char *name, uint8_t *val)
+{
+    char *c;
+    for (c = arg; *c; ++c)
+    {
+        if (*c == 0){break;}
+        if (!isdigit(*c))
+        {
+            fprintf(stderr, "Warining: %s expected to be a positive numerical value, got %s\n", 
+                    name, arg);
+            fprintf(stderr, "Will try to ignore this if possible\n");
+            return false;
+        }
+    }
+    *val = (uint8_t)atoi(arg);
+    return true;
 }
 
 
@@ -311,18 +331,46 @@ void read_input__main_args(char **argv, Input_data *input_data)
 void read_input__opt_args(int argc, char**argv, Input_data *input_data)
 {
     // default values
-    input_data->v = false;
     input_data->show_patterns = false;
     input_data->no_repeats = false;
     input_data->init_render_show = false;
     input_data->optimize_f_line = false;
+    input_data->show_help = false;
+    input_data->show_version = false;
+    input_data->log_level = 0;
 
-    for (int op = 3; op < argc; ++op)
+    if (strcmp(argv[1], "-h") == 0) {
+        input_data->show_help = true;
+        return;
+    } else if (strcmp(argv[1], "-V") == 0){
+        input_data->show_version = true;
+        return;
+    }
+
+    int op = 3;
+    while (argv[op] && op < argc)
     {
         if (strcmp(argv[op], "-v") == 0){
             // enable verbose
-            input_data->v = true;
-            verbose("# Verbose mode activated\n");
+            ++op;
+            if (op == argc) {
+                // if the last arg
+                input_data->log_level = 1;
+                return;
+            }
+            bool _read = __get_num_param(argv[op], "-v", &input_data->log_level);
+            if (!_read){
+                // default verbosity level - 1
+                --op;
+                input_data->log_level = 1;
+            }
+            if (input_data->log_level > 3){
+                fprintf(stderr, "Warning, verbosity level %d is not implemented, will use %d\n",
+                        input_data->log_level, V_MAX);
+                input_data->log_level = 3;
+            } else if (input_data->log_level == 0){
+                fprintf(stderr, "Warning, -v = 0 has no effect.\n");
+            }
         } else if (strcmp(argv[op], "-p") == 0){
             // show patterns
             input_data->show_patterns = true;
@@ -334,9 +382,14 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
             input_data->init_render_show = true;
         } else if (strcmp(argv[op], "-f") == 0) {
             input_data->optimize_f_line = true;
+        } else if (strcmp(argv[op], "-V") == 0) {
+            input_data->show_version = true;
+        } else if (strcmp(argv[op], "-h") == 0) {
+            input_data->show_help = true;
         } else {
-            fprintf(stderr, "Error: unknown parameter %s\n", argv[op]);
-            _show_usage_and_quit(argv[0]);
+            fprintf(stderr, "Ignore unknown parameter %s\n", argv[op]);
+            // _show_usage_and_quit(argv[0]);
         }
+        ++op;
     }
 }

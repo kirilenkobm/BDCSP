@@ -26,8 +26,10 @@
 #include "arrstuff.h"
 #define MOVES_STEP 10
 
+#define MEM_CHUNK 5
 #define _MOVES_MULT 1
-extern bool v;
+
+extern uint8_t log_level;
 
 
 typedef struct{
@@ -194,7 +196,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
     // in this case we tried all possible paths for this state
     if (states[*cur_state].moves_num == states[*cur_state].cur_move)
     {
-        verbose("****GO BACK! Were %u moves depth %u\n",
+        verbose(3, "****GO BACK! Were %u moves depth %u\n",
                 states[*cur_state].moves_num, *cur_state);
         __wipe_state(&states[*cur_state]);
         if (*cur_state == 0){*end = true;}  // no states < 0, break the loop
@@ -214,7 +216,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
     if (already_is_in)
     {
         free(cur_mask);
-        verbose("*****been there, go back\n");
+        verbose(3, "*****been there, go back\n");
         if (*cur_state == 0){*end = true;}  // no states < 0, break the loop
         else {*cur_state = *cur_state - 1;}  // goto previous one
         return;  // nothing to do in this function anymore
@@ -227,7 +229,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
                                                 cur_mask,
                                                 mask->mask_size,
                                                 input_data->pat_num);
-    if (v) {arr_1D_uint32_print(cur_mask, mask->mask_size);}
+    if (log_level > 1) {arr_1D_uint32_print(cur_mask, mask->mask_size);}
     
     // initiate next compares and initiate actual number
     uint32_t allocated_ =  input_data->dir_pat_num * 2;
@@ -292,13 +294,13 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
         // return mask back
         cur_mask[p_num] -= change;
     }
-    verbose("# Possible %u moves out of %u allocated\n", moves_count, allocated_);
+    verbose(2, "# Possible %u moves out of %u allocated\n", moves_count, allocated_);
     free(init_z_dist);  // we don't need this array anymore
     *cur_state += 1;
 
     if (moves_count == 0){
         // no moves possible -> go back
-        verbose("***Nothing found, go back\n");
+        verbose(3, "***Nothing found, go back\n");
         if (*cur_state == 0){*end = true;}
         else {*cur_state = *cur_state - 1;}  // goto previous one
         return;  // nothing to do in this function anymore
@@ -321,11 +323,12 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
     // find out whether we have the answer already
     uint32_t ones_cov = input_data->act_col_num - next_compares[0].min_zeros;
     if (ones_cov > *m_c_f) {*m_c_f = ones_cov;}  // update max reached val
-    verbose("# Ones coverage: %u; Zeros: %u\n", ones_cov, next_compares[0].min_zeros);
+    verbose(2, "# Ones coverage: %u; Zeros: %u; State num %u\n",
+            ones_cov, next_compares[0].min_zeros, *cur_state);
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     if (already_ans_true){
         // we have an answer -> so break execution
-        verbose("# Answer branch 5\n");
+        verbose(1, "# Answer branch 5\n");
         *end = true;
         *res = true;
         return;
@@ -352,7 +355,7 @@ Input_data *input_data, Pattern *patterns)
     bool res = false;  // default answer
     // uint32_t states_num = input_data->act_col_num * _MOVES_MULT;
     uint32_t steps_num = input_data->act_col_num * _MOVES_MULT;
-    verbose("# Search depth %u\n", steps_num);
+    verbose(2, "# Search depth %u\n", steps_num);
     Mask_memory mask_memory;
     mask_memory.arrs_num = 0;
     uint32_t mask_size = (input_data->dir_pat_num + 1);
@@ -396,12 +399,12 @@ Input_data *input_data, Pattern *patterns)
         zero_mask[p_num] = 0;
         free(zeros_dist);
     }
-    verbose("# Found %u initial moves\n", i_moves_count);
+    verbose(2, "# Found %u initial moves\n", i_moves_count);
     if (i_moves_count == 0){
         free(initial_moves);
         free(init_compares);
-        verbose("# Answer branch 4\n");
-        verbose("# Cannot find initial move\n");
+        verbose(1, "# Answer branch 4\n");
+        verbose(1, "# Cannot find initial move\n");
         return false;
     }
 
@@ -415,7 +418,7 @@ Input_data *input_data, Pattern *patterns)
 
     uint32_t ones_cov = input_data->act_col_num - init_compares[0].min_zeros;
     uint32_t states_num = input_data->to_cover;  // don't need any more
-    verbose("# Allocated %u states\n", states_num);
+    verbose(1, "# Allocated %u states\n", states_num);
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     bool already_ans_false = (init_compares[0].min_zeros_delta == 1);
     assert(!(already_ans_false && already_ans_true));  // should never happen that both are true
@@ -439,11 +442,11 @@ Input_data *input_data, Pattern *patterns)
         //     free(states[i].moves);
         // }
         // free(states);
-        verbose("# Answer branch 4\n");
+        verbose(1, "# Answer branch 4\n");
         if (already_ans_true){
             return true;
         } else {
-            verbose("# Cannot make the first move\n");
+            verbose(1, "# Cannot make the first move\n");
             return false;
         }
     }
@@ -462,7 +465,7 @@ Input_data *input_data, Pattern *patterns)
 
     states[0].pat_mask = traverse__mask_copy(zero_mask, mask_size);
     // so now we have a cutoff and can write the initial array
-    verbose("# Initial cutoff is: %u\n", cutoff);
+    verbose(2, "# Initial cutoff is: %u\n", cutoff);
     init_compares = (Z_compare*)realloc(init_compares, cutoff * sizeof(Z_compare));
     qsort(init_compares, cutoff, sizeof(Z_compare), Z_comp_order);
 
@@ -490,17 +493,17 @@ Input_data *input_data, Pattern *patterns)
     uint32_t max_cov_found = 0;
 
     // main loop
-    verbose("# Started search loop.\n");
+    verbose(1, "# Started search loop.\n");
     for (uint32_t step = 0; step < steps_num; ++step)
     {
-        verbose("# Step num %u / %u\n", step, states_num - 1);
+        verbose(2, "# Step num %u / %u\n", step + 1, steps_num);
         __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data,
                          patterns, &max_cov_found, &mask_memory);
         if (end){break;}  // interrupt if something is bad
     }
 
     if (!res){
-        verbose("Maximal coverage found is %u / %u\n", max_cov_found, input_data->to_cover);
+        verbose(1, "Maximal coverage found is %u / %u\n", max_cov_found, input_data->to_cover);
     }
     free(init_compares);
     free(initial_moves);
@@ -510,6 +513,6 @@ Input_data *input_data, Pattern *patterns)
     }
 
     free(states);
-    verbose("# Freed traverse data\n");
+    verbose(2, "# Freed traverse data\n");
     return res;
 }

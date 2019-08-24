@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Just run tests to make sure that everything works
+
 printf "Started BDCSP tests\n"
 
 declare -a arr=("make clean"

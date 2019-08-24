@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # repeat datasets for evaluation
+
 ./generate_input.py clean
 
 mydir="${0%/*}"

@@ -3,6 +3,7 @@
 ./generate_input.py clean
 
 mydir="${0%/*}"
+gen_in="$mydir/../generate_input.py"
 # tune this
 str_lens=(100 100 500 500)
 str_nums=(25 50 175 250)
@@ -25,7 +26,7 @@ do
         raw_k="${raw_ks[$k_]}"
         this_k=$(($raw_k * mul))
         d_name="test_${str_len}_${str_num}_${this_k}"
-        cmd="${0%/*}/../generate_input.py $str_len $str_num $this_k $repl $d_name"
+        cmd="$gen_in $str_len $str_num $this_k $repl $d_name"
         # echo $cmd
         eval $cmd
     done

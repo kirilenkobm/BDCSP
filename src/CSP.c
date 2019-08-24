@@ -28,7 +28,6 @@
 
 
 bool v = false;
-bool vv = false;
 
 
 // in support for free_all func
@@ -55,7 +54,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-p]: show patterns\n");
     fprintf(stderr, "[-nr]: you promise there are no repetative strings (not recommended) =)\n");
     fprintf(stderr, "[-r]: render initial state (not recommended on big datasets)\n");
-    fprintf(stderr, "[-vv]: extended verbose messages)\n");
+    fprintf(stderr, "[-f]: optimize first line)\n");
     exit(1);
 }
 
@@ -150,8 +149,10 @@ int main(int argc, char ** argv)
     read_input__opt_args(argc, argv, &input_data);
     v = input_data.v;
     read_input__main_args(argv, &input_data);
-    read_input__prepare_data(&input_data);
 
+    if (input_data.optimize_f_line){
+        read_input__prepare_data(&input_data);
+    }
     // set defaults to (potentially) allocated stuff
     allocated.input_arr = input_data.in_arr;
     allocated.str_num = input_data.str_num;

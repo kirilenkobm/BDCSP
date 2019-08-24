@@ -28,7 +28,6 @@
 
 #define _MOVES_MULT 1
 extern bool v;
-extern bool vv;
 
 
 typedef struct{

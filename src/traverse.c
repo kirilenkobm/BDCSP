@@ -257,7 +257,6 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
         is_in_memory = __is_in_memory(mask_memory, cur_mask, mask->mask_size);
         if (is_in_states || is_in_memory){
             // repeats are not allowed
-            verbose("***skip repeating step\n");
             cur_mask[p_num] -= change;
             continue;
         }
@@ -351,26 +350,14 @@ bool traverse__run
 Input_data *input_data, Pattern *patterns)
 {
     bool res = false;  // default answer
-    uint32_t states_num = input_data->act_col_num * _MOVES_MULT;
-    verbose("# Search depth %u\n", states_num);
+    // uint32_t states_num = input_data->act_col_num * _MOVES_MULT;
+    uint32_t steps_num = input_data->act_col_num * _MOVES_MULT;
+    verbose("# Search depth %u\n", steps_num);
     Mask_memory mask_memory;
-    mask_memory.arrays = (uint32_t**)malloc((states_num + 1) * sizeof(uint32_t*));
     mask_memory.arrs_num = 0;
-    State *states = (State*)malloc((states_num + 1) * sizeof(State));
     uint32_t mask_size = (input_data->dir_pat_num + 1);
 
-    // initiate states with default values
-    for (uint32_t i = 1; i < states_num; ++i)
-    {
-        states[i].pat_mask = NULL;
-        states[i].moves = NULL;
-        states[i].moves_num = 0;
-        states[i].cur_move = 0;
-        states[i].prev_pat = 0;
-        states[i].prev_p_sign = zero;
-    }
 
-    states[0].pat_mask = traverse__mask_copy(zero_mask, mask_size);
     // states[0].moves = NULL;
 
     // initiate moves, only + moves available
@@ -413,11 +400,6 @@ Input_data *input_data, Pattern *patterns)
     if (i_moves_count == 0){
         free(initial_moves);
         free(init_compares);
-        for (uint32_t i = 0; i < states_num; ++i){
-            free(states[i].pat_mask);
-            free(states[i].moves);
-        }
-        free(states);
         verbose("# Answer branch 4\n");
         verbose("# Cannot find initial move\n");
         return false;
@@ -432,6 +414,8 @@ Input_data *input_data, Pattern *patterns)
     // bool found = false;
 
     uint32_t ones_cov = input_data->act_col_num - init_compares[0].min_zeros;
+    uint32_t states_num = input_data->to_cover;  // don't need any more
+    verbose("# Allocated %u states\n", states_num);
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     bool already_ans_false = (init_compares[0].min_zeros_delta == 1);
     assert(!(already_ans_false && already_ans_true));  // should never happen that both are true
@@ -450,11 +434,11 @@ Input_data *input_data, Pattern *patterns)
         // we have an answer already
         free(initial_moves);
         free(init_compares);
-        for (uint32_t i = 0; i < states_num; ++i){
-            free(states[i].pat_mask);
-            free(states[i].moves);
-        }
-        free(states);
+        // for (uint32_t i = 0; i < states_num; ++i){
+        //     free(states[i].pat_mask);
+        //     free(states[i].moves);
+        // }
+        // free(states);
         verbose("# Answer branch 4\n");
         if (already_ans_true){
             return true;
@@ -463,6 +447,20 @@ Input_data *input_data, Pattern *patterns)
             return false;
         }
     }
+
+    State *states = (State*)malloc((states_num + 1) * sizeof(State));
+    mask_memory.arrays = (uint32_t**)malloc((states_num + 1) * sizeof(uint32_t*));
+    for (uint32_t i = 1; i < states_num; ++i)
+    {
+        states[i].pat_mask = NULL;
+        states[i].moves = NULL;
+        states[i].moves_num = 0;
+        states[i].cur_move = 0;
+        states[i].prev_pat = 0;
+        states[i].prev_p_sign = zero;
+    }
+
+    states[0].pat_mask = traverse__mask_copy(zero_mask, mask_size);
     // so now we have a cutoff and can write the initial array
     verbose("# Initial cutoff is: %u\n", cutoff);
     init_compares = (Z_compare*)realloc(init_compares, cutoff * sizeof(Z_compare));
@@ -480,7 +478,6 @@ Input_data *input_data, Pattern *patterns)
 
     // finally create initial state
     states[0].moves = filt_moves;
-    // if (v) {for (uint32_t i = 0; i < cutoff; ++i){__print_move(&filt_moves[i]);}}
     states[0].moves_num = cutoff;
     states[0].cur_move = 0;
     
@@ -494,7 +491,7 @@ Input_data *input_data, Pattern *patterns)
 
     // main loop
     verbose("# Started search loop.\n");
-    for (uint32_t step = 0; step < states_num; ++step)
+    for (uint32_t step = 0; step < steps_num; ++step)
     {
         verbose("# Step num %u / %u\n", step, states_num - 1);
         __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data,

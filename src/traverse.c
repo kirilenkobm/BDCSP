@@ -543,7 +543,7 @@ Input_data *input_data, Pattern *patterns)
                               input_data->act_col_num);
         // arr_2D_uint8_print(final_render, input_data->str_num, input_data->act_col_num);
         render__free_render(final_render, input_data->str_num);
-        verbose(1, "Final render saved\n");
+        // verbose(1, "Final render saved\n");
     }
     free(init_compares);
     free(initial_moves);

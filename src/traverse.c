@@ -27,7 +27,7 @@
 #define MOVES_STEP 10
 
 #define MEM_CHUNK 5
-#define _MOVES_MULT 1
+#define _MOVES_MULT 1000
 
 extern uint8_t log_level;
 
@@ -48,7 +48,7 @@ int compare_Z_compares(const void *a, const void *b)
     // maybe something else is different
     if (ia->minus_ > ib->minus_){return -1;}
     else if (ia->minus_ < ib->minus_){return 1;}
-    return 0;  // the same for nom
+    return 0;  // the same for now
 }
 
 

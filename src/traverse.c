@@ -27,7 +27,7 @@
 #define MOVES_STEP 10
 
 #define MEM_CHUNK 5
-#define _MOVES_MULT 1000
+#define _MOVES_MULT 1
 
 extern uint8_t log_level;
 
@@ -301,6 +301,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
     init_z_dist = NULL;
     *cur_state += 1;
 
+    // if nothing found -> skip iteration
     if (moves_count == 0){
         // no moves possible -> go back
         verbose(3, "***Nothing found, go back\n");
@@ -314,7 +315,21 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
     }
     // sort to get best ones, sort moves correspondingly
     qsort(next_compares, allocated_, sizeof(Z_compare), compare_Z_compares);
+
+    // now left the best combinations only
+    uint32_t cutoff = allocated_;
+    for (uint32_t i = 1; i < allocated_; ++i){
+        if (compare_Z_compares(&next_compares[i], &next_compares[i - 1]) == 1){
+            cutoff = i;
+            break;
+        }
+    }
+
+    allocated_ = cutoff;
+    verbose(3, "Cutoff: %u\n", cutoff);
+    next_compares = (Z_compare*)realloc(next_compares, sizeof(Z_compare) * allocated_);
     Move *sort_moves = (Move*)malloc(allocated_ * sizeof(Move));
+
     uint32_t move_id = 0;
     for (uint32_t i = 0; i < allocated_; ++i){
         move_id = next_compares[i].assign_to_move;

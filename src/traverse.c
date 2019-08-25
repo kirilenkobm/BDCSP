@@ -506,6 +506,20 @@ Input_data *input_data, Pattern *patterns)
     if (!res){
         verbose(1, "Maximal coverage found is %u / %u\n", max_cov_found, input_data->to_cover);
     }
+    // if init render write was requested
+    if (input_data->save_render)
+    {
+        // if false -> final one is written, otherwise cur_state - 1;
+        uint32_t get_state = (res) ? cur_state - 1 : cur_state;
+        uint8_t **final_render = render__draw(patterns, states[get_state].pat_mask, input_data);
+        render__write_to_file(input_data->save_render_to,
+                              final_render,
+                              input_data->str_num,
+                              input_data->act_col_num);
+        // arr_2D_uint8_print(final_render, input_data->str_num, input_data->act_col_num);
+        render__free_render(final_render, input_data->str_num);
+        verbose(1, "Final render saved\n");
+    }
     free(init_compares);
     free(initial_moves);
     for (uint32_t i = 0; i < states_num; ++i){

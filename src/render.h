@@ -33,4 +33,6 @@ uint32_t render__get_min_zeros_amount(uint8_t **init_render_data, uint32_t rows,
 
 void render__free_render(uint8_t **arr, uint32_t depth);
 
+void render__write_to_file(char *filename, uint8_t **render, uint32_t rows, uint32_t cols);
+
 #endif // !RENDER_H

@@ -67,6 +67,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-r]: render initial state (not recommended on big datasets)\n");
     fprintf(stderr, "[-f]: optimize first line)\n");
     fprintf(stderr, "[-s]: sanity checks, just check the input correctness and quit\n");
+    fprintf(stderr, "[-sr]: <string> save final render to file\n");
     exit(1);
 }
 

@@ -107,3 +107,16 @@ void render__free_render(uint8_t **arr, uint32_t depth)
     for (uint32_t i = 0; i < depth; ++i){free(arr[i]);}
     free(arr);
 }
+
+void render__write_to_file(char *filename, uint8_t **render, uint32_t rows, uint32_t cols)
+{
+    FILE *f;
+    f = fopen(filename, "w");
+    for (uint32_t row = 0; row < rows; ++row){
+        for (uint32_t col = 0; col < cols; ++col){
+            fprintf(f, "%d", render[row][col]);
+        }
+        fprintf(f, "\n");
+    }
+    fclose(f);
+}

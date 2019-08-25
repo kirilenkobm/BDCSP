@@ -30,6 +30,7 @@ typedef struct
     uint32_t times;
     uint32_t reverses;
     uint32_t size;
+    bool is_zero;
 } Pattern;
 
 

@@ -34,6 +34,8 @@ typedef struct
     uint32_t act_col_num;
     uint32_t level_size;
     uint8_t log_level;
+    char *save_render_to;
+    bool save_render;
     bool optimize_f_line;
     bool show_patterns;
     bool no_repeats;

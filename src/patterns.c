@@ -92,6 +92,7 @@ int compare_patterns(const void *a, const void *b)
 { 
     Pattern *ia = (Pattern *)a;
     Pattern *ib = (Pattern *)b;
+
     if (ib->size > ia->size){return 1;}
     else if (ia->size > ib->size){return -1;}
     else {return diff_as_numbers(ib->pattern, ia->pattern);}
@@ -111,6 +112,7 @@ Pattern *get_patterns(Input_data *input_data)
         patterns[i].pattern = (uint8_t*)calloc(input_data->str_num + 1, sizeof(uint8_t));
         patterns[i].times = 0;
         patterns[i].size = 0;
+        patterns[i].is_zero = false;
     }
     // go over the columns
     for (uint32_t col_num = 0; col_num < input_data->str_len; ++col_num){
@@ -152,6 +154,7 @@ Pattern *get_patterns(Input_data *input_data)
     for (uint32_t i = 0; i < input_data->str_num; ++i){patterns[extracted_patterns].pattern[i] = 1;}
     patterns[extracted_patterns].size = input_data->str_num;
     patterns[extracted_patterns].times = 0;
+    patterns[extracted_patterns].is_zero = true;
     ++extracted_patterns;
     if (extracted_patterns > (UINT32_MAX / 2)) {
         fprintf(stderr, "Overflow error. Number of patterns > UINT32_MAX\n");
@@ -175,6 +178,7 @@ Pattern *get_patterns(Input_data *input_data)
         patterns[minus_i].reverses = patterns[i].times;
         patterns[minus_i].size = input_data->str_num - patterns[i].size;
         patterns[minus_i].pattern = (uint8_t*)calloc(input_data->str_num + 1, sizeof(uint8_t));
+        patterns[minus_i].is_zero = false;
         for (uint32_t j = 0; j < input_data->str_num; ++j){
             patterns[minus_i].pattern[j] = patterns[i].pattern[j];
         }

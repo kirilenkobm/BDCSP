@@ -339,6 +339,8 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
     input_data->show_version = false;
     input_data->log_level = 0;
     input_data->sanity_check = false;
+    input_data->save_render = false;
+    input_data->save_render_to = NULL;
 
     if (strcmp(argv[1], "-h") == 0) {
         input_data->show_help = true;
@@ -352,7 +354,7 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
     while (argv[op] && op < argc)
     {
         if (strcmp(argv[op], "-v") == 0){
-            // enable verbose
+            // enable verbose, also need to read required verbosity level
             ++op;
             if (op == argc) {
                 // if the last arg
@@ -372,6 +374,27 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
             } else if (input_data->log_level == 0){
                 fprintf(stderr, "Warning, -v = 0 has no effect.\n");
             }
+        } else if (strcmp(argv[op], "-sr") == 0){
+            // save final render to...
+            ++op;
+            if (op == argc) {
+                // if the last arg
+                fprintf(stderr, "Warning, --sr option need a value, it was not provided, skipping\n");
+                return;
+            }
+            input_data->save_render = true;
+            input_data->save_render_to = argv[op];
+            // check if file can be written
+            FILE *test_f;
+            test_f = fopen(input_data->save_render_to, "w");
+            if (test_f == NULL) {
+                // file is unavailable
+                fprintf(stderr, "Error! Cannot write to %s\n", input_data->save_render_to);
+                _show_usage_and_quit(argv[0]);
+            }
+            // ok, we can write to this file
+            fclose(test_f);
+
         } else if (strcmp(argv[op], "-p") == 0){
             // show patterns
             input_data->show_patterns = true;

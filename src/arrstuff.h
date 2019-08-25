@@ -26,6 +26,9 @@ bool arr_uint8_all_eq(uint8_t *arr, uint32_t arr_size);
 
 void arr_1D_uint32_print(uint32_t *arr, uint32_t arr_size);
 
+void arr_1D_uint32_copy_from_to
+(uint32_t *to, uint32_t *from, uint32_t size);
+
 void arr_2D_uint8_print(uint8_t **arr, uint32_t rows, uint32_t cols);
 
 #endif

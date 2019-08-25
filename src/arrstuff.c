@@ -49,6 +49,12 @@ uint8_t **arr_2D_uint8_copy(uint8_t **arr, uint32_t arrs_num, uint32_t elem_num)
 }
 
 
+void arr_1D_uint32_copy_from_to
+(uint32_t *to, uint32_t *from, uint32_t size)
+{
+    for (uint32_t i = 0; i < size; ++i){to[i] = from[i];}
+}
+
 // swap rows in uint8_t array
 void arr_2D_uint8_swap_lines(uint8_t **arr, uint32_t one, uint32_t two)
 {

@@ -274,6 +274,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
         // if move makes everything worse -> skip it
         if (compare.min_zeros_delta >= 0){
             free(zeros_dist);
+            zeros_dist = NULL;
             cur_mask[p_num] -= change;
             continue;
         }
@@ -291,11 +292,13 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
 
         ++moves_count;
         free(zeros_dist);
+        zeros_dist = NULL;
         // return mask back
         cur_mask[p_num] -= change;
     }
     verbose(2, "# Possible %u moves out of %u allocated\n", moves_count, allocated_);
     free(init_z_dist);  // we don't need this array anymore
+    init_z_dist = NULL;
     *cur_state += 1;
 
     if (moves_count == 0){
@@ -311,7 +314,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
     }
     // sort to get best ones, sort moves correspondingly
     qsort(next_compares, allocated_, sizeof(Z_compare), compare_Z_compares);
-    Move *sort_moves = (Move*)malloc(allocated_ * sizeof(Move*));
+    Move *sort_moves = (Move*)malloc(allocated_ * sizeof(Move));
     uint32_t move_id = 0;
     for (uint32_t i = 0; i < allocated_; ++i){
         move_id = next_compares[i].assign_to_move;
@@ -319,6 +322,7 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
         sort_moves[i].size = next_moves[move_id].size;
     }
     free(next_moves);
+    next_moves = NULL;
 
     // find out whether we have the answer already
     uint32_t ones_cov = input_data->act_col_num - next_compares[0].min_zeros;
@@ -341,7 +345,6 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
     states[*cur_state].prev_pat = cur_move.pat_id;
     states[*cur_state].cur_move = 0;
     states[*cur_state].prev_p_sign = cur_move.size;
-    // free allocated stuff
 }
 
 
@@ -361,10 +364,9 @@ Input_data *input_data, Pattern *patterns)
     uint32_t mask_size = (input_data->dir_pat_num + 1);
 
 
-    // states[0].moves = NULL;
-
     // initiate moves, only + moves available
     Move *initial_moves = (Move*)malloc(sizeof(Move) * input_data->dir_pat_num);
+    verbose(1, "# Allocated %u initial moves\n", input_data->dir_pat_num);
     Z_compare* init_compares = (Z_compare*)malloc(sizeof(Z_compare) * input_data->dir_pat_num);
     uint32_t i_moves_count = 0;
 
@@ -373,15 +375,16 @@ Input_data *input_data, Pattern *patterns)
     {
         zero_mask[p_num] = 1;
         uint32_t *zeros_dist = traverse_get_z_dist(patterns,
-                                            input_data->str_num,
-                                            zero_mask,
-                                            mask_size,
-                                            input_data->pat_num);
+                                                   input_data->str_num,
+                                                   zero_mask,
+                                                   mask_size,
+                                                   input_data->pat_num);
         // don't check for "possible" because shift=1 possible everywhere
         // orherwise, there is a bug
         Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
         if (compare.min_zeros_delta >= 0){
             free(zeros_dist);
+            zeros_dist = NULL;
             zero_mask[p_num] = 0;
             continue;
         }
@@ -398,6 +401,7 @@ Input_data *input_data, Pattern *patterns)
         // free allocated stuff, return mask to status-quo
         zero_mask[p_num] = 0;
         free(zeros_dist);
+        zeros_dist = NULL;
     }
     verbose(2, "# Found %u initial moves\n", i_moves_count);
     if (i_moves_count == 0){
@@ -417,7 +421,8 @@ Input_data *input_data, Pattern *patterns)
     // bool found = false;
 
     uint32_t ones_cov = input_data->act_col_num - init_compares[0].min_zeros;
-    uint32_t states_num = input_data->to_cover;  // don't need any more
+    // uint32_t states_num = input_data->to_cover;  // don't need any more
+    uint32_t states_num = steps_num; // don't need any more
     verbose(1, "# Allocated %u states\n", states_num);
     bool already_ans_true = (ones_cov >= input_data->to_cover);
     bool already_ans_false = (init_compares[0].min_zeros_delta == 1);
@@ -437,11 +442,7 @@ Input_data *input_data, Pattern *patterns)
         // we have an answer already
         free(initial_moves);
         free(init_compares);
-        // for (uint32_t i = 0; i < states_num; ++i){
-        //     free(states[i].pat_mask);
-        //     free(states[i].moves);
-        // }
-        // free(states);
+
         verbose(1, "# Answer branch 4\n");
         if (already_ans_true){
             return true;
@@ -511,7 +512,6 @@ Input_data *input_data, Pattern *patterns)
         free(states[i].pat_mask);
         free(states[i].moves);
     }
-
     free(states);
     verbose(2, "# Freed traverse data\n");
     return res;

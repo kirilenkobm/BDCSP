@@ -92,9 +92,9 @@ int compare_patterns(const void *a, const void *b)
 { 
     Pattern *ia = (Pattern *)a;
     Pattern *ib = (Pattern *)b;
-    if (ib->size > ia->size){return -1;}
-    else if (ia->size > ib->size){return 1;}
-    else {return diff_as_numbers(ia->pattern, ib->pattern);}
+    if (ib->size > ia->size){return 1;}
+    else if (ia->size > ib->size){return -1;}
+    else {return diff_as_numbers(ib->pattern, ia->pattern);}
 }
 
 

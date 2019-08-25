@@ -62,9 +62,6 @@ def main():
     args = parse_args()
     ones_num = int(args.H * args.ones_fraction)
     zeros_num = args.H - ones_num
-    # TODO: actually is not very floating-point errors resistsant
-    origin_str = [1 for _ in range(ones_num)] + [0 for _ in range(zeros_num)]
-    np.random.shuffle(origin_str)
     dataset_in_dir = os.path.join(INPUT_FILES_DIR, args.dataset_name)
     os.mkdir(dataset_in_dir) if not os.path.isdir(dataset_in_dir) else None
     dataset_ans_file = os.path.join(ANSWER_FILES_DIR, "{}.ans.txt".format(args.dataset_name))
@@ -80,7 +77,10 @@ def main():
         ans_buff.write("# Sample_num={}\n".format(samlpe_num))
         h_dists = []
         sample_strings = []
-        for i_num in range(args.W):
+        origin_str = [1 for _ in range(ones_num)] + [0 for _ in range(zeros_num)]
+        np.random.shuffle(origin_str)
+
+        for _ in range(args.W):
             rand_ind = np.random.choice(ind_set, size=args.k, replace=False)
             alt = origin_str[:]
             for ind in rand_ind:

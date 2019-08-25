@@ -67,7 +67,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-r]: render initial state (not recommended on big datasets)\n");
     fprintf(stderr, "[-f]: optimize first line)\n");
     fprintf(stderr, "[-s]: sanity checks, just check the input correctness and quit\n");
-    fprintf(stderr, "[-sr]: <string> save final render to file\n");
+    fprintf(stderr, "[-sr]/[--sr]: <string> save final render to file\n");
     exit(1);
 }
 
@@ -279,7 +279,7 @@ int main(int argc, char ** argv)
 
     uint32_t cover_left = input_data.to_cover - (input_data.act_col_num - max_zeros);
 
-    verbose(1, "# Initial zeros nums:\n# ");
+    verbose(2, "# Initial zeros nums:\n# ");
     for (uint32_t i = 0; i < input_data.str_num; ++i){verbose(2, "%u ", zeros_nums[i]);}
     verbose(2, "\n");
     verbose(1, "# Max zeros: %u; Left to cover: %u\n", max_zeros, cover_left);

@@ -374,7 +374,7 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
             } else if (input_data->log_level == 0){
                 fprintf(stderr, "Warning, -v = 0 has no effect.\n");
             }
-        } else if (strcmp(argv[op], "-sr") == 0){
+        } else if (strcmp(argv[op], "-sr") == 0 || strcmp(argv[op], "--sr") == 0){
             // save final render to...
             ++op;
             if (op == argc) {

@@ -43,6 +43,23 @@ To run generate_inputs.py and tests.ipynb install requirements first:
 pip install -r requirements.txt
 ```
 
+Program usage:
+
+```txt
+Usage: ./CSP [input file] [k] [-v] [-p]
+[input file]: text file containing input or stdin
+[k]: minimal distance to check, positive integer number
+[-v 0..3]: enable verosity mode, set logging level from 1 to 3, 0 - nothing
+[-h]: show this message
+[-V]: show version
+[-p]: show patterns
+[-nr]: you promise there are no repetative strings (not recommended) =)
+[-r]: render initial state (not recommended on big datasets)
+[-f]: optimize first line)
+[-s]: sanity checks, just check the input correctness and quit
+[-sr]/[--sr]: <filename> save final render to file
+```
+
 ## Contents
 
 - src/ - C source code, the algorithm implementation itself:

@@ -191,7 +191,8 @@ uint32_t *traverse_get_z_dist
 // update program state
 void __upd_prog_state
 (State *states, Masks_data *mask, uint32_t *cur_state, bool *end, bool *res,
-Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_memory)
+Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_memory,
+uint32_t *best_mask)
 {
     // in this case we tried all possible paths for this state
     if (states[*cur_state].moves_num == states[*cur_state].cur_move)
@@ -336,12 +337,21 @@ Input_data *input_data, Pattern *patterns, uint32_t *m_c_f, Mask_memory *mask_me
         sort_moves[i].pat_id = next_moves[move_id].pat_id;
         sort_moves[i].size = next_moves[move_id].size;
     }
-    free(next_moves);
-    next_moves = NULL;
+
 
     // find out whether we have the answer already
     uint32_t ones_cov = input_data->act_col_num - next_compares[0].min_zeros;
-    if (ones_cov > *m_c_f) {*m_c_f = ones_cov;}  // update max reached val
+    if (ones_cov > *m_c_f) {
+        // update max reached val
+        *m_c_f = ones_cov;
+        free(best_mask);
+        best_mask = arr_1D_uint32_copy(cur_mask, mask->mask_size);
+        __apply_move(best_mask, &next_moves[0]);
+    }
+
+    free(next_moves);
+    next_moves = NULL;
+
     verbose(2, "# Ones coverage: %u; Zeros: %u; State num %u\n",
             ones_cov, next_compares[0].min_zeros, *cur_state);
     bool already_ans_true = (ones_cov >= input_data->to_cover);
@@ -509,12 +519,14 @@ Input_data *input_data, Pattern *patterns)
     uint32_t max_cov_found = 0;
 
     // main loop
+    uint32_t *best_mask = (uint32_t*)calloc(mask_size, sizeof(uint32_t));
+
     verbose(1, "# Started search loop.\n");
     for (uint32_t step = 0; step < steps_num; ++step)
     {
         verbose(2, "# Step num %u / %u\n", step + 1, steps_num);
         __upd_prog_state(states, &masks, &cur_state, &end, &res, input_data,
-                         patterns, &max_cov_found, &mask_memory);
+                         patterns, &max_cov_found, &mask_memory, best_mask);
         if (end){break;}  // interrupt if something is bad
     }
 
@@ -525,8 +537,7 @@ Input_data *input_data, Pattern *patterns)
     if (input_data->save_render)
     {
         // if false -> final one is written, otherwise cur_state - 1;
-        uint32_t get_state = (res) ? cur_state - 1 : cur_state;
-        uint8_t **final_render = render__draw(patterns, states[get_state].pat_mask, input_data);
+        uint8_t **final_render = render__draw(patterns, best_mask, input_data);
         render__write_to_file(input_data->save_render_to,
                               final_render,
                               input_data->str_num,
@@ -542,6 +553,7 @@ Input_data *input_data, Pattern *patterns)
         free(states[i].moves);
     }
     free(states);
+    free(best_mask);
     verbose(2, "# Freed traverse data\n");
     return res;
 }

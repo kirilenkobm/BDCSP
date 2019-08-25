@@ -158,6 +158,7 @@ void get_init_density_range
 int main(int argc, char ** argv)
 {
     // read arguments
+    if (argc == 1) {_show_usage_and_quit(argv[0]);}
     Input_data input_data;
     read_input__opt_args(argc, argv, &input_data);
     if (input_data.show_help) {_show_usage_and_quit(argv[0]);}

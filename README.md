@@ -60,6 +60,14 @@ Usage: ./CSP [input file] [k] [-v] [-p]
 [-sr]/[--sr]: <filename> save final render to file
 ```
 
+For better results, add -f option.
+
+For best results, call throw call_for_each_line.py:
+
+```shell
+../call_for_each_line.py [input_file] [k]
+```
+
 ## Contents
 
 - src/ - C source code, the algorithm implementation itself:

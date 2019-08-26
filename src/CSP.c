@@ -63,7 +63,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-h]: show this message\n");
     fprintf(stderr, "[-V]: show version\n");
     fprintf(stderr, "[-p]: show patterns\n");
-    fprintf(stderr, "[-nr]: you promise there are no repetative strings (not recommended) =)\n");
+    fprintf(stderr, "[-nr]/[--nr]: you promise there are no repetative strings (not recommended) =)\n");
     fprintf(stderr, "[-r]: render initial state (not recommended on big datasets)\n");
     fprintf(stderr, "[-f]: optimize first line)\n");
     fprintf(stderr, "[-s]: sanity checks, just check the input correctness and quit\n");

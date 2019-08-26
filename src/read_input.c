@@ -398,7 +398,7 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
         } else if (strcmp(argv[op], "-p") == 0){
             // show patterns
             input_data->show_patterns = true;
-        } else if (strcmp(argv[op], "-nr") == 0){
+        } else if (strcmp(argv[op], "-nr") == 0 || strcmp(argv[op], "--nr") == 0){
             // user promises there are no repeats
             input_data->no_repeats = true;
         } else if (strcmp(argv[op], "-r") == 0){

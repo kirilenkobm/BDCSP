@@ -24,6 +24,8 @@ bool arr_uint32_are_the_same(uint32_t *arr_1, uint32_t *arr_2, uint32_t arr_size
 
 bool arr_uint8_all_eq(uint8_t *arr, uint32_t arr_size);
 
+void arr_1D_uint8_print(uint8_t *arr, uint32_t arr_size);
+
 void arr_1D_uint32_print(uint32_t *arr, uint32_t arr_size);
 
 void arr_1D_uint32_copy_from_to

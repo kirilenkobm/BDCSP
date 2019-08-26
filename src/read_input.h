@@ -43,6 +43,7 @@ typedef struct
     bool show_help;
     bool show_version;
     bool sanity_check;
+    bool average_line;
 } Input_data;
 
 
@@ -62,5 +63,7 @@ void free_in_data(Input_data *input_data, uint32_t line_num);
 void read_input__main_args(char **argv, Input_data *Input_data);
 
 void read_input__opt_args(int argc, char**argv, Input_data *input_data);
+
+uint32_t read_input__get_dist_to_average_line(Input_data *input_data);
 
 #endif  // !READ_INPUT_H

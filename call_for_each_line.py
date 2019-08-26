@@ -46,7 +46,7 @@ def call_for_line(input_data, line_num, k_, tmp_dir, p=False):
     tmp_path = os.path.join(tmp_dir, tmp_filemame)
     with open(tmp_path, "w") as f:
         f.write("\n".join(in_data_copy) + "\n")
-    cmd = "{} {} {} -v 1".format(CSP_BIN, tmp_path, k_)
+    cmd = "{} {} {} -v 1 -a".format(CSP_BIN, tmp_path, k_)
     if p:
         print(cmd)
     result = subprocess.check_output(cmd, shell=True).decode("utf-8")

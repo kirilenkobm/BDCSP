@@ -27,6 +27,16 @@ uint32_t arr_max(uint32_t *arr, uint32_t size)
     return ans;
 }
 
+// max of array
+uint32_t arr_min(uint32_t *arr, uint32_t size)
+{
+    uint32_t ans = UINT32_MAX;
+    for (uint32_t i = 0; i < size; ++i){
+        if (arr[i] < ans){ans = arr[i];}
+    }
+    return ans;
+}
+
 
 // copy 1D array of uint32_t
 uint32_t *arr_1D_uint32_copy(uint32_t *array, uint32_t size)
@@ -91,6 +101,13 @@ bool arr_uint8_all_eq(uint8_t *arr, uint32_t arr_size)
         if (arr[i] != arr[i - 1]){return false;}
     }
     return true;
+}
+
+
+// just print an 1D array
+void arr_1D_uint8_print(uint8_t *arr, uint32_t arr_size){
+    for (uint32_t i = 0; i < arr_size; ++i){printf("%u ", arr[i]);}
+    printf("\n");
 }
 
 

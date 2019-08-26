@@ -341,6 +341,7 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
     input_data->sanity_check = false;
     input_data->save_render = false;
     input_data->save_render_to = NULL;
+    input_data->average_line = false;
 
     if (strcmp(argv[1], "-h") == 0) {
         input_data->show_help = true;
@@ -412,10 +413,55 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
             input_data->show_help = true;
         } else if (strcmp(argv[op], "-s") == 0) {
             input_data->sanity_check = true;
+        } else if (strcmp(argv[op], "-a") == 0) {
+            input_data->average_line = true;
         } else {
             fprintf(stderr, "Ignore unknown parameter %s\n", argv[op]);
             // _show_usage_and_quit(argv[0]);
         }
         ++op;
     }
+}
+
+
+// compute humming distance
+uint32_t __get_h_dist(uint8_t *line_1, uint8_t *line_2, uint32_t len)
+{
+    uint32_t dist = 0;
+    for (uint32_t i = 0; i < len; ++i){
+        if (line_1[i] != line_2[i]){++dist;}
+    }
+    return dist;
+}
+
+// exxtract average line and get K for this line
+uint32_t read_input__get_dist_to_average_line(Input_data *input_data)
+{
+    uint8_t *ave_line = (uint8_t*)calloc(input_data->str_len, sizeof(uint8_t));
+    uint32_t zeros = 0;
+    uint32_t ones = 0;
+    for (uint32_t col_num = 0; col_num < input_data->str_len; ++col_num)
+    {
+        zeros = 0;
+        ones = 0;
+        // count zeros and ones in the column
+        for (uint32_t row_num = 0; row_num < input_data->str_num; ++row_num){
+            if (input_data->in_arr[row_num][col_num] == 0){++zeros;}
+            else {++ones;}
+        }
+        // get average number
+        // if ones == zeros - doesn't really matter
+        ave_line[col_num] = (ones > zeros) ? 1 : 0;
+    }
+    uint32_t *hum_dists = (uint32_t*)calloc(input_data->str_num, sizeof(uint32_t));
+    uint32_t dist = 0;
+    for (uint32_t l_num = 0; l_num < input_data->str_num; ++l_num){
+        dist = __get_h_dist(ave_line, input_data->in_arr[l_num], input_data->str_len);
+        hum_dists[l_num] = dist;
+    }
+    uint32_t ans = arr_max(hum_dists, input_data->str_num);
+    // free allocated
+    free(ave_line);
+    free(hum_dists);
+    return ans;
 }

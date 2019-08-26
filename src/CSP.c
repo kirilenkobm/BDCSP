@@ -59,16 +59,18 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "Usage: %s [input file] [k] [-v] [-p]\n", executable);
     fprintf(stderr, "[input file]: text file containing input or stdin\n");
     fprintf(stderr, "[k]: minimal distance to check, positive integer number\n");
-    fprintf(stderr, "[-v 0..3]: enable verosity mode, set logging level from 1 to 3, 0 - nothing\n");
+    fprintf(stderr, "[-v] <number 0 .. 3>: enable verosity mode, set logging level from 1 to 3, 0 - nothing\n");
     fprintf(stderr, "[-h]: show this message\n");
     fprintf(stderr, "[-V]: show version\n");
     fprintf(stderr, "[-p]: show patterns\n");
     fprintf(stderr, "[-nr]/[--nr]: you promise there are no repetative strings (not recommended) =)\n");
     fprintf(stderr, "[-r]: render initial state (not recommended on big datasets)\n");
-    fprintf(stderr, "[-f]: optimize first line)\n");
+    fprintf(stderr, "[-f]: optimize first line\n");
     fprintf(stderr, "[-s]: sanity checks, just check the input correctness and quit\n");
-    fprintf(stderr, "[-sr]/[--sr]: <string> save final render to file\n");
-    exit(1);
+    fprintf(stderr, "[-sr]/[--sr] <filaname>: save final render to file\n");
+    fprintf(stderr, "[-a]: try to get distance to average line\n");
+    exit(1);    fprintf(stderr, "[-sr]/[--sr] <filaname>: save final render to file\n");
+
 }
 
 
@@ -168,9 +170,6 @@ int main(int argc, char ** argv)
     verbose(1, "# Set verbosity level %d\n", log_level);
     read_input__main_args(argv, &input_data);
 
-    if (input_data.optimize_f_line){
-        read_input__prepare_data(&input_data);
-    }
     // set defaults to (potentially) allocated stuff
     allocated.input_arr = input_data.in_arr;
     allocated.str_num = input_data.str_num;
@@ -181,6 +180,21 @@ int main(int argc, char ** argv)
     allocated.zeros_nums = NULL;
     allocated.zero_mask = NULL;
     allocated.full_mask = NULL;
+
+    // check for average line
+    if (input_data.average_line) {
+        uint32_t ave_k = read_input__get_dist_to_average_line(&input_data);
+        if (ave_k <= input_data.k){
+            verbose(1, "# Answer branch 0\n");
+            printf("The answer is:\nTrue\n");
+            free_all();
+            return 0;
+        }
+    }
+
+    if (input_data.optimize_f_line){
+        read_input__prepare_data(&input_data);
+    }
 
     Pattern *patterns = get_patterns(&input_data);
     if (patterns == NULL){

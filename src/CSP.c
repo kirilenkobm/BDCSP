@@ -69,7 +69,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-s]: sanity checks, just check the input correctness and quit\n");
     fprintf(stderr, "[-sr]/[--sr] <filaname>: save final render to file\n");
     fprintf(stderr, "[-a]: try to get distance to average line\n");
-    exit(1);    fprintf(stderr, "[-sr]/[--sr] <filaname>: save final render to file\n");
+    exit(1);
 
 }
 

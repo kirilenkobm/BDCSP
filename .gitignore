@@ -16,7 +16,7 @@ old_src/
 CSP
 tests/answers/*
 tests/input_files/*
-CSP.dSYM/
+*.dSYM/
 __backup/*
 metrics/temp/
 metrics/.ipynb_checkpoints/

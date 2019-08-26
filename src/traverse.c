@@ -338,7 +338,6 @@ uint32_t *best_mask)
         sort_moves[i].size = next_moves[move_id].size;
     }
 
-    printf("HERE\n");
     // find out whether we have the answer already
     uint32_t ones_cov = input_data->act_col_num - next_compares[0].min_zeros;
     if (ones_cov > *m_c_f) {
@@ -347,7 +346,6 @@ uint32_t *best_mask)
         arr_1D_uint32_copy_from_to(best_mask, cur_mask, mask->mask_size);
         __apply_move(best_mask, &next_moves[0]);
     }
-    printf("THIS\n");
     free(next_moves);
     next_moves = NULL;
 

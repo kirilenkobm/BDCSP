@@ -117,10 +117,16 @@ void get_init_density_range
     bool stop = false;
 
     // compute the lowest density
-    for (uint32_t pat_id = 0; pat_id < input_data->pat_num; ++pat_id){
-        cur_pat_size = patterns[pat_id].size;
+    uint32_t start_go = ((input_data->pat_num - 1 ) / 2) + 1;
+    uint32_t rev_id = 0;
+    // for (uint32_t pat_id = input_data->pat_num - 1; pat_id >0; --pat_id){
+    for (uint32_t pat_id = start_go; pat_id < input_data->pat_num; ++pat_id){
+        // rev_id = input_data->pat_num - 1;
+        cur_pat_size = input_data->str_num - patterns[pat_id].size;
+        printf("Cur pat size %u\n", cur_pat_size);
         cur_pat_times = patterns[pat_id].times;
         unit = input_data->str_num - cur_pat_size + 1;
+        printf("Unit: %u\n", unit);
         for (uint32_t i = 0; i < cur_pat_times; i++){
             if (unit > col_left){
                 stop = true;
@@ -137,7 +143,7 @@ void get_init_density_range
     uint32_t max_size = 0;
     uint64_t max_pat_sum = 0;
     uint32_t max_pat_id = 0;
-    uint32_t rev_id = 0;
+    rev_id = 0;
 
     // then the highest potential density
     for (uint32_t pat_id = 0; pat_id < input_data->pat_num; ++pat_id){

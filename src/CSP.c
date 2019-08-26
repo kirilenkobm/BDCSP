@@ -123,10 +123,8 @@ void get_init_density_range
     for (uint32_t pat_id = start_go; pat_id < input_data->pat_num; ++pat_id){
         // rev_id = input_data->pat_num - 1;
         cur_pat_size = input_data->str_num - patterns[pat_id].size;
-        printf("Cur pat size %u\n", cur_pat_size);
         cur_pat_times = patterns[pat_id].times;
         unit = input_data->str_num - cur_pat_size + 1;
-        printf("Unit: %u\n", unit);
         for (uint32_t i = 0; i < cur_pat_times; i++){
             if (unit > col_left){
                 stop = true;

@@ -14,8 +14,13 @@ Here, I suggest an polynomial approximation for this task with precision measure
 Briefly, the suggested algorithm solves the problem in:
 
 ``` math
-O(str_len^4 * str_num * 2)
+O(W^4 * H^2)
 ```
+
+Where:
+
+- W - string length
+- H - number of strings
 
 in the worst case.
 

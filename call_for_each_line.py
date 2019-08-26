@@ -15,6 +15,7 @@ import random
 MY_DIR = os.path.dirname(__file__)
 CSP_BIN = os.path.join(MY_DIR, "CSP")
 
+
 def parse_args():
     """Read and check args."""
     app = argparse.ArgumentParser()
@@ -52,7 +53,7 @@ def call_for_line(input_data, line_num, k_, tmp_dir, p=False):
     return result
 
 
-def get_k(result_str, k_req):
+def get_k(result_str, k_req, str_len):
     """Get K from the result."""
     res_data = result_str.split("\n")
     ans_ = res_data[-3]
@@ -60,7 +61,7 @@ def get_k(result_str, k_req):
         return k_req
     # False
     if res_data[-5] == "# Cannot find initial move":
-        return k_req + 99999999
+        return str_len
     cov_data = res_data[-5].split()
     exp = int(cov_data[-1])
     real = int(cov_data[-3])
@@ -85,7 +86,7 @@ def main():
                 for l_num in range(str_num)]
     if args.p:
         sys.exit(0)
-    answers = [pool.apply(get_k, args=(r, args.k)) for r in results]
+    answers = [pool.apply(get_k, args=(r, args.k, str_len)) for r in results]
     ans_sort = sorted(answers)
     if ans_sort[0] == args.k:
         print("The answer is:\nTrue")

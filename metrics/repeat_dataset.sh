@@ -3,7 +3,7 @@
 mydir="${0%/*}"
 gen_in="$mydir/../generate_input.py"
 
-./generate_input.py clean
+eval "$gen_in clean"
 # tune this
 str_lens=(100 100 500 500)
 str_nums=(25 50 175 250)
@@ -13,7 +13,7 @@ range=4  # number of subsets
 # maybe this
 raw_ks=(15 25 35 50 75)
 raw_ks_max_i=4
-repl=100  # number of replicates
+repl=50  # number of replicates
 
 for step in `seq 0 $((range - 1))`
 do

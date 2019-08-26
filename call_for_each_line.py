@@ -78,6 +78,7 @@ def main():
     str_lens = set(len(l) for l in lines)
     if len(str_lens) > 1:
         sys.exit("Input must have lines of the same length")
+    str_len = next(iter(str_lens))
     tmp_dir = "TEMP_{}".format(rnd_string())
     os.mkdir(tmp_dir) if not os.path.isdir(tmp_dir) else None
 

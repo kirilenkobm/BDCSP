@@ -14,7 +14,7 @@ Here, I suggest an polynomial approximation for this task with precision measure
 Briefly, the suggested algorithm solves the problem in:
 
 ``` math
-O(N^4)
+O(str_len^4 * str_num * 2)
 ```
 
 in the worst case.

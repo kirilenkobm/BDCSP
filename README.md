@@ -48,6 +48,15 @@ To run generate_inputs.py and tests.ipynb install requirements first:
 pip install -r requirements.txt
 ```
 
+Or, for generating inputs:
+
+```shell
+make rnd
+./generate_input
+```
+
+Will compile random datasets generator in C
+
 Program usage:
 
 ```txt

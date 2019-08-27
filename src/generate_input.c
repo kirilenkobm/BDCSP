@@ -24,7 +24,7 @@
 #endif
 
 #define OPT_NUM 6
-#define MAXCHAR 255
+#define MAXCHAR 512
 
 typedef struct
 {
@@ -37,12 +37,17 @@ typedef struct
 
 struct stat st = {0};
 
+
 // show help and exit
 void _show_usage_and_quit(char * executable)
 {
     fprintf(stderr, "Usage: %s [str_len] [strnum] [k] [replicates_num] [dataset_name]\n", executable);
+    fprintf(stderr, "[str_len] - int < 65536 - string length\n");
+    fprintf(stderr, "[str_num] - int < 65536 - number of strings\n");
+    fprintf(stderr, "[k_] - int < 65536 - distance to the closest string\n");
+    fprintf(stderr, "[replicates_num] - int < 65536 - number of files to produce\n");
+    fprintf(stderr, "[dataset_name] - int < 65536 - dirname for files\n");
     exit(1);
-
 }
 
 
@@ -132,17 +137,20 @@ int main(int argc, char **argv)
     if (argc != 6){_show_usage_and_quit(argv[0]);}
     Input_data input_data;
     __read_input(&input_data, argv);
+
     printf("# Generating input with following parameters:\n");
     printf("# str_len: %u\n", input_data.str_len);
     printf("# str_num: %u\n", input_data.str_num);
     printf("# k_: %u\n", input_data.k_);
     printf("# repl_num: %u\n", input_data.replicates_num);
     printf("# dataset name: %s\n", input_data.dataset_name);
+
     char input_dir[MAXCHAR];
     strcpy(input_dir, "tests/input_files/");
     if (stat(input_dir, &st) == -1) {
         mkdir(input_dir, 0700);
     }
+
     strcat(input_dir, input_data.dataset_name);
     // create input dir if not exists
     if (stat(input_dir, &st) == -1) {
@@ -151,9 +159,7 @@ int main(int argc, char **argv)
     
     uint16_t *indexes = (uint16_t*)malloc(input_data.str_len * sizeof(uint16_t));
     uint16_t *first_k = (uint16_t*)calloc(input_data.k_, sizeof(uint16_t));
-
     for (uint32_t i = 0; i < input_data.str_len; ++i){indexes[i] = i;}
-
 
     for (uint16_t rep_num = 0; rep_num < input_data.replicates_num; ++rep_num)
     // generate replicate
@@ -187,9 +193,12 @@ int main(int argc, char **argv)
         _write_to_file(file_path, strings, input_data.str_num, input_data.str_len);
 
         // TODO: maybe allocate it only once?
+        for (uint16_t i = 0; i < input_data.str_num; ++i){free(strings[i]);}
+        free(strings);
         free(origin_string);
     }
-
+    
+    printf("Generated dataset %s\n", input_data.dataset_name);
     free(indexes);
     free(first_k);
 }

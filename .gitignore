@@ -1,5 +1,10 @@
+# IDE related
 .vscode/
 .idea/
+.DS_Store
+metrics/.DS_Store
+
+# compilator stuff / binaries
 *.so
 *.dll
 *.o
@@ -7,20 +12,28 @@
 *.obj
 *.exp
 *.lib
-__pycache__/
-old_py_replace/
-old_src/
-old/
 *.bc
 *.i
 *.s
 CSP
+*.dSYM/
+generate_input
+
+# python stuff
+__pycache__/
+
+# backups and more
+old_py_replace/
+old_src/
+old/
+__backup/*
+
+# test data
 tests/answers/*
 tests/input_files/*
-*.dSYM/
-__backup/*
+
+# metrics related
 metrics/temp/
 metrics/.ipynb_checkpoints/
-.DS_Store
-metrics/.DS_Store
-generate_input
+metrics/TEMP*
+metrics/_*

@@ -11,6 +11,9 @@
 #include <ctype.h> 
 #include <stdarg.h>
 #include <limits.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #ifdef _WIN32
 #include <io.h>
 #define F_OK 0
@@ -156,6 +159,16 @@ void read_input__main_args(char **argv, Input_data *input_data)
     verbose(1, "# k = %u \n", input_data->k);
 
     // and the input array
+
+    // first check that this is a regular file, not a dir
+    struct stat path_stat;
+    stat(argv[1], &path_stat);
+    if (!S_ISREG(path_stat.st_mode)){
+         fprintf(stderr, "Sorry, but %s is not a regular file, likely a directory.\n", argv[1]);
+        _show_usage_and_quit(argv[0]);       
+    }
+
+    // so read the file then
     FILE *fp = NULL;
     if (strcmp(argv[1], "stdin") == 0) {
         fp = stdin;  // if stdin --> ok

@@ -22,3 +22,4 @@ metrics/temp/
 metrics/.ipynb_checkpoints/
 .DS_Store
 metrics/.DS_Store
+generate_input

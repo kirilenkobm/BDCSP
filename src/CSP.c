@@ -188,6 +188,7 @@ int main(int argc, char ** argv)
     // check for average line
     if (input_data.average_line) {
         uint32_t ave_k = read_input__get_dist_to_average_line(&input_data);
+        verbose(1, "# Average line k = %u\n", ave_k);
         if (ave_k <= input_data.k){
             verbose(1, "# Answer branch 0\n");
             printf("The answer is:\nTrue\n");
@@ -195,7 +196,6 @@ int main(int argc, char ** argv)
             return 0;
         }
     }
-
     if (input_data.optimize_f_line){
         read_input__prepare_data(&input_data);
     }

@@ -3,14 +3,16 @@
 mydir="${0%/*}"
 gen_in="$mydir/generate_input"
 
-if [ $1 == "clean" ];
+# just delete all generated files
+eval "rm -rf tests/input_files/*"
+echo "cleaned"
+
+# make generate_input if not exists
+if [ ! - f generate_input ];
 then
-    eval "rm -rf tests/input_files/*"
-    echo "cleaned"
-    exit 0;
+    eval "make rnd"
 fi
 
-// eval "$gen_in clean"
 # tune this
 str_lens=(100 100 500 500)
 str_nums=(25 50 175 250)

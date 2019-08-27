@@ -10,6 +10,7 @@
 __pycache__/
 old_py_replace/
 old_src/
+old/
 *.bc
 *.i
 *.s

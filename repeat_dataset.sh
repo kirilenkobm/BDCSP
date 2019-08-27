@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 # repeat datasets for evaluation
 mydir="${0%/*}"
-gen_in="$mydir/../generate_input.py"
+gen_in="$mydir/generate_input"
 
-eval "$gen_in clean"
+if [ $1 == "clean" ];
+then
+    eval "rm -rf tests/input_files/*"
+    echo "cleaned"
+    exit 0;
+fi
+
+// eval "$gen_in clean"
 # tune this
 str_lens=(100 100 500 500)
 str_nums=(25 50 175 250)

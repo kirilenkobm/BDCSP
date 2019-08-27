@@ -95,7 +95,6 @@ void _shuffle(uint16_t *arr, uint16_t size)
     uint16_t i;
     uint16_t j;
     uint16_t t;
-    srand(time(NULL));
     for (i = 0; i < size - 1; i++) 
     {
         j = i + rand() / (RAND_MAX / (size - i) + 1);
@@ -135,15 +134,16 @@ void _swap_(uint8_t *num) {*num = 1 - *num;}
 int main(int argc, char **argv)
 {
     if (argc != 6){_show_usage_and_quit(argv[0]);}
+    srand(time(NULL));
     Input_data input_data;
     __read_input(&input_data, argv);
 
-    printf("# Generating input with following parameters:\n");
-    printf("# str_len: %u\n", input_data.str_len);
-    printf("# str_num: %u\n", input_data.str_num);
-    printf("# k_: %u\n", input_data.k_);
-    printf("# repl_num: %u\n", input_data.replicates_num);
-    printf("# dataset name: %s\n", input_data.dataset_name);
+    // printf("# Generating input with following parameters:\n");
+    // printf("# str_len: %u\n", input_data.str_len);
+    // printf("# str_num: %u\n", input_data.str_num);
+    // printf("# k_: %u\n", input_data.k_);
+    // printf("# repl_num: %u\n", input_data.replicates_num);
+    // printf("# dataset name: %s\n", input_data.dataset_name);
 
     char input_dir[MAXCHAR];
     strcpy(input_dir, "tests/input_files/");

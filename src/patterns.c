@@ -44,17 +44,35 @@ uint32_t get_col_size(uint8_t *col, uint32_t size)
 
 
 // main patterns -> the biggest ones
-void __patterns__redefine_patterns(Pattern *patterns, Input_data *in_data)
+void __patterns__redefine_patterns(Pattern *patterns, Input_data *in_data, uint32_t *hum_dists)
 {
     uint32_t split = in_data->pat_num / 2;
     uint32_t rev_id = 0;
+    uint32_t d_sum = 0;
+    uint32_t r_sum = 0;
+
     for (uint32_t dir_id = 1; dir_id <= split; ++dir_id)
     {
         rev_id = in_data->pat_num - dir_id;
-        if (patterns[dir_id].size > patterns[rev_id].size) {continue;}
-        // ok, need to swap bith
-        invert_pattern(patterns[dir_id].pattern, in_data->str_num);
-        invert_pattern(patterns[rev_id].pattern, in_data->str_num);
+        d_sum = 0;
+        r_sum = 0;
+        // get sum for each
+        for (uint32_t i = 0; i < in_data->str_num; ++i){
+            if (patterns[dir_id].pattern[0] == 1) {d_sum += hum_dists[i];}
+            else {r_sum += hum_dists[i];}
+        }
+        if (d_sum >= r_sum) {
+            for (uint32_t i = 0; i < in_data->str_num; ++i){
+                if (patterns[dir_id].pattern[i] == 1) {--hum_dists[i];}
+            }
+        } else {
+            for (uint32_t i = 0; i < in_data->str_num; ++i){
+                if (patterns[rev_id].pattern[i] == 1) {--hum_dists[i];}
+            }
+            // ok, need to swap
+            invert_pattern(patterns[dir_id].pattern, in_data->str_num);
+            invert_pattern(patterns[rev_id].pattern, in_data->str_num);
+        }
     }
 }
 

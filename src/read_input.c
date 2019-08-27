@@ -456,7 +456,7 @@ int __comp_uint32(const void *a, const void *b)
 
 
 // exxtract average line and get K for this line
-uint32_t read_input__get_dist_to_average_line(Input_data *input_data)
+uint32_t read_input__get_dist_to_average_line(Input_data *input_data, uint32_t *hum_dists)
 {
     uint8_t *ave_line = (uint8_t*)calloc(input_data->str_len, sizeof(uint8_t));
     uint32_t zeros = 0;
@@ -474,7 +474,6 @@ uint32_t read_input__get_dist_to_average_line(Input_data *input_data)
         // if ones == zeros - doesn't really matter
         ave_line[col_num] = (ones > zeros) ? 1 : 0;
     }
-    uint32_t *hum_dists = (uint32_t*)calloc(input_data->str_num, sizeof(uint32_t));
     uint32_t dist = 0;
     for (uint32_t l_num = 0; l_num < input_data->str_num; ++l_num){
         dist = __get_h_dist(ave_line, input_data->in_arr[l_num], input_data->str_len);
@@ -489,6 +488,6 @@ uint32_t read_input__get_dist_to_average_line(Input_data *input_data)
     // free allocated
     uint32_t ans = max_1 - (m_delta / 2);
     free(ave_line);
-    free(hum_dists);
+    // free(hum_dists);
     return ans;
 }

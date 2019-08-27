@@ -450,6 +450,7 @@ Input_data *input_data, Pattern *patterns)
     bool already_ans_false = (init_compares[0].min_zeros_delta == 1);
     assert(!(already_ans_false && already_ans_true));  // should never happen that both are true
     uint32_t cutoff = i_moves_count;
+
     if (!already_ans_true && !already_ans_false)
     {
         for (uint32_t i = 0; i < i_moves_count; ++i){

@@ -42,6 +42,7 @@ struct allocated_data{
     uint32_t *zeros_nums;
     uint32_t *zero_mask;
     uint32_t *full_mask;
+    uint32_t *hum_dist_to_ave;
 } allocated;
 
 
@@ -99,6 +100,7 @@ void free_all()
 
     render__free_render(allocated.init_render_data, allocated.init_r_data_depth);
 
+    free(allocated.hum_dist_to_ave);
     free(allocated.zeros_nums);
     free(allocated.zero_mask);
     free(allocated.full_mask);
@@ -183,9 +185,13 @@ int main(int argc, char ** argv)
     allocated.zeros_nums = NULL;
     allocated.zero_mask = NULL;
     allocated.full_mask = NULL;
+    allocated.hum_dist_to_ave = NULL;
 
     // check for average line
-    uint32_t ave_k = read_input__get_dist_to_average_line(&input_data);
+    uint32_t *hum_dists = (uint32_t*)calloc(input_data.str_num, sizeof(uint32_t));
+    uint32_t ave_k = read_input__get_dist_to_average_line(&input_data, hum_dists);
+    allocated.hum_dist_to_ave = hum_dists;
+
     verbose(1, "# Average line k = %u\n", ave_k);
     if (ave_k <= input_data.k){
         verbose(1, "# Answer branch 0\n");
@@ -255,7 +261,7 @@ int main(int argc, char ** argv)
     }
 
     // help the program a bit
-    // __patterns__redefine_patterns(patterns, &input_data);
+    __patterns__redefine_patterns(patterns, &input_data, hum_dists);
 
     // not so obvious case, get intersection data first
     uint32_t *zero_mask = (uint32_t*)calloc(input_data.dir_pat_num + 1, sizeof(uint32_t));

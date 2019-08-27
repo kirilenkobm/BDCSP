@@ -63,6 +63,6 @@ void read_input__main_args(char **argv, Input_data *Input_data);
 
 void read_input__opt_args(int argc, char**argv, Input_data *input_data);
 
-uint32_t read_input__get_dist_to_average_line(Input_data *input_data);
+uint32_t read_input__get_dist_to_average_line(Input_data *input_data, uint32_t *hum_dists);
 
 #endif  // !READ_INPUT_H

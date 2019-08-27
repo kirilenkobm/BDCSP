@@ -43,6 +43,21 @@ uint32_t get_col_size(uint8_t *col, uint32_t size)
 }
 
 
+// main patterns -> the biggest ones
+void __patterns__redefine_patterns(Pattern *patterns, Input_data *in_data)
+{
+    uint32_t split = in_data->pat_num / 2;
+    uint32_t rev_id = 0;
+    for (uint32_t dir_id = 1; dir_id <= split; ++dir_id)
+    {
+        rev_id = in_data->pat_num - dir_id;
+        if (patterns[dir_id].size > patterns[rev_id].size) {continue;}
+        // ok, need to swap bith
+        invert_pattern(patterns[dir_id].pattern, in_data->str_num);
+        invert_pattern(patterns[rev_id].pattern, in_data->str_num);
+    }
+}
+
 // check if the pattern was already added
 void is_it_in
 (Pattern *patterns, uint8_t *column, uint32_t col_size, bool *is_in,

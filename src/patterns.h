@@ -53,6 +53,8 @@ void invert_pattern(uint8_t *pattern, uint32_t size);
 
 uint32_t get_col_size(uint8_t *col, uint32_t size);
 
+void __patterns__redefine_patterns(Pattern *patterns, Input_data *in_data);
+
 void is_it_in(Pattern *patterns, uint8_t *column, uint32_t col_size, bool *is_in,
               uint32_t *ind_if_in, uint32_t extracted_num, uint32_t pat_size);
 

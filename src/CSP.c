@@ -68,7 +68,6 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-f]: optimize first line\n");
     fprintf(stderr, "[-s]: sanity checks, just check the input correctness and quit\n");
     fprintf(stderr, "[-sr]/[--sr] <filaname>: save final render to file\n");
-    fprintf(stderr, "[-a]: try to get distance to average line\n");
     exit(1);
 
 }
@@ -186,16 +185,15 @@ int main(int argc, char ** argv)
     allocated.full_mask = NULL;
 
     // check for average line
-    if (input_data.average_line) {
-        uint32_t ave_k = read_input__get_dist_to_average_line(&input_data);
-        verbose(1, "# Average line k = %u\n", ave_k);
-        if (ave_k <= input_data.k){
-            verbose(1, "# Answer branch 0\n");
-            printf("The answer is:\nTrue\n");
-            free_all();
-            return 0;
-        }
+    uint32_t ave_k = read_input__get_dist_to_average_line(&input_data);
+    verbose(1, "# Average line k = %u\n", ave_k);
+    if (ave_k <= input_data.k){
+        verbose(1, "# Answer branch 0\n");
+        printf("The answer is:\nTrue\n");
+        free_all();
+        return 0;
     }
+
     if (input_data.optimize_f_line){
         read_input__prepare_data(&input_data);
     }
@@ -255,6 +253,9 @@ int main(int argc, char ** argv)
         free_all();
         return 0;
     }
+
+    // help the program a bit
+    // __patterns__redefine_patterns(patterns, &input_data);
 
     // not so obvious case, get intersection data first
     uint32_t *zero_mask = (uint32_t*)calloc(input_data.dir_pat_num + 1, sizeof(uint32_t));

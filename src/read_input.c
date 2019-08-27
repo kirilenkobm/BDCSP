@@ -341,7 +341,6 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
     input_data->sanity_check = false;
     input_data->save_render = false;
     input_data->save_render_to = NULL;
-    input_data->average_line = false;
 
     if (strcmp(argv[1], "-h") == 0) {
         input_data->show_help = true;
@@ -413,8 +412,6 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
             input_data->show_help = true;
         } else if (strcmp(argv[op], "-s") == 0) {
             input_data->sanity_check = true;
-        } else if (strcmp(argv[op], "-a") == 0) {
-            input_data->average_line = true;
         } else {
             fprintf(stderr, "Ignore unknown parameter %s\n", argv[op]);
             // _show_usage_and_quit(argv[0]);

@@ -43,7 +43,6 @@ typedef struct
     bool show_help;
     bool show_version;
     bool sanity_check;
-    bool average_line;
 } Input_data;
 
 

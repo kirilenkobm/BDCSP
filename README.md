@@ -14,7 +14,7 @@ Here, I suggest an polynomial approximation for this task with precision measure
 Briefly, the suggested algorithm solves the problem in:
 
 ``` math
-O(W^4 * H^2)
+O(W^3 * H^2)
 ```
 
 Where:
@@ -75,9 +75,9 @@ Usage: ./CSP [input file] [k] [-v] [-p]
 [-a]: try to get distance to average line
 ```
 
-For better results, add -f option.
+For better (in average) results, add -f and -z options.
 
-For best results, call throw call_for_each_line.py:
+Also, results might be improved with:
 
 ```shell
 ../call_for_each_line.py [input_file] [k]

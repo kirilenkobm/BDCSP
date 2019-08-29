@@ -188,6 +188,26 @@ uint32_t *traverse_get_z_dist
 }
 
 
+// updated get z dist function
+uint32_t *__get_z_dist
+(Pattern *patterns, Input_data *input_data, uint32_t *i_z_dist, uint32_t p_num, int8_t change)
+{
+    uint32_t *res = (uint32_t*)calloc(input_data->str_num, sizeof(uint32_t));
+    arr_1D_uint32_copy_from_to(res, i_z_dist, input_data->str_num);
+    uint32_t rev_id = input_data->pat_num - p_num;
+    uint32_t p_id = 0;
+    if (change == 1) {p_id = rev_id;} else {p_id = p_num;}
+    for (uint32_t i = 0; i < input_data->str_num; ++i){
+        if (patterns[p_id].pattern[i] == 0) { // increse number of zeros at this position
+            res[i] += 1;
+        } else {  // decrease number of zeros
+            res[i] -= 1;
+        }
+    }
+    return res;
+}
+
+
 // update program state
 void __upd_prog_state
 (State *states, Masks_data *mask, uint32_t *cur_state, bool *end, bool *res,
@@ -209,7 +229,7 @@ uint32_t *best_mask)
     uint32_t cur_move_num = states[*cur_state].cur_move;
     Move cur_move = states[*cur_state].moves[cur_move_num];
     states[*cur_state].cur_move += 1;  // keep in memory + move
-    uint32_t *cur_mask = traverse__mask_copy(states[*cur_state].pat_mask, mask->mask_size);
+    uint32_t *cur_mask = arr_1D_uint32_copy(states[*cur_state].pat_mask, mask->mask_size);
     __apply_move(cur_mask, &cur_move);
 
     // bool already_is_in = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
@@ -249,7 +269,7 @@ uint32_t *best_mask)
         p_num = iter / 2;
         change = (iter - (p_num * 2)) ? -1 : 1;
         // ok, I think I need to block this feature
-        if (change == -1) {continue;}  // I don't know, do I need -1 moves or not
+        // if (change == -1) {continue;}  // I don't know, do I need -1 moves or not
         // this is why there are so many comments
 
         // cannot have value < 0 or > MAX
@@ -258,17 +278,15 @@ uint32_t *best_mask)
         cur_mask[p_num] += change;
         is_in_states = __is_in_mask(cur_mask, mask->mask_size, states, *cur_state);
         is_in_memory = __is_in_memory(mask_memory, cur_mask, mask->mask_size);
+        // is_in_memory = false;
+        // return mask back
+        cur_mask[p_num] -= change;
         if (is_in_states || is_in_memory){
             // repeats are not allowed
-            cur_mask[p_num] -= change;
             continue;
         }
 
-        uint32_t *zeros_dist = traverse_get_z_dist(patterns,
-                                                   input_data->str_num,
-                                                   cur_mask,
-                                                   mask->mask_size,
-                                                   input_data->pat_num);
+        uint32_t *zeros_dist = __get_z_dist(patterns, input_data, init_z_dist, p_num, change);
         // compare distributions; free render we don't need anymore
         Z_compare compare = compare_Z_dist(init_z_dist, zeros_dist, input_data->str_num);
 
@@ -276,7 +294,6 @@ uint32_t *best_mask)
         if (compare.min_zeros_delta >= 0){
             free(zeros_dist);
             zeros_dist = NULL;
-            cur_mask[p_num] -= change;
             continue;
         }
 
@@ -294,11 +311,9 @@ uint32_t *best_mask)
         ++moves_count;
         free(zeros_dist);
         zeros_dist = NULL;
-        // return mask back
-        cur_mask[p_num] -= change;
     }
     verbose(2, "# Possible %u moves out of %u allocated\n", moves_count, allocated_);
-    free(init_z_dist);  // we don't need this array anymore
+    // free(init_z_dist);  // we don't need this array anymore
     init_z_dist = NULL;
     *cur_state += 1;
 

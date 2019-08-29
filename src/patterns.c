@@ -52,23 +52,36 @@ void __patterns__redefine_patterns(Pattern *patterns, Input_data *in_data, uint3
     uint32_t r_sum = 0;
     uint32_t _temp = 0;
 
-    for (uint32_t dir_id = 1; dir_id <= split; ++dir_id)
+    // for (uint32_t dir_id = 1; dir_id <= split; ++dir_id)
+    for (uint32_t dir_id = split; dir_id > 0; --dir_id)
+
     {
         rev_id = in_data->pat_num - dir_id;
         d_sum = 0;
         r_sum = 0;
         // get sum for each
+
+        // if (patterns[dir_id].size >= patterns[rev_id].size){
+        //     continue;
+        // } else {
+        //     invert_pattern(patterns[dir_id].pattern, in_data->str_num);
+        //     invert_pattern(patterns[rev_id].pattern, in_data->str_num);
+        //     _temp = patterns[dir_id].size;
+        //     patterns[dir_id].size = patterns[rev_id].size;
+        //     patterns[rev_id].size = _temp;           
+        // }
+
         for (uint32_t i = 0; i < in_data->str_num; ++i){
             if (patterns[dir_id].pattern[0] == 1) {d_sum += hum_dists[i];}
             else {r_sum += hum_dists[i];}
         }
-        if (d_sum < r_sum) {
+        if (d_sum <= r_sum) {
             for (uint32_t i = 0; i < in_data->str_num; ++i){
-                if (patterns[dir_id].pattern[i] == 1) {--hum_dists[i];}
+                if (patterns[rev_id].pattern[i] == 1) {--hum_dists[i];}
             }
         } else {
             for (uint32_t i = 0; i < in_data->str_num; ++i){
-                if (patterns[rev_id].pattern[i] == 1) {--hum_dists[i];}
+                if (patterns[dir_id].pattern[i] == 1) {--hum_dists[i];}
             }
             // ok, need to swap
             invert_pattern(patterns[dir_id].pattern, in_data->str_num);

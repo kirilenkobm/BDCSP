@@ -69,6 +69,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-f]: optimize first line\n");
     fprintf(stderr, "[-s]: sanity checks, just check the input correctness and quit\n");
     fprintf(stderr, "[-sr]/[--sr] <filaname>: save final render to file\n");
+    fprintf(stderr, "[-z]: turn on magic mode\n");
     exit(1);
 
 }
@@ -145,8 +146,9 @@ void get_init_density_range
     rev_id = 0;
 
     // then the highest potential density
-    for (uint32_t pat_id = 0; pat_id < input_data->pat_num; ++pat_id){
+    for (uint32_t pat_id = 1; pat_id < input_data->pat_num; ++pat_id){
         if (patterns[pat_id].pattern[0] != 1){continue;}
+        // printf("pat id %u\n", pat_id);
         // consider only direct primers
         rev_id = input_data->pat_num - pat_id;
         cur_pat_times = patterns[pat_id].times;
@@ -261,8 +263,9 @@ int main(int argc, char ** argv)
     }
 
     // help the program a bit
-    __patterns__redefine_patterns(patterns, &input_data, hum_dists);
-
+    if (input_data.magic) {
+        __patterns__redefine_patterns(patterns, &input_data, hum_dists);
+    }
     // not so obvious case, get intersection data first
     uint32_t *zero_mask = (uint32_t*)calloc(input_data.dir_pat_num + 1, sizeof(uint32_t));
     uint32_t *full_mask = patterns__get_full_mask(patterns, input_data.dir_pat_num);
@@ -291,13 +294,13 @@ int main(int argc, char ** argv)
 
     if (baseline >= input_data.to_cover){
         // eventually got answer
-        verbose(1, "# answer branch 3\n");
+        verbose(1, "# Answer branch 3\n");
         printf("The answer is:\nTrue\n");
         free_all();
         return 0;
     } else if (total_allowed_zeros < min_zeros_amount){
         // also an answer; not sure if it is possible
-        verbose(1, "# answer branch 3\n");
+        verbose(1, "# Answer branch 3\n");
         printf("The answer is:\nFalse\n");
         free_all();
         return 0;
@@ -317,6 +320,7 @@ int main(int argc, char ** argv)
     // "just" extract result and output it
     bool ans_ = traverse__run(zero_mask, full_mask, zeros_nums, &input_data, patterns);
     char *answer = (ans_) ? "True" : "False";
+    verbose(1, "# Answer branch 5\n");
     printf("The answer is:\n%s\n", answer);
     free_all();
     return 0;

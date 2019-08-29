@@ -43,6 +43,7 @@ typedef struct
     bool show_help;
     bool show_version;
     bool sanity_check;
+    bool magic;
 } Input_data;
 
 

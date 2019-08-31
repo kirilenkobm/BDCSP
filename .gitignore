@@ -39,3 +39,7 @@ metrics/temp/
 metrics/.ipynb_checkpoints/
 metrics/TEMP*
 metrics/_*
+
+perf_jobs/
+perf_results/
+perf_comb_jobs.txt

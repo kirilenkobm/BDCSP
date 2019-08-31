@@ -21,6 +21,8 @@ generate_input
 
 # python stuff
 __pycache__/
+*/.ipynb_checkpoints/*
+metrics/plots/.ipynb_checkpoints/*
 
 # backups and more
 old_py_replace/

@@ -4,7 +4,7 @@ import os
 import random
 
 DATASETS_DIR = "tests/input_files"
-JOBS_NUM = 100
+JOBS_NUM = 400
 JOBS_DIR = "perf_jobs"
 RES_DIR = "perf_results"
 COMBINED = "perf_comb_jobs.txt"
@@ -28,6 +28,12 @@ def main():
         files_paths = [os.path.join(dataset_path, df) for df in dataset_files]
         ds_cmds = ["{ " + "time ./CSP {0} {1}".format(fp, k) + "; } 2>&1" for fp in files_paths]
         commands.extend(ds_cmds)
+        ds_cmds_f = ["{ " + "time ./CSP {0} {1} -f".format(fp, k) + "; } 2>&1" for fp in files_paths]
+        commands.extend(ds_cmds_f)
+        ds_cmds_z = ["{ " + "time ./CSP {0} {1} -z".format(fp, k) + "; } 2>&1" for fp in files_paths]
+        commands.extend(ds_cmds_z)
+        ds_cmds_zf = ["{ " + "time ./CSP {0} {1} -z -f".format(fp, k) + "; } 2>&1" for fp in files_paths]
+        commands.extend(ds_cmds_zf)
 
     random.shuffle(commands)
     cmds_num = len(commands)

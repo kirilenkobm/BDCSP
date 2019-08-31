@@ -5,22 +5,33 @@
 
 ## What is the problem
 
-What is the problem: [1]. Is also np complete in case of binary alphabet:[2]. Coming soon.
+Binary decisional closest string problem definition:
 
-Here, I suggest an polynomial approximation for this task with precision measurements.
+- Given a set of strings s1, s2, s3, ... sk of length L over the alphabet {0, 1}
+- Also given a parameter K
+- Question: is there a string s such that d(s, si) <= K for all i = 1,...,k?
+
+Where d(s1, s2) is a Humming distance between stings s1 and s2.
+
+This problem considered to be NP-complete.
+
+Here, I suggest a polynomial approximation for this task with precision and performance measurements.
+
+The algorithm is explained in detail in the following article:
 
 <https://example.com>
 
 Briefly, the suggested algorithm solves the problem in:
 
 ``` math
-O(W^3 * H^2)
+O(W^2 * H^2 * W * u)
 ```
 
 Where:
 
 - W - string length
 - H - number of strings
+- u - user-defined multiplicator, default 1
 
 in the __worst__ case (K ~ 33% of string length).
 
@@ -55,6 +66,12 @@ make rnd
 ./generate_input
 ```
 
+To reproduce testing dataset:
+
+```shell
+./repeat_dataset.sh
+```
+
 Will compile random datasets generator in C
 
 Program usage:
@@ -72,7 +89,8 @@ Usage: ./CSP [input file] [k] [-v] [-p]
 [-f]: optimize first line
 [-s]: sanity checks, just check the input correctness and quit
 [-sr]/[--sr] <filaname>: save final render to file
-[-a]: try to get distance to average line
+[-z]: turn on magic mode
+[-t]: transpose dataset
 ```
 
 For better (in average) results, add -f and -z options.
@@ -83,7 +101,7 @@ Also, results might be improved with:
 ../call_for_each_line.py [input_file] [k]
 ```
 
-Warning - takes X str_num more operations!
+Warning - takes str_num more operations!
 
 ## Contents
 
@@ -115,11 +133,3 @@ Warning - takes X str_num more operations!
 
 - patterns concept
 - complications on patterns concept
-- why decisional and binary version
-- estimated complexity
-
-## References
-
-[1] Lanctot J, Li M, Ma B, Wang S, Zhang L. Distinguishing string selection problems. Information and Computation. 2003. pp. 41–55.
-
-[2] Frances M, Litman A. On covering problems of codes. Theoretical Computer Science. 1997;30(2):113–119.

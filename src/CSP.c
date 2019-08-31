@@ -70,6 +70,7 @@ void _show_usage_and_quit(char * executable)
     fprintf(stderr, "[-s]: sanity checks, just check the input correctness and quit\n");
     fprintf(stderr, "[-sr]/[--sr] <filaname>: save final render to file\n");
     fprintf(stderr, "[-z]: turn on magic mode\n");
+    fprintf(stderr, "[-t]: transpose dataset\n");
     exit(1);
 
 }
@@ -176,6 +177,11 @@ int main(int argc, char ** argv)
     log_level = input_data.log_level;
     verbose(1, "# Set verbosity level %d\n", log_level);
     read_input__main_args(argv, &input_data);
+    if (input_data.transpose){
+        read_input__transpose(&input_data);
+        verbose(1, "Transposed\n");
+        verbose(1, "New str_num %u; str_len %u\n", input_data.str_num, input_data.str_len);
+    }
 
     // set defaults to (potentially) allocated stuff
     allocated.input_arr = input_data.in_arr;

@@ -135,6 +135,28 @@ void read_input__prepare_data(Input_data *input_data)
 }
 
 
+// transpose input dataset
+void read_input__transpose(Input_data *input_data)
+{
+    uint32_t init_str_num = input_data->str_num;
+    uint32_t init_str_len = input_data->str_len;
+    input_data->str_len = init_str_num;
+    input_data->str_num = init_str_len;
+
+    uint8_t **new_arr = (uint8_t**)malloc(init_str_len * sizeof(uint8_t*));
+    for (uint32_t i = 0; i < init_str_len; ++i){new_arr[i] = (uint8_t*)calloc(init_str_num, sizeof(uint8_t));}
+
+    for (uint32_t row = 0; row < init_str_num; ++row){
+        for (uint32_t col = 0; col < init_str_len; ++col){
+            new_arr[col][row] = input_data->in_arr[row][col];
+        }
+    }
+    for (uint32_t i = 0; i < init_str_num; ++i){free(input_data->in_arr[i]);}
+    free(input_data->in_arr);
+    input_data->in_arr = new_arr;
+}
+
+
 // read and check input array and K
 void read_input__main_args(char **argv, Input_data *input_data)
 {
@@ -355,6 +377,7 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
     input_data->save_render = false;
     input_data->save_render_to = NULL;
     input_data->magic = false;
+    input_data->transpose = false;
 
     if (strcmp(argv[1], "-h") == 0) {
         input_data->show_help = true;
@@ -428,6 +451,8 @@ void read_input__opt_args(int argc, char**argv, Input_data *input_data)
             input_data->sanity_check = true;
         } else if (strcmp(argv[op], "-z") == 0) {
             input_data->magic = true;
+        } else if (strcmp(argv[op], "-t") == 0) {
+            input_data->transpose = true;
         } else {
             fprintf(stderr, "Ignore unknown parameter %s\n", argv[op]);
             // _show_usage_and_quit(argv[0]);

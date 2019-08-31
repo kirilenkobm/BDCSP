@@ -44,6 +44,7 @@ typedef struct
     bool show_version;
     bool sanity_check;
     bool magic;
+    bool transpose;
 } Input_data;
 
 
@@ -59,6 +60,8 @@ typedef struct
 void read_input__prepare_data(Input_data *input_data);
 
 void free_in_data(Input_data *input_data, uint32_t line_num);
+
+void read_input__transpose(Input_data *input_data);
 
 void read_input__main_args(char **argv, Input_data *Input_data);
 

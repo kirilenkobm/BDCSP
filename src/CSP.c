@@ -25,11 +25,11 @@
 #include "render.h"
 #include "traverse.h"
 #include "arrstuff.h"
+
 #define VERSION "0.01 Unreleased"
-
-
 uint8_t log_level = 0;
-
+#define RES_TRUE "The answer is:\nTrue\n"
+#define RES_FALSE "The answer is:\nFalse\n"
 
 // in support for free_all func
 struct allocated_data{
@@ -203,7 +203,7 @@ int main(int argc, char ** argv)
     verbose(1, "# Average line k = %u\n", ave_k);
     if (ave_k <= input_data.k){
         verbose(1, "# Answer branch 0\n");
-        printf("The answer is:\nTrue\n");
+        printf(RES_TRUE);
         free_all();
         return 0;
     }
@@ -240,7 +240,7 @@ int main(int argc, char ** argv)
     // case if K is too high and no need to compute anything
     if (input_data.k >= input_data.act_col_num){
         verbose(1, "# Answer branch 1\n");
-        printf("The answer is:\nTrue\n");
+        printf(RES_TRUE);
         free_all();
         return 0;
     }
@@ -258,14 +258,18 @@ int main(int argc, char ** argv)
     // in case if expected density is not in [inf, sup)
     if (input_data.to_cover <= inf_cov){
         verbose(1, "# Answer branch 2\n");
-        printf("The answer is:\nTrue\n");
+        printf(RES_TRUE);
         free_all();
         return 0;
     } else if (input_data.to_cover > sup_cov){
         verbose(1, "# Answer branch 2\n");
-        printf("The answer is:\nFalse\n");
+        printf(RES_FALSE);
         free_all();
         return 0;
+    } else if (input_data.to_cover == sup_cov){
+        // this is interesting case
+        verbose(1, "# to_cover is the maximal possible val\n");
+
     }
 
     // help the program a bit
@@ -301,13 +305,13 @@ int main(int argc, char ** argv)
     if (baseline >= input_data.to_cover){
         // eventually got answer
         verbose(1, "# Answer branch 3\n");
-        printf("The answer is:\nTrue\n");
+        printf(RES_TRUE);
         free_all();
         return 0;
     } else if (total_allowed_zeros < min_zeros_amount){
         // also an answer; not sure if it is possible
         verbose(1, "# Answer branch 3\n");
-        printf("The answer is:\nFalse\n");
+        printf(RES_FALSE);
         free_all();
         return 0;
     }
@@ -325,9 +329,8 @@ int main(int argc, char ** argv)
 
     // "just" extract result and output it
     bool ans_ = traverse__run(zero_mask, full_mask, zeros_nums, &input_data, patterns);
-    char *answer = (ans_) ? "True" : "False";
     verbose(1, "# Answer branch 5\n");
-    printf("The answer is:\n%s\n", answer);
+    if (ans_){printf(RES_TRUE);} else {printf(RES_FALSE);}
     free_all();
     return 0;
 }

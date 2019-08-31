@@ -45,17 +45,14 @@ done
 echo "Created set for precision test"
 
 echo "Creating set for performance test"
-str_lens=(100 200 300 400 500 600 700 800 900 1000
-          1100 1200 1300 1400 1500 1600 1700 1800 1900 2000)
-
 str_num=100
 repl=20
 range=20
 prop=3
 
-for step in `seq 0 $((range-1))`
+for step in `seq 1 $((range))`
 do
-    str_len="${str_lens[$step]}"
+    str_len=$((step * 100))
     k=$((str_len / prop))
     d_name="perf_${str_len}_${str_num}_${k}"
     cmd="$gen_in $str_len $str_num $k $repl $d_name"

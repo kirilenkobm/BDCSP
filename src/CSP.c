@@ -266,10 +266,6 @@ int main(int argc, char ** argv)
         printf(RES_FALSE);
         free_all();
         return 0;
-    } else if (input_data.to_cover == sup_cov){
-        // this is interesting case
-        verbose(1, "# to_cover is the maximal possible val\n");
-
     }
 
     // help the program a bit

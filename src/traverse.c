@@ -502,7 +502,7 @@ Input_data *input_data, Pattern *patterns)
         states[i].prev_p_sign = zero;
     }
 
-    states[0].pat_mask = traverse__mask_copy(zero_mask, mask_size);
+    states[0].pat_mask = arr_1D_uint32_copy(zero_mask, mask_size);
     // so now we have a cutoff and can write the initial array
     verbose(2, "# Initial cutoff is: %u\n", cutoff);
     init_compares = (Z_compare*)realloc(init_compares, cutoff * sizeof(Z_compare));

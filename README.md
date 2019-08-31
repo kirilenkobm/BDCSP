@@ -22,7 +22,7 @@ Where:
 - W - string length
 - H - number of strings
 
-in the worst case.
+in the __worst__ case (K ~ 33% of string length).
 
 ## Usage
 

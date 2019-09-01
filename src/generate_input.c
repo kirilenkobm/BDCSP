@@ -64,13 +64,13 @@ void __read_input(Input_data *input_data, char **argv)
 
 
 // generate origin string
-uint8_t* __gen_origin_string(uint16_t len)
+void __gen_origin_string(uint8_t *arr, uint16_t len)
 {
-    uint8_t *orig = (uint8_t*)malloc(len * sizeof(uint8_t));
+    // uint8_t *orig = (uint8_t*)malloc(len * sizeof(uint8_t));
     for (uint16_t i = 0; i < len; ++i){
-        orig[i] = rand() % 2;
+        arr[i] = rand() % 2;
     }
-    return orig;
+    // return orig;
 }
 
 
@@ -95,7 +95,7 @@ void _shuffle(uint16_t *arr, uint16_t size)
     uint16_t i;
     uint16_t j;
     uint16_t t;
-    for (i = 0; i < size - 1; i++) 
+    for (i = 0; i < size - 1; ++i) 
     {
         j = i + rand() / (RAND_MAX / (size - i) + 1);
         t = arr[j];
@@ -165,12 +165,12 @@ int main(int argc, char **argv)
     for (uint16_t i = 0; i < input_data.str_num; ++i){
         strings[i] = (uint8_t*)calloc(input_data.str_len, sizeof(uint8_t));
     }
-
+    uint8_t *origin_string = (uint8_t*)malloc(input_data.str_len * sizeof(uint8_t));
     for (uint16_t rep_num = 0; rep_num < input_data.replicates_num; ++rep_num)
     // generate replicate
     {
         // we need origin string here
-        uint8_t *origin_string = __gen_origin_string(input_data.str_len);
+        __gen_origin_string(origin_string, input_data.str_len);
         // need str_num random strings originated from origin string
 
         for (uint16_t str_num = 0; str_num < input_data.str_num; ++str_num)
@@ -192,10 +192,10 @@ int main(int argc, char **argv)
         strcpy(file_path, input_dir);
         strcat(file_path, filename);
         _write_to_file(file_path, strings, input_data.str_num, input_data.str_len);
-        free(origin_string);
     }
     for (uint16_t i = 0; i < input_data.str_num; ++i){free(strings[i]);}
     free(strings);
+    free(origin_string);
     printf("Generated dataset %s\n", input_data.dataset_name);
     free(indexes);
     free(first_k);

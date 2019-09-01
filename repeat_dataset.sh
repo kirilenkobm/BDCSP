@@ -46,7 +46,7 @@ echo "Created set for precision test"
 
 echo "Creating set for performance test"
 str_num=100
-repl=20
+repl=50
 range=20
 prop=3
 

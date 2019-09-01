@@ -161,16 +161,17 @@ int main(int argc, char **argv)
     uint16_t *first_k = (uint16_t*)calloc(input_data.k_, sizeof(uint16_t));
     for (uint32_t i = 0; i < input_data.str_len; ++i){indexes[i] = i;}
 
+    uint8_t **strings = (uint8_t**)malloc(input_data.str_num * sizeof(uint8_t*));
+    for (uint16_t i = 0; i < input_data.str_num; ++i){
+        strings[i] = (uint8_t*)calloc(input_data.str_len, sizeof(uint8_t));
+    }
+
     for (uint16_t rep_num = 0; rep_num < input_data.replicates_num; ++rep_num)
     // generate replicate
     {
         // we need origin string here
         uint8_t *origin_string = __gen_origin_string(input_data.str_len);
         // need str_num random strings originated from origin string
-        uint8_t **strings = (uint8_t**)malloc(input_data.str_num * sizeof(uint8_t*));
-        for (uint16_t i = 0; i < input_data.str_num; ++i){
-            strings[i] = (uint8_t*)calloc(input_data.str_len, sizeof(uint8_t));
-        }
 
         for (uint16_t str_num = 0; str_num < input_data.str_num; ++str_num)
         {
@@ -191,13 +192,10 @@ int main(int argc, char **argv)
         strcpy(file_path, input_dir);
         strcat(file_path, filename);
         _write_to_file(file_path, strings, input_data.str_num, input_data.str_len);
-
-        // TODO: maybe allocate it only once?
-        for (uint16_t i = 0; i < input_data.str_num; ++i){free(strings[i]);}
-        free(strings);
         free(origin_string);
     }
-    
+    for (uint16_t i = 0; i < input_data.str_num; ++i){free(strings[i]);}
+    free(strings);
     printf("Generated dataset %s\n", input_data.dataset_name);
     free(indexes);
     free(first_k);

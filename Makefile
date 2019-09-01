@@ -29,6 +29,7 @@ include $(SRCS:.c=.d)
 clean:
 	-${RM} ${OBJS} $(SRCS:.c)
 
+# to make inputs generator; standalone tool
 .PHONY: rnd
 rnd: $(RND_GEN)
 

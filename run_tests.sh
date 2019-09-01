@@ -8,8 +8,6 @@ declare -a arr=("make clean"
                 "./CSP _sample_input/test_0.txt 2"
                 "./CSP _sample_input/test_0.txt 4"
                 "./CSP _sample_input/test_2.txt 12"
-                "make rnd"
-                "./generate_input 100 25 25 25 _test"
                 )
 
 for (( i = 0; i < ${#arr[@]} ; i++ )); do
@@ -43,7 +41,5 @@ for (( i = 0; i < ${#arr[@]} ; i++ )); do
 
     printf "Test $((i + 1)) out of ${#arr[@]}\n"
 done
-
-eval "rm -rf tests/input_files/_test/"
 
 exit 0

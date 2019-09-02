@@ -35,7 +35,7 @@ Where:
 
 in the __worst__ case (K ~ 33% of string length).
 
-To achieve this, I developed some ideas, published in "Fixed-Parameter Algorithms for Closest String and Related Problems" by Jens Gramm & Rolf Niedermeier, and added a couple of mine.
+To achieve this, I developed some ideas, published in "Fixed-Parameter Algorithms for Closest String and Related Problems" by Jens Gramm, Rolf Niedermeier, and Peter Rossmanith3 (Algorithmica, September 2003, Volume 37, Issue 1, pp 25–42) and added a couple of mine. Also, using the binary alphabet simplifies the search a lot.
 
 ## Usage
 

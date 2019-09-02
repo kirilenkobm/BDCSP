@@ -138,8 +138,3 @@ In this case the program runs several times using the best state of the previous
   - .gitlab-ci.yml
   - CHANGELOG
   - README.md =)
-
-## To write
-
-- patterns concept
-- complications on patterns concept

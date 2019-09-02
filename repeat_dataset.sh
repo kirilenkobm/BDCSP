@@ -44,7 +44,7 @@ done
 
 echo "Created set for precision test"
 
-echo "Creating set for performance test"
+echo "Creating set for performance test, fixed str_num"
 str_num=100
 repl=50
 range=20
@@ -58,5 +58,22 @@ do
     cmd="$gen_in $str_len $str_num $k $repl $d_name"
     eval $cmd
 done
+
+
+echo "Creating set for performance test, fixed str_len"
+str_len=100
+repl=50
+range=10
+prop=3
+
+for step in `seq 1 $((range))`
+do
+    str_num=$((step * 100))
+    k=$((str_len / prop))
+    d_name="perf_${str_len}_${str_num}_${k}"
+    cmd="$gen_in $str_len $str_num $k $repl $d_name"
+    eval $cmd
+done
+
 
 echo "Done."

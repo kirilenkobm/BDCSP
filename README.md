@@ -35,6 +35,8 @@ Where:
 
 in the __worst__ case (K ~ 33% of string length).
 
+To achieve this, I developed some ideas, published in "Fixed-Parameter Algorithms for Closest String and Related Problems" by Jens Gramm & Rolf Niedermeier, and added a couple of mine.
+
 ## Usage
 
 On linux/MacOS:
@@ -102,6 +104,14 @@ Also, results might be improved with:
 ```
 
 Warning - takes str_num more operations!
+
+In some cases, this also might be useful:
+
+```shell
+./iterative_call.py
+```
+
+In this case the program runs several times using the best state of the previous program.
 
 ## Contents
 

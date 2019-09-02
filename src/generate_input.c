@@ -134,7 +134,7 @@ void _swap_(uint8_t *num) {*num = 1 - *num;}
 int main(int argc, char **argv)
 {
     if (argc != 6){_show_usage_and_quit(argv[0]);}
-    srand(time(NULL));
+    srand((uint32_t)time(NULL) + (uint32_t)**main);
     Input_data input_data;
     __read_input(&input_data, argv);
 

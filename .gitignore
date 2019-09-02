@@ -30,9 +30,10 @@ old_src/
 old/
 __backup/*
 
-# test data
+# test data and more
 tests/answers/*
 tests/input_files/*
+_temp/
 
 # metrics related
 metrics/temp/

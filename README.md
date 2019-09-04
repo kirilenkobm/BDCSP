@@ -24,7 +24,7 @@ The algorithm is explained in detail in the following article:
 Briefly, the suggested algorithm solves the problem in:
 
 ``` math
-O(W^3 * H^2 * W)
+O(W^3 * H^2)
 ```
 
 in the __worst__ case (if K ~ 33% of string length, then the probability of the worst case is the hightest, ).
@@ -161,3 +161,22 @@ In average, F and Z corrections improve results.
 However, if we compare different corrections with uncorrected model, we see that in a minority of cases it is better to call the program without any corrections:
 
 ![alt text](metrics/plots/precision_2.png "Precision_2")
+
+## Performane tests
+
+In the worst case algorithm shows complexity as O(W^3 * H^2).
+However, in the best case program shows almost linear time.
+It depends on the step where program found the answer. The search tree step is the bottleneck, and, if program fails to find the closest string at this stage, it actually is the worst case.
+I performed performance tests on the dataset with fixed str_num (100 strings) and different str lengths (100 - 2000 characters).
+Expected K is 33% of str_len in each dataset, to perform the tests on the potentially worst case.
+
+![alt text](metrics/plots/performance_1.png "Performance_1")
+
+As we can see, the runtime is highly variable, however is quite low in the average case. Actually, according the algorithm structure, the worst runtime will be shown for cases, where program failed to find the closest string.
+The same plot for "only False" answers looks like:
+
+![alt text](metrics/plots/performance_2.png "Performance_2")
+
+Also the runtime depends on applied corrections, because with corrections the search is deeper in average. So this plot shows runtime in "False" case for different types of corrections:
+
+![alt text](metrics/plots/performance_3.png "Performance_3")

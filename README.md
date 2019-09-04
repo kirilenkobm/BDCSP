@@ -112,6 +112,22 @@ In some cases, this also might be useful:
 
 In this case the program runs several times using the best state of the previous program.
 
+## How it works
+
+Briefly, the program is based on the following ideas:
+
+- Let's imagine, that we have all possible strings of some length L. In this case the question of existence of the closest string is nonsense, because for each string S it will exist a string -S with all characters inverted, and the maximal distance will be equal to strlen.
+- If we remove one string, let's say 0000, then 1111 will be the closest string, because a minus-string for the 1111 doesn't exist anymore. The maximal distance will be reached for strings like 1000, 0100, etc.
+- Columns 1001 and 0110 mean the same thing in relation to other strings, they belong to the same class, so all 1000's might be replaced witn 0111's and vice versa.
+- We can take strings containing only 1's as the closest string, and swap all columns in way to minimize the maximal distance, in our case - to minimize number of zeros in the string, containing the bigger number of zeros.
+- We need only one instance of each strings, duplicates can be removed.
+- Columns containing only 0 or 1 might also be skipped.
+- For the K given we need to cover col_num - K columns.
+- If we swap all columns to make number of ones in our matrix as big as possible, we can sum up numbers of ones and divide to str_num, then we get __potentially__ biggest number of covered columns. So we can simply measure the potentially smallest K.
+- For the same "maximal number of ones" metrix we can measure the maximal a priori K. Meaning if we request this K, or bigger, we can skip computations and say "True". If a column has 2 zeros, then this column together with 2 any other columns will a priori cover the level, and so on.
+- We also can get "average string" (if a columns has more 1's than 0's, then put 1 at this position in average string and vice versa). Then we can compute humming distances to each string and get maximal K (if requested this or bigger K - return True).
+- Also, we can use the following logic - if maximal distance is 10, and the second is 6, we can shrink this number up to 8.
+
 ## Contents
 
 - src/ - C source code, the algorithm implementation itself:

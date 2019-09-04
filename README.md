@@ -162,7 +162,7 @@ However, if we compare different corrections with uncorrected model, we see that
 
 ![alt text](metrics/plots/precision_2.png "Precision_2")
 
-## Performane tests
+## Performance tests
 
 In the worst case algorithm shows complexity as O(W^3 * H^2).
 However, in the best case program shows almost linear time.

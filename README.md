@@ -9,7 +9,7 @@ Binary decisional closest string problem definition:
 
 - Given a set of strings S = {s1, s2, s3, ... sk} of length L over the alphabet {0, 1}
 - Also given a parameter K
-- Question: is there a string sc such that d(s, si) <= K for all s ∈ S?
+- Question: is there a string sc such that d(sc, s) <= K for each s ∈ S?
 
 Where d(s1, s2) is a Humming distance between stings s1 and s2.
 
@@ -24,16 +24,15 @@ The algorithm is explained in detail in the following article:
 Briefly, the suggested algorithm solves the problem in:
 
 ``` math
-O(W^2 * H^2 * W * u)
+O(W^3 * H^2 * W)
 ```
+
+in the __worst__ case (K ~ 33% of string length).
 
 Where:
 
 - W - string length
 - H - number of strings
-- u - user-defined multiplicator, default 1
-
-in the __worst__ case (K ~ 33% of string length).
 
 To achieve this, I developed some ideas, published in "Fixed-Parameter Algorithms for Closest String and Related Problems" by Jens Gramm, Rolf Niedermeier, and Peter Rossmanith3 (Algorithmica, September 2003, Volume 37, Issue 1, pp 25–42) and added a couple of mine. Also, using the binary alphabet simplifies the search a lot.
 

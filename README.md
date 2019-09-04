@@ -107,10 +107,10 @@ Warning - takes _str_num_ times more operations!
 In some cases, this also might be useful:
 
 ```shell
-./iterative_call.py
+./iterative_call.py [input_file] [k]
 ```
 
-In this case the program runs several times using the best state of the previous program.
+In this case the program runs several times using the best state of the previous run.
 
 ## How it works
 

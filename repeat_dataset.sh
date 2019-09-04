@@ -8,7 +8,7 @@ eval "rm -rf tests/input_files/*"
 echo "cleaned"
 
 # make generate_input if not exists
-if [ ! -f generate_input ];
+if [ ! -f $gen_in ];
 then
     eval "make rnd"
 fi

@@ -1,22 +1,15 @@
-# Makefile for shared library
 CC = gcc
-# CFLAGS = -fPIC -Wall -Wextra -O2 -g
 CFLAGS = -Wall -Wextra -O2 -g
-# LDFLAGS = -shared
 RM = rm -f
-# TARGET_LIB = bin/CSP.so
 TARGET = CSP
 RND_GEN = generate_input
 
-# SRCS = src/CSP.c src/grid.c src/patterns.c
 SRCS = src/CSP.c src/read_input.c src/patterns.c src/render.c src/traverse.c src/arrstuff.c
 OBJS = $(SRCS:.c=.o)
 
 .PHONY: all
-# all: ${TARGET_LIB}
 all: ${TARGET}
 
-# $(TARGET_LIB): $(OBJS)
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $^
 

@@ -9,4 +9,6 @@ build:
   only:
   - master
   - changes:
-    - src/*
+    - paths:
+      - "^src/.*"
+

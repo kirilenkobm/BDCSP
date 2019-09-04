@@ -8,6 +8,3 @@ build:
   - ./run_tests.sh
   only:
   - master
-  - paths:
-    - "^src/.*"
-

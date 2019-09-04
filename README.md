@@ -7,9 +7,9 @@
 
 Binary decisional closest string problem definition:
 
-- Given a set of strings s1, s2, s3, ... sk of length L over the alphabet {0, 1}
+- Given a set of strings S = {s1, s2, s3, ... sk} of length L over the alphabet {0, 1}
 - Also given a parameter K
-- Question: is there a string s such that d(s, si) <= K for all i = 1,...,k?
+- Question: is there a string sc such that d(s, si) <= K for all s ∈ S?
 
 Where d(s1, s2) is a Humming distance between stings s1 and s2.
 

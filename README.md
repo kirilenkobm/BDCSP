@@ -27,7 +27,7 @@ Briefly, the suggested algorithm solves the problem in:
 O(W^3 * H^2 * W)
 ```
 
-in the __worst__ case (K ~ 33% of string length).
+in the __worst__ case (if K ~ 33% of string length, then the probability of the worst case is the hightest, ).
 
 Where:
 
@@ -137,3 +137,22 @@ In this case the program runs several times using the best state of the previous
   - .gitlab-ci.yml
   - CHANGELOG
   - README.md =)
+
+## Precision measurements
+
+Precision measurements were performed in the following way:
+
+- Create testing dataset with "repeat_dataset.sh", 150 repeats for each combination of expected K, str_len and str_num
+  - To create an input file, first create a random string of str_len given (I call it origin string)
+  - Then, str_num times swap K random characters of origin string, save resulting string
+  - Thus, we know that in for this file it must exist a closest string with maximal distance K
+- For each point we know the K expected, so we can check whether program will find it
+- Call program for each file and K given with different corrections (-z, -f and -z -f flags)
+- If the answer is False, this is an error, and we can compute the % of error
+- Plot these errors:
+
+![alt text](metrics/plots/precision_1.png "Precision_1")
+
+We see that the best results are obtained with -z and -f flags. However, if we compare different correction with uncorrected model we see that in a minority of cases it is better to call the program without any correction:
+
+![alt text](metrics/plots/precision_2.png "Precision_2")

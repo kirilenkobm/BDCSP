@@ -8,7 +8,6 @@ build:
   - ./run_tests.sh
   only:
   - master
-  - changes:
-    - paths:
-      - "^src/.*"
+  - paths:
+    - "^src/.*"
 

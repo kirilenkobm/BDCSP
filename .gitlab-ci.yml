@@ -8,16 +8,5 @@ build:
   - ./run_tests.sh
   only:
   - master
-
-# py_test:
-#   stage: py_test
-#   script:
-#   - pip install -r requirements.txt
-#   - ./generate_input.py 50 20 20 10 test
-#   - ./generate_input.py clean
-#   - <generate public/py_test.svg>
-#   only:
-#   - master
-#   artifacts:
-#     paths:
-#       - public/py_test.svg
+  - changes:
+    - src/*

@@ -153,6 +153,11 @@ Precision measurements were performed in the following way:
 
 ![alt text](metrics/plots/precision_1.png "Precision_1")
 
-We see that the best results are obtained with -z and -f flags. However, if we compare different correction with uncorrected model we see that in a minority of cases it is better to call the program without any correction:
+We see that the best results are obtained with -z and -f flags. Each 4 plots represent one dataset.
+Dataset name is written as {str_len} {str_num} {K expected}.
+F, Z and FZ mean different corrections applied.
+We see that in case of K ~ 35% of strlen program gives the worst results even after corrections.
+In average, F and Z corrections improve results.
+However, if we compare different corrections with uncorrected model, we see that in a minority of cases it is better to call the program without any corrections:
 
 ![alt text](metrics/plots/precision_2.png "Precision_2")

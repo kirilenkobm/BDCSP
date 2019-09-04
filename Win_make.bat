@@ -8,4 +8,7 @@ CALL cl %CL_PARAMS% src\CSP.c ^
                     src\render.c ^
                     src\traverse.c ^
                     /link /out:CSP.exe
+
+CALL cl %CL_PARAMS% src/generate_input.c ^
+                    /out: generate_input.exe
 DEL ".\*.obj" /f /q

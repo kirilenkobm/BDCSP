@@ -10,5 +10,5 @@ CALL cl %CL_PARAMS% src\CSP.c ^
                     /link /out:CSP.exe
 
 CALL cl %CL_PARAMS% src/generate_input.c ^
-                    /out: generate_input.exe
+                    /link /out:generate_input.exe
 DEL ".\*.obj" /f /q

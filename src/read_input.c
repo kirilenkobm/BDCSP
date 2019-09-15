@@ -13,7 +13,7 @@
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
+
 #ifdef _WIN32
 #include <io.h>
 #define F_OK 0
@@ -22,6 +22,11 @@
 #elif __APPLE__
 #include <unistd.h>
 #endif
+
+#if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+
 #include "CSP.h"
 #include "read_input.h"
 #include "arrstuff.h"

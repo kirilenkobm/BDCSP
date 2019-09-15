@@ -15,6 +15,7 @@ metrics/.DS_Store
 *.bc
 *.i
 *.s
+*.exe
 CSP
 *.dSYM/
 generate_input
